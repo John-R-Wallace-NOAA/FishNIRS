@@ -1,0 +1,9 @@
+Package: Fish_NIRS
+Type: Package
+Title: NIRS on fish structures.
+Version: 0.1
+Date: 2021-01-20
+Author: John Wallace (John.Wallace@noaa.gov)
+Maintainer: Who to complain to <yourfault@somewhere.net>
+Description: More about what it does (maybe more than one line)
+License: What license is it under?
