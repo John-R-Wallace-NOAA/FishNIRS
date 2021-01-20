@@ -37,8 +37,8 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    require(readxl)
    
    # Load standard wave freq.
-   load("WaveFreqs1331.RData")
-   load("WaveFreqs921.RData")
+   load("WaveFreqs1331.RData", envir = .GlobalEnv)
+   load("WaveFreqs921.RData", envir = .GlobalEnv)
    # load("WaveFreqs921.B.RData")
    
    WaveFreqs1331.subset.for.921 <- as.numeric(WaveFreqs1331) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs1331))
