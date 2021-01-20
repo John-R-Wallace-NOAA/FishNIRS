@@ -15,6 +15,8 @@ sourceFunctionURL <- function (URL) {
       source(File.ASCII, local = parent.env(environment()))
 }  
 
+# lib() installs the package only if needed and also loads the package. 
+# Quoted names with a forward slash '/' are assumed to be for downloading a repo from GitHub.
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
 
