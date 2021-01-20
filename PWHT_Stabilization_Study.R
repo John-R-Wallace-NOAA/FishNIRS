@@ -14,32 +14,34 @@ sourceFunctionURL <- function (URL) {
       writeLines(paste0('source("', readLines(textConnection(xml2::download_html(URL))), '")'), File.ASCII)
       source(File.ASCII, local = parent.env(environment()))
 }  
-    
+
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
 
    
-library(vegan)
-library(pls)
-library(mdatools)
-library(PLSbiplot1)
-library(prospectr)
+lib(vegan)
+lib(pls)
+lib(mdatools)
+lib(PLSbiplot1)
+lib(prospectr)
 
-library(FactoMineR)
-library(factoextra)
-library(tidyverse)
-library(ggplot2)
-library(grid)
-library(gridExtra)
-library(ade4)
-library(ExPosition)
-library(spectacles)
-library(signal)
-library(data.table)
-library(reshape2)
-library(dplyr)
-library(bio3d)
+lib(FactoMineR)
+lib(factoextra)
+lib(tidyverse)
+lib(ggplot2)
+lib(grid)
+lib(gridExtra)
+lib(ade4)
+lib(ExPosition)
+lib(spectacles)
+lib(signal)
+lib(data.table)
+lib(reshape2)
+lib(dplyr)
+lib(bio3d)
 
-library(Fish_NIRS)
+# lib('John-R-Wallace-NOAA/Fish_NIRS', Package.Name = FishNIRS)
+lib(Fish_NIRS)
 
 
 ##############################################################
