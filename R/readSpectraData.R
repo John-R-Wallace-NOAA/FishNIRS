@@ -37,9 +37,9 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    require(readxl)
    
    # Load standard wave freq.
-   load("W:\\ALL_USR\\JRW\\SIDT\\PWHT Stabilization Study\\R\\WaveFreqs1331.RData")
-   load("W:\\ALL_USR\\JRW\\SIDT\\PWHT Stabilization Study\\R\\WaveFreqs921.RData")
-   load("W:\\ALL_USR\\JRW\\SIDT\\PWHT Stabilization Study\\R\\WaveFreqs921.B.RData")
+   load("WaveFreqs1331.RData")
+   load("WaveFreqs921.RData")
+   # load("WaveFreqs921.B.RData")
    
    WaveFreqs1331.subset.for.921 <- as.numeric(WaveFreqs1331) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs1331))
    # WaveFreqs921.B.subset.for.921 <- as.numeric(WaveFreqs921.B) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs921.B)) # Both 921 - just use the WaveFreqs921 column labels below
