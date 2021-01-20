@@ -40,7 +40,7 @@ lib(reshape2)
 lib(dplyr)
 lib(bio3d)
 
-# lib('John-R-Wallace-NOAA/Fish_NIRS', Package.Name = FishNIRS)
+# lib('John-R-Wallace-NOAA/FishNIRS')  # Load from GitHub
 lib(Fish_NIRS)
 
 
