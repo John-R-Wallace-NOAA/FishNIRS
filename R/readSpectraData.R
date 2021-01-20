@@ -2,8 +2,8 @@
 
 readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
 
-'  # Initial code provided by Jordan Healy <jordan.healy@noaa.gov>  '
-   
+   '  # Initial code provided by Jordan Healy <jordan.healy@noaa.gov>  '
+
    sourceFunctionURL <- function (URL) {
       " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
       require(xml2)
@@ -23,7 +23,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")  
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
    
-   # Nearest Neighbor; x is the shorter column. The y elements nearest the x elements are returned.
+   # Nearest Neighbor; x is the shorter column. The y elements nearest the x elements are returned. 
    nearbor <- function(x, y) {
    
      Out <- NULL
@@ -42,7 +42,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    load("W:\\ALL_USR\\JRW\\SIDT\\PWHT Stabilization Study\\R\\WaveFreqs921.B.RData")
    
    WaveFreqs1331.subset.for.921 <- as.numeric(WaveFreqs1331) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs1331))
-   WaveFreqs921.B.subset.for.921 <- as.numeric(WaveFreqs921.B) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs921.B))
+   # WaveFreqs921.B.subset.for.921 <- as.numeric(WaveFreqs921.B) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs921.B)) # Both 921 - just use the WaveFreqs921 column labels below
    
    hakeStabSpcStudy <- NULL 
    
