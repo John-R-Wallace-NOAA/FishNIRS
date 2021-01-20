@@ -41,7 +41,7 @@ lib(dplyr)
 lib(bio3d)
 
 # lib('John-R-Wallace-NOAA/FishNIRS')  # Load from GitHub
-lib(Fish_NIRS)
+lib(FishNIRS)
 
 
 ##############################################################
