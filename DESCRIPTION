@@ -1,4 +1,4 @@
-Package: Fish_NIRS
+Package: FishNIRS
 Type: Package
 Title: NIRS on fish structures.
 Version: 0.1
