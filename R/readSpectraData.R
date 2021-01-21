@@ -78,6 +78,8 @@ readSpectraData <- function(UploadDates, WaveFreqs1331 = WaveFreqs1331, WaveFreq
                 # Using '..WaveFreqs1331' and '..WaveFreqs921' is subsetting to just those repective vectors of freq., if that complete subset is there.
                 
                 Spc_df <- NULL
+                
+                # Attempts to get the data.table to see ..WaveFreqs1331 (see issue 1)
                 .datatable.aware <- TRUE
                 WaveFreqs1331 <- WaveFreqs1331
                 assign('WaveFreqs1331', WaveFreqs1331, pos = 1)
