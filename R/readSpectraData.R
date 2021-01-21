@@ -11,7 +11,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
        on.exit(file.remove(File.ASCII))
        getTMP <- httr::GET(URL)
        write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
-      source(File.ASCII, local = parent.env(environment()))
+       source(File.ASCII, local = parent.env(environment()))
    }
 
     
@@ -51,7 +51,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    for(h in 1:length(UploadDates)) {
    
       if( h %% 3 == 1) {
-         dev.new(width = 400, height = 300)  #   homeDir, homeDir, "../OPUS Spectra
+         dev.new(width = 400, height = 300) 
          par(mfrow = c(3, 2))
       }    
       
