@@ -72,7 +72,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                 }
                 # print(str(ldf[[1]])) # check first element
                 cat("\n\n"); print(names(ldf[[1]]))
-                cat("\n\n"); print(str(ldf[[1]]))
+                # cat("\n\n"); print(str(ldf[[1]]))
                 
                 # The '..' usage is a data.table construct (data.table inherits from data.frame). Try it without the '..' for more info.
                 # Using '..WaveFreqs1331' and '..WaveFreqs921' is subsetting to just those repective vectors of freq., if that complete subset is there.
