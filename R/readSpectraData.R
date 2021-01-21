@@ -205,7 +205,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    
            print( metaDataNames  ); cat("\n")
                    
-                   print(Spc_Meta_df[1:4, c(metaDataNames, WaveFreqsUsed[1:2]) ])
+                    print(Spc_Meta_df[1:4, c(metaDataNames, paste0('X', WaveFreqsUsed[1:2])) ])
                    hakeStabSpcStudy <- rbind(hakeStabSpcStudy, Spc_Meta_df)
                 }
            }
