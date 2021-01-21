@@ -24,7 +24,6 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/catf.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R") 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/readXlsx.R")
    
    # Nearest Neighbor; x is the shorter column. The y elements nearest the x elements are returned. 
    nearbor <- function(x, y) {
@@ -190,11 +189,11 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    hakeMetaData$date_collected <- as.POSIXct(as.character(hakeMetaData$date_collected), format = "%Y-%m-%d")
                    hakeMetaData$Sample_ID <- substr(hakeMetaData$file_name, 1, 45) # Remove '.OA1'  or 'OA2' suffix
                    hakeMetaData$file_name <- NULL
-                   
+print(names(hakeMetaData))                 
                    # Match metadata to spectral data
                    Spc_Meta_df <- Spc_df
                    Spc_Meta_df$Storage <- j
-                   Spc_Meta_df <- match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-23]) 
+                   Spc_Meta_df <- match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-24]) 
                    catf('\nNumber of matches of metadata to Spectra table that occured:',  sum(!is.na(Spc_Meta_df$collection_year)), "\n\n")
                    
                    if(any(is.na(Spc_Meta_df$collection_year)))
