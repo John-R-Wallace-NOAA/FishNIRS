@@ -80,10 +80,6 @@ readSpectraData <- function(UploadDates, WaveFreqs1331 = WaveFreqs1331, WaveFreq
                 Spc_df <- NULL
                 WaveFreqs1331 <- WaveFreqs1331
                 assign('WaveFreqs1331', WaveFreqs1331, pos = 1)
-                assign('WaveFreqs1331', WaveFreqs1331, pos = 2)
-                assign('WaveFreqs1331', WaveFreqs1331, pos = 3)
-                assign('WaveFreqs1331', WaveFreqs1331, pos = 4)
-                assign('WaveFreqs1331', WaveFreqs1331, pos = 5)
                 assign('WaveFreqs1331', WaveFreqs1331, envir = parent.frame())
               
                 for (k in 1:length(ldf)) {
