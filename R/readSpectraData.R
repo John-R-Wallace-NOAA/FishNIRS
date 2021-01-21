@@ -1,6 +1,6 @@
 
 
-readSpectraData <- function(UploadDates, WaveFreqs1331 = WaveFreqs1331, WaveFreqs921 = WaveFreqs921, nearestColSubset = TRUE) {
+readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
 
    '  # Initial code provided by Jordan Healy <jordan.healy@noaa.gov>  '
 
@@ -41,8 +41,8 @@ readSpectraData <- function(UploadDates, WaveFreqs1331 = WaveFreqs1331, WaveFreq
    on.exit(setwd(homeDir))
    
    # Load standard wave freq.
-   # load("WaveFreqs1331.RData", envir = .GlobalEnv)
-   # load("WaveFreqs921.RData", envir = .GlobalEnv)
+   load("WaveFreqs1331.RData", envir = .GlobalEnv)
+   load("WaveFreqs921.RData", envir = .GlobalEnv)
    # load("WaveFreqs921.B.RData")
    
    WaveFreqs1331.subset.for.921 <- as.numeric(WaveFreqs1331) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs1331))
