@@ -1,6 +1,6 @@
 
 
-readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
+readSpectraData_Not_Repo <- function(UploadDates, nearestColSubset = TRUE) {
 
    '  # Initial code provided by Jordan Healy <jordan.healy@noaa.gov>  '
 
