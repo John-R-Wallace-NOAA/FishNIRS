@@ -193,7 +193,7 @@ print(names(hakeMetaData))
                    # Match metadata to spectral data
                    Spc_Meta_df <- Spc_df
                    Spc_Meta_df$Storage <- j
-                   Spc_Meta_df <- match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-24]) 
+                   Spc_Meta_df <- JRWToolBox::match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-24]) 
                    catf('\nNumber of matches of metadata to Spectra table that occured:',  sum(!is.na(Spc_Meta_df$collection_year)), "\n\n")
                    
                    if(any(is.na(Spc_Meta_df$collection_year)))
