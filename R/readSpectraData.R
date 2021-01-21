@@ -9,7 +9,7 @@ readSpectraData <- function(UploadDates, WaveFreqs1331 = WaveFreqs1331, WaveFreq
       require(xml2)
       File.ASCII <- tempfile()
       on.exit(file.remove(File.ASCII))
-          homeDir <- getwd()
+      homeDir <- getwd()
       tempDir <- tempfile()
       dir.create(tempDir); setwd(tempDir)
       on.exit(setwd(homeDir), add = TRUE)
