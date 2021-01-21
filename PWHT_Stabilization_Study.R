@@ -19,6 +19,7 @@ sourceFunctionURL <- function (URL) {
 # Quoted names with a forward slash '/' are assumed to be for downloading a repo from GitHub.
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/readSpectraData.R") # Workaround for issue 1.
 
    
 lib(vegan)
@@ -43,7 +44,7 @@ lib(dplyr)
 lib(bio3d)
 
 # lib('John-R-Wallace-NOAA/FishNIRS')  # Load from GitHub
-lib(FishNIRS)
+# lib(FishNIRS)
 
 
 ##############################################################
