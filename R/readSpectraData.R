@@ -67,7 +67,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
                 # Loops through and uploads each file, depends on simplerspec package
                 for (k in 1:length(listspc)) { 
                       ldf[[k]] <- simplerspec::read_opus_bin_univ(listspc[k], extract = "spc", print_progress = TRUE, atm_comp_minus4offset = FALSE)
-                      ldf[[k]] <- data.frame(ldf[[k]][['spc']])
+                      ldf[[k]][['spc']] <- data.frame(ldf[[k]][['spc']])
                 }
                 # print(str(ldf[[1]])) # check first element
                 cat("\n\n"); print(names(ldf[[1]]))
