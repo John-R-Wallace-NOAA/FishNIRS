@@ -1,4 +1,3 @@
-\
 
 readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
 
