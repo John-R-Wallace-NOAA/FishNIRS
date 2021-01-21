@@ -78,7 +78,8 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                 # Using '..WaveFreqs1331' and '..WaveFreqs921' is subsetting to just those repective vectors of freq., if that complete subset is there.
                 
                 Spc_df <- NULL
-                WaveFreqs1331 <- WaveFreqs1331
+                assign('WaveFreqs1331', WaveFreqs1331)
+                assign('WaveFreqs1331', WaveFreqs1331, envir = parent.frame())
               
                 for (k in 1:length(ldf)) {
                    # cat("\n", k, "\n")
