@@ -2,25 +2,20 @@
 # Initial code provided by Jordan Healy <jordan.healy@noaa.gov> 
 
 sourceFunctionURL <- function (URL) {
-      " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
-      require(xml2)
-      File.ASCII <- tempfile()
-      on.exit(file.remove(File.ASCII))
-          homeDir <- getwd()
-      tempDir <- tempfile()
-      dir.create(tempDir); setwd(tempDir)
-      on.exit(setwd(homeDir), add = TRUE)
-      on.exit(system(paste0("rm -r -f ", tempDir)), add = TRUE)
-      writeLines(paste0('source("', readLines(textConnection(xml2::download_html(URL))), '")'), File.ASCII)
-      source(File.ASCII, local = parent.env(environment()))
-}  
+    " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+    require(httr)
+    File.ASCII <- tempfile()
+    on.exit(file.remove(File.ASCII))
+    getTMP <- httr::GET(URL)
+    write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+   source(File.ASCII, local = parent.env(environment()))
+}
 
 # lib() installs the package only if needed and also loads the package. 
 # Quoted names with a forward slash '/' are assumed to be for downloading a repo from GitHub.
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/readSpectraData.R") # Workaround for issue 1.
-
    
 lib(vegan)
 lib(pls)
