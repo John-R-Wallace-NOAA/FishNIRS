@@ -23,6 +23,8 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")  
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/catf.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R") 
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/readXlsx.R")
    
    # Nearest Neighbor; x is the shorter column. The y elements nearest the x elements are returned. 
    nearbor <- function(x, y) {
@@ -176,7 +178,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    #        hakeMetaData <- read.csv(homeDir, "../OPUS Spectra/NIR export exportQueryData 3_2_2020_OA2.csv")[1:86, ]  # 86 good dry oties & 89 good Etoh
                    
                    hakeMetaData <- data.frame(readxl::read_excel(paste0(homeDir, "../OPUS Spectra/", i, "/", j, "/", dir(pattern = '*QueryData*'))))
-                   # hakeMetaData <- JRWToolBox::readXlsx(paste0(homeDir, "../OPUS Spectra/", i, "/", j, "/", dir(pattern = '*QueryData*'))) 
+                   # hakeMetaData <- readXlsx(paste0(homeDir, "../OPUS Spectra/", i, "/", j, "/", dir(pattern = '*QueryData*'))) 
                                   
                    hakeMetaData <- hakeMetaData[!is.na(hakeMetaData$cruise_number), ]
                    if(!'readability' %in% names(hakeMetaData)) {
@@ -192,7 +194,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    # Match metadata to spectral data
                    Spc_Meta_df <- Spc_df
                    Spc_Meta_df$Storage <- j
-                   Spc_Meta_df <- JRWToolBox::match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-23]) 
+                   Spc_Meta_df <- match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-23]) 
                    catf('\nNumber of matches of metadata to Spectra table that occured:',  sum(!is.na(Spc_Meta_df$collection_year)), "\n\n")
                    
                    if(any(is.na(Spc_Meta_df$collection_year)))
