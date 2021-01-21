@@ -129,7 +129,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    
                    # Look at the ragged data
                    plot(0, type = 'n', xlim = range(Spc_df.ragged$Spectra) + c(-10, 10), ylim = range(Spc_df.ragged$Absorbance) + c(-0.1, 0.1), 
-                        main = paste0(i, '; ', j), xlab = "Wavelength", ylab = "Absorbance")
+                        main = paste0(i, '; ', j), xlab = "Wavelength Energy (1/cm)", ylab = "Absorbance")
                    for( m in unique(Spc_df.ragged$Sample_ID) ) {
                       sampData <- Spc_df.ragged[Spc_df.ragged$Sample_ID %in% m, ]
                       lines(sampData$Spectra, sampData$Absorbance, col = ifelse(j == 'Dry', 'green', 'red'))
@@ -155,7 +155,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    # dev.new(width = 400, height = 300)
                    # matplot(1:ncol(Spc_df), t(Spc_df), col = ifelse(j == 'Dry', 'green', 'red'), type = 'l', lty = 1, main = paste0(i, '; ', j)) 
                    matplot(as.numeric(WaveFreqsUsed), t(Spc_df[, ..WaveFreqsUsed]), col = ifelse(j == 'Dry', 'green', 'red'), type = 'l', lty = 1,
-                           main = paste0(i, '; ', j), xlab = "Wavelength", ylab = "Absorbance")
+                           main = paste0(i, '; ', j), xlab = "Wavelength Energy (1/cm)", ylab = "Absorbance")
                    
                    # Look at the data
                    cat("\n\n")
