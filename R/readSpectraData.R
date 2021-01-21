@@ -199,11 +199,11 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    Spc_Meta_df <- Spc_Meta_df[, c(1:2, N + 3:26, 3:(N + 2))]  # Move metadata to the front
                    
            print(names(Spc_Meta_df)[1:28]); cat("\n")
-           print( metaDataNames  ); cat("\n")
+           print( WaveFreqsUsed[1:2]  ); cat("\n") 
           
                    metaDataNames <- c(names(Spc_df)[1:2], 'Storage', names(hakeMetaData)[-24]) # 26 metadata columns
                    
-          print( WaveFreqsUsed[1:2]  ); cat("\n") 
+           print( metaDataNames  ); cat("\n")
                    
                    print(Spc_Meta_df[1:4, c(metaDataNames, WaveFreqsUsed[1:2]) ])
                    hakeStabSpcStudy <- rbind(hakeStabSpcStudy, Spc_Meta_df)
