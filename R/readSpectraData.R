@@ -189,24 +189,19 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    hakeMetaData$date_collected <- as.POSIXct(as.character(hakeMetaData$date_collected), format = "%Y-%m-%d")
                    hakeMetaData$Sample_ID <- substr(hakeMetaData$file_name, 1, 45) # Remove '.OA1'  or 'OA2' suffix
                    hakeMetaData$file_name <- NULL
-print(names(hakeMetaData))                 
+                
                    # Match metadata to spectral data
-                   Spc_Meta_df <- Spc_df
+                   Spc_Meta_df <- data.frame(Spc_df)
                    Spc_Meta_df$Storage <- j
-                   Spc_Meta_df <- match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-grep("Sample_ID", names(hakeMetaData))]) 
+                   Spc_Meta_df <- match.f(Spc_Meta_df, hakeMetaData, 'Sample_ID', 'Sample_ID', names(hakeMetaData)[-24]) 
                    catf('\nNumber of matches of metadata to Spectra table that occured:',  sum(!is.na(Spc_Meta_df$collection_year)), "\n\n")
                    
                    if(any(is.na(Spc_Meta_df$collection_year)))
                        stop("Good matching to metadata did not occur!")
-                    
-                   Cols <- c(1:2, N + 3:25, 3:(N + 2))                    
-                   Spc_Meta_df <- Spc_Meta_df[, ..Cols]  # Move metadata to the front
-                                      
-                   metaDataNames <- c(names(Spc_df)[1:2], 'Storage', names(hakeMetaData)[-23]) # 25 metadata columns
-                   
-                   Cols <- c(metaDataNames, WaveFreqsUsed[1:2]) # '..' data.table construct needs an object name
-                   print(Spc_Meta_df[1:4, ..Cols])
-                   
+                                       
+                   Spc_Meta_df <- Spc_Meta_df[, c(1:2, N + 3:26, 3:(N + 2))]  # Move metadata to the front
+                   metaDataNames <- c(names(Spc_df)[1:2], 'Storage', names(hakeMetaData)[-24]) # 26 metadata columns
+                   print(Spc_Meta_df[1:4, c(metaDataNames, WaveFreqsUsed[1:2]) ])
                    hakeStabSpcStudy <- rbind(hakeStabSpcStudy, Spc_Meta_df)
                 }
            }
