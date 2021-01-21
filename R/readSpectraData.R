@@ -1,4 +1,4 @@
-
+\
 
 readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
 
@@ -37,6 +37,9 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    require(simplerspec)
    require(readxl)
    
+   homeDir <- paste0(getwd(), '/')
+   on.exit(setwd(homeDir))
+   
    # Load standard wave freq.
    load("WaveFreqs1331.RData", envir = .GlobalEnv)
    load("WaveFreqs921.RData", envir = .GlobalEnv)
@@ -50,13 +53,14 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
    for(h in 1:length(UploadDates)) {
    
       if( h %% 3 == 1) {
-         dev.new(width = 400, height = 300)
+         dev.new(width = 400, height = 300)  #   homeDir, homeDir, "../OPUS Spectra
          par(mfrow = c(3, 2))
       }    
       
       for( i in UploadDates[h]) {
            for(j in c("Dry", "Etoh")) {
-                setwd(paste0("W:/ALL_USR/JRW/SIDT/PWHT Stabilization Study/OPUS Spectra/", i, "/", j)) # Set working directory to folder containing spectral files
+           
+                setwd(paste0(homeDir, "../OPUS Spectra/", i, "/", j)) # Set working directory to folder containing spectral files
                 
                 ldf <- list() # creates an empty list
                 (listspc <- dir(pattern = '*HAKE*')) # creates the list of all the .001 file names in the directory
@@ -67,6 +71,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                 }
                 # print(str(ldf[[1]])) # check first element
                 cat("\n\n"); print(names(ldf[[1]]))
+                cat("\n\n"); print(str(ldf[[1]]))
                 
                 # The '..' usage is a data.table construct (data.table inherits from data.frame). Try it without the '..' for more info.
                 # Using '..WaveFreqs1331' and '..WaveFreqs921' is subsetting to just those repective vectors of freq., if that complete subset is there.
@@ -152,19 +157,19 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE) {
                    print(Spc_df[1:3, 1:10])
                    
                    # Read in metadata
-                   # hakeMetaData <- xlsxToR("W:/ALL_USR/JRW/SIDT/PWHT Stabilization Study/OPUS Spectra/NIR export exportQueryData 3_2_2020.xlsx")
-                   # hakeMetaData <- readxl::read_excel("W:/ALL_USR/JRW/SIDT/PWHT Stabilization Study/OPUS Spectra/NIR export exportQueryData 3_2_2020.xlsx")
+                   # hakeMetaData <- xlsxToR(homeDir, "../OPUS Spectra/NIR export exportQueryData 3_2_2020.xlsx")
+                   # hakeMetaData <- readxl::read_excel(homeDir, "../OPUS Spectra/NIR export exportQueryData 3_2_2020.xlsx")
                    
                    # Regardless of 'OA1' or 'OA2' - change all to 'OA1'
                    # Spc_df$Sample_ID <- paste0(substr(Spc_df$Sample_ID , 1, 46), 'OA1')
                    
                    #  if(i == "2019_11_01") {
-                   #        hakeMetaData <- read.csv("W:/ALL_USR/JRW/SIDT/PWHT Stabilization Study/OPUS Spectra/NIR export exportQueryData 3_2_2020_OA1.csv")[1:87, ]  # 87 good rows
+                   #        hakeMetaData <- read.csv(homeDir, "../OPUS Spectra/NIR export exportQueryData 3_2_2020_OA1.csv")[1:87, ]  # 87 good rows
                    #  } else
-                   #        hakeMetaData <- read.csv("W:/ALL_USR/JRW/SIDT/PWHT Stabilization Study/OPUS Spectra/NIR export exportQueryData 3_2_2020_OA2.csv")[1:86, ]  # 86 good dry oties & 89 good Etoh
+                   #        hakeMetaData <- read.csv(homeDir, "../OPUS Spectra/NIR export exportQueryData 3_2_2020_OA2.csv")[1:86, ]  # 86 good dry oties & 89 good Etoh
                    
-                   hakeMetaData <- data.frame(readxl::read_excel(paste0("W:/ALL_USR/JRW/SIDT/PWHT Stabilization Study/OPUS Spectra/", i, "/", j, "/", dir(pattern = '*QueryData*'))))
-                   # hakeMetaData <- JRWToolBox::readXlsx(paste0("W:/ALL_USR/JRW/SIDT/PWHT Stabilization Study/OPUS Spectra/", i, "/", j, "/", dir(pattern = '*QueryData*'))) 
+                   hakeMetaData <- data.frame(readxl::read_excel(paste0(homeDir, "../OPUS Spectra/", i, "/", j, "/", dir(pattern = '*QueryData*'))))
+                   # hakeMetaData <- JRWToolBox::readXlsx(paste0(homeDir, "../OPUS Spectra/", i, "/", j, "/", dir(pattern = '*QueryData*'))) 
                                   
                    hakeMetaData <- hakeMetaData[!is.na(hakeMetaData$cruise_number), ]
                    if(!'readability' %in% names(hakeMetaData)) {
