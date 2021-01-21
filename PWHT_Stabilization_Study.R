@@ -8,7 +8,7 @@ sourceFunctionURL <- function (URL) {
     on.exit(file.remove(File.ASCII))
     getTMP <- httr::GET(URL)
     write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
-   source(File.ASCII, local = parent.env(environment()))
+    source(File.ASCII, local = parent.env(environment()))
 }
 
 # lib() installs the package only if needed and also loads the package. 
