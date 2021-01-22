@@ -46,6 +46,11 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
    WaveFreqs1331.subset.for.921 <- as.numeric(WaveFreqs1331) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs1331))
    # WaveFreqs921.B.subset.for.921 <- as.numeric(WaveFreqs921.B) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs921.B)) # Both 921 - just use the WaveFreqs921 column labels below
    
+   # Add 'X' prefix for data frame columns
+   WaveFreqs1331 <- paste0('X', WaveFreqs1331)
+   WaveFreqs921 <- paste0('X', WaveFreqs921)
+   WaveFreqs1331.subset.for.921 <- paste0('X', WaveFreqs1331.subset.for.921)
+   
    hakeStabSpcStudy <- NULL 
    
    for(h in 1:length(UploadDates)) {
@@ -71,18 +76,9 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
                 }
                 # print(str(ldf[[1]])) # check first element
                 cat("\n\n"); print(names(ldf[[1]]))
-                # cat("\n\n"); print(str(ldf[[1]]))
-                
-                # The '..' usage is a data.table construct (data.table inherits from data.frame). Try it without the '..' for more info.
-                # Using '..WaveFreqs1331' and '..WaveFreqs921' is subsetting to just those repective vectors of freq., if that complete subset is there.
-                
+                # cat("\n\n"); print(str(ldf[[1]])) # Debug only
+                               
                 Spc_df <- NULL
-                
-                # Attempts to get the data.table to see ..WaveFreqs1331 (see issue 1)
-                .datatable.aware <- TRUE
-                WaveFreqs1331 <- WaveFreqs1331
-                assign('WaveFreqs1331', WaveFreqs1331, pos = 1)
-                assign('WaveFreqs1331', WaveFreqs1331, envir = parent.frame())
               
                 for (k in 1:length(ldf)) {
                    # cat("\n", k, "\n")
@@ -126,7 +122,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
                    Spc_df.ragged <- NULL
                    for (l in 1:length(ldf)) 
                        Spc_df.ragged <- rbind(Spc_df.ragged, renum(data.frame(Sample_ID = ldf[[l]]$metadata$sample_id, 
-                                 Spectra = as.numeric(names(ldf[[l]][['spc']])), Absorbance = unlist(ldf[[l]][['spc']]))))
+                                 Spectra = as.numeric(substring(names(ldf[[l]][['spc']]), 2)), Absorbance = unlist(ldf[[l]][['spc']]))))
                    
                    # Look at the ragged data
                    plot(0, type = 'n', xlim = range(Spc_df.ragged$Spectra) + c(-10, 10), ylim = range(Spc_df.ragged$Absorbance) + c(-0.1, 0.1), 
@@ -155,7 +151,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
                    
                    # dev.new(width = 400, height = 300)
                    # matplot(1:ncol(Spc_df), t(Spc_df), col = ifelse(j == 'Dry', 'green', 'red'), type = 'l', lty = 1, main = paste0(i, '; ', j)) 
-                   matplot(as.numeric(WaveFreqsUsed), t(Spc_df[, WaveFreqsUsed]), col = ifelse(j == 'Dry', 'green', 'red'), type = 'l', lty = 1,
+                   matplot(as.numeric(substring(WaveFreqsUsed, 2)), t(Spc_df[, WaveFreqsUsed]), col = ifelse(j == 'Dry', 'green', 'red'), type = 'l', lty = 1,
                            main = paste0(i, '; ', j), xlab = "Wavelength Energy (1/cm)", ylab = "Absorbance")
                    
                    # Look at the data
@@ -202,7 +198,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
                    # print( WaveFreqsUsed[1:2]  ); cat("\n")
                    metaDataNames <- c(names(Spc_df)[1:2], 'Storage', names(hakeMetaData)[-24]) # 26 metadata columns
                    # print( metaDataNames  ); cat("\n")
-                   print(Spc_Meta_df[1:4, c(metaDataNames, paste0('X', WaveFreqsUsed[1:2])) ])
+                   print(Spc_Meta_df[1:4, c(metaDataNames, WaveFreqsUsed[1:2]) ])
                    hakeStabSpcStudy <- rbind(hakeStabSpcStudy, Spc_Meta_df)
                 }
            }
