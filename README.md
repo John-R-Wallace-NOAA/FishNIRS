@@ -1,5 +1,6 @@
 
-Near-Infrared Spectroscopy (NIRS) on fish structures.
+<h3> Near-Infrared Spectroscopy (NIRS) on fish structures </h3>
+
 
 
 The directory structure used by readSpectraData() is for the R working directory to be:
