@@ -12,10 +12,12 @@ sourceFunctionURL <- function (URL) {
 }
 
 # lib() installs the package only if needed and also loads the package. 
-# Quoted names with a forward slash '/' are assumed to be for downloading a repo from GitHub.
+# Quoted names with a forward slash '/' are assumed to be a repo from GitHub for installing.
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/readSpectraData.R") # Workaround for issue 1.
+ 
+# Since there is no package dependencies for now, just downloading readSpectraData() would also work.
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/readSpectraData.R") 
    
 lib(vegan)
 lib(pls)
@@ -38,8 +40,8 @@ lib(reshape2)
 lib(dplyr)
 lib(bio3d)
 
-# lib('John-R-Wallace-NOAA/FishNIRS')  # Load from GitHub
-# lib(FishNIRS)
+lib('John-R-Wallace-NOAA/FishNIRS')  # Install the repo from GitHub
+# lib(FishNIRS)  # Load an already installed package
 
 
 ##############################################################
@@ -64,11 +66,8 @@ hakeStabSpcStudy[1:4, 1:27]
 
 
 hakeStabSpcStudy$Date_Read <- substr(as.character(hakeStabSpcStudy$Date_Time_rf), 1, 10)
-
-hakeStabSpcStudy <- ColumnMove(hakeStabSpcStudy, 25)
+hakeStabSpcStudy <- ColumnMove(hakeStabSpcStudy, 'Date_Time_rf') # Put the new last column, 'Date_Read', immediately to the right 'Date_Time_rf'
 hakeStabSpcStudy[1:4, 1:28]
-
-
 
 
 # Table(hakeStabSpcStudy$Storage, paste(days(hakeStabSpcStudy$Date_Time_rf), months(hakeStabSpcStudy$Date_Time_rf), years(hakeStabSpcStudy$Date_Time_rf)))
