@@ -49,8 +49,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
    # Add 'X' prefix for data frame columns
    WaveFreqs1331 <- paste0('X', WaveFreqs1331)
    WaveFreqs921 <- paste0('X', WaveFreqs921)
-   WaveFreqs1331.subset.for.921 <- paste0('X', WaveFreqs1331.subset.for.921)
-   
+     
    hakeStabSpcStudy <- NULL 
    
    for(h in 1:length(UploadDates)) {
