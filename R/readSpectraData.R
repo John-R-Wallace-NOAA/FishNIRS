@@ -21,6 +21,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ColumnMove.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/catf.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R") 
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/rgit/master/R/gitAFile.R")
    
    # Nearest Neighbor; x is the shorter column. The y elements nearest the x elements are returned. 
    nearbor <- function(x, y) {
@@ -39,9 +40,10 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
    on.exit(setwd(homeDir))
    
    # Load standard wave freq.
-   load("WaveFreqs1331.RData", envir = .GlobalEnv)
-   load("WaveFreqs921.RData", envir = .GlobalEnv)
-   # load("WaveFreqs921.B.RData")
+   gitAFile("John-R-Wallace-NOAA/FishNIRS/master/WaveFreqs1331.RData", type = 'RData')
+   gitAFile("John-R-Wallace-NOAA/FishNIRS/master/WaveFreqs921.RData", type = 'RData')
+   # load("WaveFreqs1331.RData", envir = .GlobalEnv)
+   # load("WaveFreqs921.RData", envir = .GlobalEnv)
    
    WaveFreqs1331.subset.for.921 <- as.numeric(WaveFreqs1331) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs1331))
    # WaveFreqs921.B.subset.for.921 <- as.numeric(WaveFreqs921.B) %in% nearbor(as.numeric(WaveFreqs921), as.numeric(WaveFreqs921.B)) # Both 921 - just use the WaveFreqs921 column labels below
@@ -49,7 +51,7 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
    # Add 'X' prefix for data frame columns
    WaveFreqs1331 <- paste0('X', WaveFreqs1331)
    WaveFreqs921 <- paste0('X', WaveFreqs921)
-     
+   
    hakeStabSpcStudy <- NULL 
    
    for(h in 1:length(UploadDates)) {
