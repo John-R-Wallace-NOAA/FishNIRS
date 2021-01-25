@@ -24,8 +24,9 @@ lib(googledrive)
 # Those ID's are in the Hake_2019_Ots_GD_IDs_22_Jan_2021.R file on the FishNIRS repo.
 
 
-# Download Hake_2019_GD_File_ID's from 
+# Download Hake_2019_GD_File_IDs from 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/Hake_2019_Ots_GD_IDs_22_Jan_2021.R")
+Hake_2019_GD_File_IDs[1:5]
 
 
 temp <- tempfile(fileext = ".bin")
