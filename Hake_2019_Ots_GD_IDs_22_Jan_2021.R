@@ -1,5 +1,5 @@
 
-Hake_2019_file_IDs <- scanIn("
+Hake_2019_GD_File_IDs <- scanIn("
 
 1gTeg81man8g2iZHnSvfxUtWxArPfTbX7
 
