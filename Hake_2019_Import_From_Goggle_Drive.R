@@ -1,6 +1,4 @@
 
-{
-
 sourceFunctionURL <- function (URL) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        require(httr)
@@ -9,7 +7,7 @@ sourceFunctionURL <- function (URL) {
        getTMP <- httr::GET(URL)
        write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
        source(File.ASCII, local = parent.env(environment()))
-   }
+}
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")   
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/scanIn.R")
@@ -59,9 +57,6 @@ dev.new(width = 400, height = 300)
 matplot(as.numeric(substring(names(ldf[[k]][['spc']]), 2)), t(Spc_df), col = 'green', type = 'l', lty = 1,
                xlab = "Wavelength Energy (1/cm)", ylab = "Absorbance")
 
-
-}          
-                
                 
                 
                 
