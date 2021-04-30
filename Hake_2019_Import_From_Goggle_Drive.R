@@ -15,14 +15,16 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 lib(googledrive)
 
 
-# The googledrive::drive_download() only needs the 'ID' from the URLs.
+# The main URL with the data folders by month and year is:
+#   https://drive.google.com/drive/folders/1V0zMPbCbFTI8bCWijFrClvUwNPAi_UGD
+
+# The googledrive::drive_download() only needs the 'ID' from the data URLs.
 # So, e.g. just "gTeg81man8g2iZHnSvfxUtWxArPfTbX7" from the URL:
 
-#  https://drive.google.com/file/d/1gTeg81man8g2iZHnSvfxUtWxArPfTbX7/view?usp=drive_web
+#   https://drive.google.com/file/d/1gTeg81man8g2iZHnSvfxUtWxArPfTbX7/view?usp=drive_web
 
 # googledrive::as_id() will extract the ID for you, but I copied the email source file and extracted the IDs myself.
 # Those ID's are in the Hake_2019_Ots_GD_IDs_22_Jan_2021.R file on the FishNIRS repo.
-
 
 # Download Hake_2019_GD_File_IDs from 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/Hake_2019_Ots_GD_IDs_22_Jan_2021.R")
