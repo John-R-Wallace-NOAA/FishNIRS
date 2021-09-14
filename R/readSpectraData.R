@@ -68,8 +68,9 @@ readSpectraData <- function(UploadDates, nearestColSubset = TRUE, dataTableRetur
                 setwd(paste0(homeDir, "../OPUS Spectra/", i, "/", j)) # Set working directory to folder containing spectral files
                 
                 ldf <- list() # creates an empty list
-                (listspc <- dir(pattern = '*HAKE*')) # creates the list of all the .001 file names in the directory
-                
+                # (listspc <- dir(pattern = '*HAKE*'))[1:20] # Alternate pattern that works
+                (listspc <- dir(pattern = '*\\.0'))[1:20]  # Creates the list of all the '.0' file names in the directory
+              
                 # Loops through and uploads each file, depends on simplerspec package
                 for (k in 1:length(listspc)) { 
                       ldf[[k]] <- simplerspec::read_opus_bin_univ(listspc[k], extract = "spc", print_progress = TRUE, atm_comp_minus4offset = FALSE)
