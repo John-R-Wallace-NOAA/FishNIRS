@@ -3,11 +3,11 @@
 
 
 
-The directory structure used by readSpectraData() is for the R working directory to be:
+The directory structure used by readSpectraData() is for the R working directory to be directly below the current directory:
 
      ../R 
      
-the spectra data to be beside it in:
+with the spectra data to be beside it in:
 
     ../OPUS Spectra
     
