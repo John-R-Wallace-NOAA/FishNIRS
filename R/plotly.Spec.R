@@ -35,7 +35,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUnique
       
    plot_ly(Spec, 
                 x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
-                colors = rainbow(length(unique(Spec$Age))), 
+                colors = rainbow(length(unique(Spec$Color))), 
                 hoverinfo = 'text',
                 text = ~paste('Scan: ', Scan,
                               '</br></br> x-axis: ', Band,
