@@ -29,11 +29,13 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUnique
                  Color = rep(spectraMeta[sampRows, grep(colorGroup, names(spectraMeta))[1]], each = freqNum))))               
                     
    Spec <- data.frame(Spec)
-   Spec$Scan <- as.character(Spec$Scan)
-   if(verbose) 
-      Spec[1:4,]                 
-      
-   plot_ly(Spec, 
+   Spec$Band <- as.numeric(Spec$Band)
+   Spec$Value <- as.numeric(Spec$Value)
+   if(verbose) {
+      print(str(Spec))
+      print(Spec[1:4,])                
+   }   
+   print(plot_ly(Spec, 
                 x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
                 colors = rainbow(length(unique(Spec$Color))), 
                 hoverinfo = 'text',
@@ -41,5 +43,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUnique
                               '</br></br> x-axis: ', Band,
                               '</br> y-axis: ', Value)) %>%
        layout(xaxis = xax, yaxis = yax) %>%
-       add_lines(line = list(width = 0.75))
+       add_lines(line = list(width = 0.75)))
+       
+invisible(Spec)       
 }  
