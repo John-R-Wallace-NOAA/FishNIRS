@@ -1,5 +1,5 @@
-plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUniqueName = 'filenames', freqNum = NULL, xlab = "Wavenumber", 
-                           ylab = "Absorbance", verbose = FALSE) {
+plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", 
+                           ylab = "Absorbance", plot = TRUE, verbose = FALSE) {
     
    require(plotly)
    
@@ -19,7 +19,9 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUnique
    if(is.null(freqNum))  {   
       optOLD <- options(warn = -1)
       on.exit(options(optOLD))      
-      freqNum <- sum(!is.na(as.numeric(names(hake_all_2019.6.20))))      
+      freqNum <- sum(!is.na(as.numeric(names(spectraMeta))))
+      if(verbose)
+         cat("\nfreqNum = ", freqNum, "\n")      
    }
    
    sampRows <- sample(1:nrow(spectraMeta), N_Samp)
@@ -31,19 +33,27 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUnique
    Spec <- data.frame(Spec)
    Spec$Band <- as.numeric(Spec$Band)
    Spec$Value <- as.numeric(Spec$Value)
+      
    if(verbose) {
       print(str(Spec))
       print(Spec[1:4,])                
    }   
-   print(plot_ly(Spec, 
-                x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
-                colors = rainbow(length(unique(Spec$Color))), 
-                hoverinfo = 'text',
-                text = ~paste('Scan: ', Scan,
-                              '</br></br> x-axis: ', Band,
-                              '</br> y-axis: ', Value)) %>%
-       layout(xaxis = xax, yaxis = yax) %>%
-       add_lines(line = list(width = 0.75)))
+   if(plot) {
+      print(plot_ly(Spec, 
+                   x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
+                   colors = rainbow(length(unique(Spec$Color))), 
+                   hoverinfo = 'text',
+                   text = ~paste('Scan: ', Scan,
+                                 '</br></br> x-axis: ', Band,
+                                 '</br> y-axis: ', Value)) %>%
+          layout(xaxis = xax, yaxis = yax) %>%
+          add_lines(line = list(width = 0.75)))
+  }     
        
-invisible(Spec)       
+  if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
+       Spec$Color <- as.numeric(Spec$Color)    
+       
+  names(Spec)[4] <- colorGroup 
+
+  invisible(Spec)       
 }  
