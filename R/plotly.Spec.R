@@ -1,4 +1,4 @@
-plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", 
+plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', WaveRange = c(0, 8000), scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", 
                            ylab = "Absorbance", plot = TRUE, verbose = FALSE) {
     
    require(plotly)
@@ -16,19 +16,26 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', scanUnique
    xax$title <- xlab
    yax$title <- ylab
    
+  
    if(is.null(freqNum))  {   
       optOLD <- options(warn = -1)
       on.exit(options(optOLD))      
       freqNum <- sum(!is.na(as.numeric(names(spectraMeta))))
       if(verbose)
-         cat("\nfreqNum = ", freqNum, "\n")      
+         cat("\nNumber of Frequencies = ", freqNum, "\n")      
    }
    
+   WaveLengths <- as.numeric(names(spectraMeta[, 2:(freqNum + 1)]))
+   WaveSubset <- as.character(WaveLengths[WaveLengths >= WaveRange[1] & WaveLengths <= WaveRange[2]])
+   freqNum.New <- length(WaveSubset)
+   
+   spectraMeta <- spectraMeta[, c(scanUniqueName, WaveSubset, colorGroup)] 
+   
    sampRows <- sample(1:nrow(spectraMeta), N_Samp)
-   Spectra <- spectraMeta[sampRows, 2:(freqNum + 1)]
-   Spec <- renum(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum), 
+   Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta))]
+   Spec <- renum(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum.New), 
                   Band = rep(as.numeric(names(Spectra)), N_Samp), Value = c(as.matrix(t(Spectra))), 
-                 Color = rep(spectraMeta[sampRows, grep(colorGroup, names(spectraMeta))[1]], each = freqNum))))               
+                 Color = rep(spectraMeta[sampRows, grep(colorGroup, names(spectraMeta))[1]], each = freqNum.New))))               
                     
    Spec <- data.frame(Spec)
    Spec$Band <- as.numeric(Spec$Band)
