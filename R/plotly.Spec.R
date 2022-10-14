@@ -1,5 +1,5 @@
 plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', WaveRange = c(0, 8000), scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", 
-                           ylab = "Absorbance", plot = TRUE, verbose = FALSE) {
+                           ylab = "Absorbance", plot = TRUE, reverse.plot.order = FALSE, verbose = FALSE) {
     
    require(plotly)
    
@@ -16,6 +16,8 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', WaveRange 
    xax$title <- xlab
    yax$title <- ylab
    
+   if(reverse.plot.order)
+      spectraMeta <- spectraMeta[ncol(spectraMeta):1, ]
   
    if(is.null(freqNum))  {   
       optOLD <- options(warn = -1)
@@ -33,6 +35,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', WaveRange 
    
    if(is.null(N_Samp)) {
        N_Samp <- nrow(spectraMeta)
+       sampRows <- 1:N_Samp
        Spectra <- spectraMeta[, -c(1, ncol(spectraMeta))]
    } else {
       sampRows <- sample(1:nrow(spectraMeta), N_Samp)
