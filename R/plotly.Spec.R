@@ -31,8 +31,13 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', WaveRange 
    
    spectraMeta <- spectraMeta[, c(scanUniqueName, WaveSubset, colorGroup)] 
    
-   sampRows <- sample(1:nrow(spectraMeta), N_Samp)
-   Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta))]
+   if(is.null(N_Samp)) {
+       N_Samp <- nrow(spectraMeta)
+       Spectra <- spectraMeta[, -c(1, ncol(spectraMeta))]
+   } else {
+      sampRows <- sample(1:nrow(spectraMeta), N_Samp)
+      Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta))]
+   }
    Spec <- renum(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum.New), 
                   Band = rep(as.numeric(names(Spectra)), N_Samp), Value = c(as.matrix(t(Spectra))), 
                  Color = rep(spectraMeta[sampRows, grep(colorGroup, names(spectraMeta))[1]], each = freqNum.New))))               
