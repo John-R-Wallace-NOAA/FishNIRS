@@ -587,12 +587,35 @@ legend("topleft", legend = paste(0:17, "Years"), col = c('red', 'blue', Cols[1:1
 ### Conduct PLSr on iPLSr selected data ###
 #########################################
 
+
 PLSr <- mdatools::pls(Hake_Spectra_2019.sg.iPLS, Hake_Age_2019, ncomp = 10, center = T, scale = F, cv = 100,
             method = "simpls", alpha = 0.05, ncomp.selcrit = "min")
 summary(PLSr)
+dev.new()
+plot(PLSr)
+
+
+
+set.seed(c(777, 747)[2])
+index <- 1:nrow(Hake_Spectra_2019.sg.iPLS)
+testindex <- sample(index, trunc(length(index)/3))
+x.testset <- Hake_Spectra_2019.sg.iPLS[testindex, ]
+x.trainset <- Hake_Spectra_2019.sg.iPLS[-testindex, ]   
+y.test <- Hake_Age_2019[testindex]
+y.train <- Hake_Age_2019[-testindex]
+
+# PLSr <- mdatools::pls(x.trainset, y.train, ncomp = 10, center = T, scale = F, cv = 100,
+#           method = "simpls", alpha = 0.05, ncomp.selcrit = "min", x.test = x.testset, y.test = y.test)
+
+PLSr <- mdatools::pls(x.trainset, y.train, ncomp = 10, center = T, scale = F, cv = 100,
+            method = "simpls", alpha = 0.05, ncomp.selcrit = "min")            
+summary(PLSr)
+dev.new()
+plot(PLSr)
+
 
 ###########################
-###Plot the PLSr results###
+### Plot the PLSr results ###
 ###########################
 
 # pull the prediction values of age from the PLSr object
@@ -600,40 +623,190 @@ compNum <- length(PLSr$res$cal$slope) # Number of selected components
 Predicted_Age <- data.frame(PLSr$cvres$y.pred[ , , 1])[, compNum]
 
 # Reference Ages
-Reference_Age <- PLSr$cvres$y.ref
+Reference_Age <- PLSr$cvres$y.ref  # Equals y.train
 
 # Plot Predicted vs Reference Ages
 (Slope <- PLSr$res$cal$slope[length(PLSr$res$cal$slope)]) #  Slope from PLSr
 
+dev.new()
+par(mfrow = c(2,1))
 # Decimal Predicted age 
-dev.new(height = 8, width = 15)
+# dev.new(height = 8, width = 15)
 par(mar = c(5,5,1,1))
-plot(Reference_Age, Predicted_Age, ylim = c(0,12), xlim = c(0,12), col ="dark blue")
+plot(Reference_Age, Predicted_Age, ylim = c(0,12), xlim = c(0,12), col = "dark blue")
 abline(0, 1, lwd = 2)
 abline(0, Slope, col = "dark blue", lwd = 2) 
+
 
 # Integer Predicted age with reference age jitter
-dev.new(height = 8, width = 15)
+# dev.new(height = 8, width = 15)
 par(mar = c(5,5,1,1))
-plot(jitter(Reference_Age), round(Predicted_Age), ylim = c(0,12), xlim = c(0,12), col ="dark blue")
+plot(jitter(Reference_Age), round(Predicted_Age), ylim = c(0,12), xlim = c(0,12), col = "dark blue")
 abline(0, 1, lwd = 2)
 abline(0, Slope, col = "dark blue", lwd = 2) 
 
-
-(validation <- lm(Predicted_Age ~ Reference_Age))
-summary(validation)$r.squared
+summary(lm(Predicted_Age ~ Reference_Age))$r.squared
+summary(lm(round(Predicted_Age) ~ Reference_Age))$r.squared
 
 Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age)
-e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age))
-e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age), match.names = TRUE)
-sum(abs(Reference_Age - round(Predicted_Age))) # 1418
+e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age)) # $diag  0.1677193
+e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age), match.names = TRUE) # diag 0.5859649
 
+sum(abs(Reference_Age - round(Predicted_Age))) 
 
 (Results <- data.frame(Reference_Age, Predicted_Age))[1:10, ]
 
-
 # Store results in an excel.csv file
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
+
+
+#   Support Vector Machine and RPART
+      
+set.seed(c(777, 747)[2])
+index <- 1:nrow(hake_all_2019.6.20)
+testindex <- sample(index, trunc(length(index)/3))
+(AgeColNum <- grep('Age', names(hake_all_2019.6.20))[1])
+# Columns <- 2:1113 # All Wavelengths 
+Columns.set <- (562:1112) + 1  # Only Wavelengths between 3,600 and 8,000
+x.testset <- hake_all_2019.6.20[testindex, Columns.set]
+x.trainset <- hake_all_2019.6.20[-testindex, Columns.set]   
+y.test <- hake_all_2019.6.20[testindex, AgeColNum]
+y.train <- hake_all_2019.6.20[-testindex, AgeColNum]   
+
+#  ## In PLS the "test set" creates the model????????????????????????????????????????
+#  #
+#  ## svm using e1071 package
+#  #svm.model <- e1071::svm(y.test ~ ., data = x.testset, cost = 100, gamma = 1)
+#  #svm.model
+#  #svm.pred <- predict(svm.model, x.trainset)
+#  #Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.train)   
+#  #e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.train)) #  $diag   0.3855337
+#  #e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.train) , match.names = TRUE) #  $diag   0.3855337
+#  #sum(abs(round(svm.pred)- y.train)) # 1432
+#  #
+#  #
+#  ## rpart
+#  #rpart.model <- rpart::rpart(y.test ~ ., data = x.testset)
+#  #rpart.model
+#  #rpart.pred <- predict(rpart.model, x.trainset)
+#  #Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.train)   
+#  #e1071::classAgreement(Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.train)) # $diag 0.4424157
+#  #e1071::classAgreement(Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.train) , match.names = TRUE) # $diag 0.3735955
+#  #sum(abs(round(rpart.pred)- y.train)) # 1434
+
+
+
+
+# svm using e1071 package
+svm.model <- e1071::svm(y.train ~ ., data = x.trainset, cost = 100, gamma = 1)
+svm.model
+svm.pred <- predict(svm.model, x.testset)
+Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.test)   
+e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.test)) #  $diag   0.3855337
+e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.test) , match.names = TRUE) #  $diag   0.3855337
+sum(abs(round(svm.pred)- y.test)) # 1432
+
+svm.pred.train <- predict(svm.model)
+Table(NIRS_SVM_AGE = round(svm.pred.train), TMA = y.train)   
+e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred.train), TMA = y.train)) 
+e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred.train), TMA = y.train), match.names = TRUE) 
+sum(abs(round(svm.pred.train)- y.train)) 
+
+
+# rpart
+rpart.model <- rpart::rpart(y.train ~ ., data = x.trainset)
+rpart.model
+rpart.pred <- predict(rpart.model, x.testset)
+Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.test)   
+e1071::classAgreement(Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.test)) # $diag 0.4424157
+e1071::classAgreement(Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.test) , match.names = TRUE) # $diag 0.3735955
+sum(abs(round(rpart.pred)- y.test)) # 1434
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ================================ PLS  using plantspec package  - TOO OLD!!!!!!!!!!!!!=====================================================
+
+
+# Select the component of interest (i.e., Age)
+  TMA_Age <- hake_all_2019.6.20$Age 
+  
+# Tried this first........  
+  
+# Optimize the preprocessing for spectra and spectral subsetting to emphasize
+# the important spectra features related to predicting N. This can be very time
+# consuming.
+  N_opt <- optimizePLS(component = TMA_Age, 
+                       spectra = hake_all_2019.6.20[, (562:1112) + 1], 
+                       training_set = !testindex)
+  
+# Fit our PLS regression using the optimal setting from our optimization.
+  N_cal <- calibrate(component = TMA_Age, 
+                     spectra = hake_all_2019.6.20[, (562:1112) + 1], 
+                     optimal_params = N_opt, 
+                     optimal_model = 1, # In N_opt, use the best model
+                     validation = "testset", 
+                     training_set = testindex)
+
+# -------------------------------------  
+  
+
+# Select a training set for model fitting (i.e., FALSE values for test set)
+#  - use "!" because subdivideDataset() returns TRUE for test set selections.
+#  - use "type = 'validation'" so both training and test data are representative. 
+  training_set_MDKS <- !(subdivideDataset(spectra = hake_all_2019.6.20[, (562:1112) + 1], 
+                                          component = TMA_Age, 
+                                          method = "MDKS", 
+                                          p = 0.5, # 10% for this example  
+                                          type = "validation")) 
+
+# Optimize the preprocessing for spectra and spectral subsetting to emphasize
+# the important spectra features related to predicting N. This can be very time
+# consuming.
+  N_opt <- optimizePLS(component = TMA_Age, 
+                       spectra = hake_all_2019.6.20[, (562:1112) + 1], 
+                       training_set = training_set_MDKS)
+  
+# Fit our PLS regression using the optimal setting from our optimization.
+  N_cal <- calibrate(component = TMA_Age, 
+                     spectra = hake_all_2019.6.20[, (562:1112) + 1], 
+                     optimal_params = N_opt, 
+                     optimal_model = 1, # In N_opt, use the best model
+                     validation = "testset", 
+                     training_set = training_set_MDKS)
+
+
+
+
+
+
+
 
 
 
