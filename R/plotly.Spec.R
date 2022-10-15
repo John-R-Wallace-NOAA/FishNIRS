@@ -17,7 +17,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, colorGroup = 'Age', WaveRange 
    yax$title <- ylab
    
    if(reverse.plot.order)
-      spectraMeta <- spectraMeta[ncol(spectraMeta):1, ]
+      spectraMeta <- spectraMeta[nrow(spectraMeta):1, ]
   
    if(is.null(freqNum))  {   
       optOLD <- options(warn = -1)
