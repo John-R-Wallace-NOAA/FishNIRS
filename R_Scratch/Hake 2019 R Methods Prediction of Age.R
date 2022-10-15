@@ -10,7 +10,7 @@ sourceFunctionURL <- function (URL) {
 
     
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
-
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 
 lib(data.table)
 lib(mdatools)
@@ -134,6 +134,8 @@ preJoinNumCol <- ncol(hake_all_2019.6.20)
 
 hake_all_2019.6.20$shortName <- apply(hake_all_2019.6.20[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(2,4)], collapse = "_"))
 
+hake_all_2019.6.20$ID <- as.numeric(subStr(hake_all_2019.6.20$shortName, "_", elements = 2))
+hake_all_2019.6.20 <- sort.f(hake_all_2019.6.20, "ID")
 
 save(hake_all_2019.6.20, file = "hake_all_2019.6.20 6 Oct 2022.RData")
 
@@ -376,8 +378,94 @@ Hake_Age_2019.fac <- factor(Hake_Age_2019)
 ################################
 ###Quick view data in plotly ###
 ################################
+
+hake_all_2019.6.20$ID <- as.numeric(subStr(hake_all_2019.6.20$shortName, "_", elements = 2))
+hake_all_2019.6.20 <- sort.f(hake_all_2019.6.20, "ID")
+hake_all_2019.6.20[1:4, c(1:2, 1160:1164)]
+# #                            filenames     12488 GroupNum Age_BB Age_OPUS shortName ID
+# # 1 PACIFIC_HAKE_BMS201906206A_1_OD1.0 0.2087611        1      1   0.9209    HAKE_1  1
+# # 2 PACIFIC_HAKE_BMS201906206A_2_OD1.0 0.1907212        1      1   0.1541    HAKE_2  2
+# # 3 PACIFIC_HAKE_BMS201906206A_3_OD1.0 0.1880061        1     NA       NA    HAKE_3  3
+
+
 # plotly.Spec(hake_all_2019.6.20, WaveRange = c(0, Inf))
+
 plotly.Spec(hake_all_2019.6.20)
+
+plotly.Spec(hake_all_2019.6.20, 500)
+
+plotly.Spec(hake_all_2019.6.20, NULL, reverse = TRUE)
+
+plotly.Spec(rbind(hake_all_2019.6.20[hake_all_2019.6.20$ID < 150, ], hake_all_2019.6.20[hake_all_2019.6.20$ID > 200 & hake_all_2019.6.20$ID < 300, ]), NULL)
+plotly.Spec(hake_all_2019.6.20[hake_all_2019.6.20$ID < 150, ], NULL) 
+plotly.Spec(hake_all_2019.6.20[hake_all_2019.6.20$ID >= 151 & hake_all_2019.6.20$ID < 700, ], NULL) 
+
+dev.new()
+plot(hake_all_2019.6.20$ID, hake_all_2019.6.20$Age)
+dev.new()
+plot(hake_all_2019.6.20$ID, hake_all_2019.6.20$Oto_Weight)
+dev.new()
+plot(hake_all_2019.6.20$ID, hake_all_2019.6.20$fork_length)
+
+plot(hake_all_2019.6.20$latitude, hake_all_2019.6.20$Age)
+"Oto_Weight"        "OtolithSide"       "Processed.by"      "Shipped.Date"      "CatchDate"        
+[37] "sex_determination" "fork_length"  
+
+
+
+plot(jitter(hake_all_2019.6.20$Age), jitter(hake_all_2019.6.20$latitude, 100), ylim = c(31, 48.5))
+points(jitter(hake_all_2019.6.20$Age[hake_all_2019.6.20$ID <= 100]), jitter(hake_all_2019.6.20$latitude[hake_all_2019.6.20$ID <= 150], 100), col = 'red', pch = 16)
+points(jitter(hake_all_2019.6.20$Age[hake_all_2019.6.20$ID %in% c(15, 113, 122)]), hake_all_2019.6.20$latitude[hake_all_2019.6.20$ID %in% c(15, 113, 122)], col = 'green', pch = 16) 
+
+
+dev.new()
+# imap(latrange = c(26, 49), longrange = c(-128, -113), zoom = FALSE)
+imap(latrange = c(34, 36), longrange = c(-122, -120), zoom = FALSE)
+TF <- hake_all_2019.6.20$ID > 150
+points(jitter(hake_all_2019.6.20$longitude[TF], 200), jitter(hake_all_2019.6.20$latitude[TF], 20))
+TF <- hake_all_2019.6.20$ID <= 150
+points(jitter(hake_all_2019.6.20$longitude[TF], 1), jitter(hake_all_2019.6.20$latitude[TF], 1), col = 'red')
+TF <- hake_all_2019.6.20$ID %in% c(15, 113)
+points(hake_all_2019.6.20$longitude[TF], hake_all_2019.6.20$latitude[TF], col = 'green', pch =16) # 2 year olds in green
+TF <- hake_all_2019.6.20$ID %in% 122
+points(hake_all_2019.6.20$longitude[TF], hake_all_2019.6.20$latitude[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
+
+
+#  Otie weight
+dev.new()
+TF <- hake_all_2019.6.20$ID > 150
+plot(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$Oto_Weight[TF], xlim = c(-5, 3000), na.rm = TRUE)
+TF <- hake_all_2019.6.20$ID <= 150
+points(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$Oto_Weight[TF], col = 'red')
+TF <- hake_all_2019.6.20$ID %in% c(15, 113)
+points(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$Oto_Weight[TF], col = 'green', pch =16) # 2 year olds in green
+cbind(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$Oto_Weight[TF])  # Missing otie weight on #113
+TF <- hake_all_2019.6.20$ID %in% 122
+points(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$Oto_Weight[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
+
+
+# Fork length
+dev.new()
+TF <- hake_all_2019.6.20$ID > 150
+plot(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$fork_length[TF], ylim = c(16.5, 73), xlim = c(-5, 3000), na.rm = TRUE)
+TF <- hake_all_2019.6.20$ID <= 150
+points(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$fork_length[TF], col = 'red')
+TF <- hake_all_2019.6.20$ID %in% c(15, 113)
+points(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$fork_length[TF], col = 'green', pch =16) # 2 year olds in green
+cbind(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$fork_length[TF])  # Missing otie weight on #113
+TF <- hake_all_2019.6.20$ID %in% 122
+points(hake_all_2019.6.20$ID[TF], hake_all_2019.6.20$fork_length[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
+
+
+ 
+# Find names of all metadata columns 
+names(hake_all_2019.6.20[, -(2:(sum(!is.na(as.numeric(names(hake_all_2019.6.20)))) + 1))])
+
+Table(hake_all_2019.6.20$broken) # 98 oties are broken
+hake_all_2019.6.20[hake_all_2019.6.20$broken == 1, "ID"]
+
+
+plotly.Spec(hake_all_2019.6.20, nrow(hake_all_2019.6.20))
 
 
 
