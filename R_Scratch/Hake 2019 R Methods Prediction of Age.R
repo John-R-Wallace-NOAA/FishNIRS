@@ -7,9 +7,10 @@ sourceFunctionURL <- function (URL) {
        getTMP <- httr::GET(URL)
        write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
        source(File.ASCII)}
-
-    
+ 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/strSplit.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 
 lib(data.table)
@@ -116,13 +117,13 @@ age_data <- read.csv(paste0(PATH, "hake_agedata_2019.csv"), strip.white = TRUE) 
 haul_data <- read.csv(paste0(PATH, "hake_haulmetadata_2019.csv"))
 (all_data <- left_join(int2_data, haul_data, by = "Barcode"))[1:5, c(1:3, 1112:1120, 1135:(ncol(int2_data) + ncol(haul_data) - 1))]
 
-
 hake_all_2019.6.20 <- all_data
 hake_all_2019.6.20$Group <- substr(hake_all_2019.6.20$filenames, 26, 26)
 hake_all_2019.6.20$GroupNum <- as.numeric(factor(hake_all_2019.6.20$Group))
 
 
-load('Hake_OPUS.RData') # Same as commented out code above but with 'Age_OPUS_Integer' column etc
+# ADD Hake_OPUS.RData
+load('Hake_OPUS.RData') 
 Hake_OPUS[1:5, ]
 names(Hake_OPUS)[2] <- "filenames"
 Hake_OPUS[1:5, ]
@@ -131,10 +132,26 @@ base::load(file = "hake_all_2019.6.20 6 Oct 2022.RData")
 preJoinNumCol <- ncol(hake_all_2019.6.20)
 (hake_all_2019.6.20 <- left_join(hake_all_2019.6.20, Hake_OPUS[, 2:4], by = "filenames"))[1:5, c(1:3, 1112:1120, 1155:(preJoinNumCol + ncol(Hake_OPUS[, 2:4]) - 1))]
 
+for( i in 1:nrow(Hake_OPUS)) # No match for row 714.  ID = 1239
+   cat("\n", i, hake_all_2019.6.20$filenames[grep(Hake_OPUS[i,2],  hake_all_2019.6.20$filenames)])
+
+grep('PACIFIC_HAKE_BMS201906206D_1239_OD1.0',  hake_all_2019.6.20$filenames)
+integer(0)
+
+
+Table(is.na(hake_all_2019.6.20$Age_OPUS))
+FALSE  TRUE 
+  854  1995 
+
+# With missing row:
+ 855/(855 + 1995)
+[1] 0.3
+  
+# is.na(hake_all_2019.6.20$Age_OPUS) == TRUE appears to be calibration (70%) and FALSE is test (validation) set (30%)
 
 hake_all_2019.6.20$shortName <- apply(hake_all_2019.6.20[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(2,4)], collapse = "_"))
 
-hake_all_2019.6.20$ID <- as.numeric(subStr(hake_all_2019.6.20$shortName, "_", elements = 2))
+hake_all_2019.6.20$ID <- as.numeric(strSplit(hake_all_2019.6.20$shortName, "_", elements = 2))
 hake_all_2019.6.20 <- sort.f(hake_all_2019.6.20, "ID")
 
 save(hake_all_2019.6.20, file = "hake_all_2019.6.20 6 Oct 2022.RData")
@@ -396,9 +413,14 @@ plotly.Spec(hake_all_2019.6.20, 500)
 
 plotly.Spec(hake_all_2019.6.20, NULL, reverse = TRUE)
 
-plotly.Spec(rbind(hake_all_2019.6.20[hake_all_2019.6.20$ID < 150, ], hake_all_2019.6.20[hake_all_2019.6.20$ID > 200 & hake_all_2019.6.20$ID < 300, ]), NULL)
-plotly.Spec(hake_all_2019.6.20[hake_all_2019.6.20$ID < 150, ], NULL) 
-plotly.Spec(hake_all_2019.6.20[hake_all_2019.6.20$ID >= 151 & hake_all_2019.6.20$ID < 700, ], NULL) 
+plotly.Spec(rbind(hake_all_2019.6.20[hake_all_2019.6.20$ID <= 150, ], hake_all_2019.6.20[hake_all_2019.6.20$ID > 200 & hake_all_2019.6.20$ID < 300, ]), NULL)
+plotly.Spec(hake_all_2019.6.20[hake_all_2019.6.20$ID <= 150, ], NULL) 
+plotly.Spec(hake_all_2019.6.20[hake_all_2019.6.20$ID > 150, ], NULL) 
+# plotly.Spec(hake_all_2019.6.20[hake_all_2019.6.20$ID >= 151 & hake_all_2019.6.20$ID < 700, ], NULL) 
+
+cbind(140:150, hake_all_2019.6.20[140:150, 'ID' ]) # 2 Oties missing below 150 ID
+plotly.Spec(hake_all_2019.6.20, N_Samp = 150, randomAfterSampNum = 148)
+plotly.Spec(hake_all_2019.6.20, N_Samp = 0, randomAfterSampNum = 148)
 
 dev.new()
 plot(hake_all_2019.6.20$ID, hake_all_2019.6.20$Age)
@@ -426,9 +448,12 @@ points(jitter(hake_all_2019.6.20$longitude[TF], 200), jitter(hake_all_2019.6.20$
 TF <- hake_all_2019.6.20$ID <= 150
 points(jitter(hake_all_2019.6.20$longitude[TF], 1), jitter(hake_all_2019.6.20$latitude[TF], 1), col = 'red')
 TF <- hake_all_2019.6.20$ID %in% c(15, 113)
-points(hake_all_2019.6.20$longitude[TF], hake_all_2019.6.20$latitude[TF], col = 'green', pch =16) # 2 year olds in green
+points(hake_all_2019.6.20$longitude[TF], hake_all_2019.6.20$latitude[TF], col = 'green', pch =16) # 2 year olds in green with last peak  < 5,000
 TF <- hake_all_2019.6.20$ID %in% 122
-points(hake_all_2019.6.20$longitude[TF], hake_all_2019.6.20$latitude[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
+points(hake_all_2019.6.20$longitude[TF], hake_all_2019.6.20$latitude[TF], col = 'dodger blue', pch =16) # 1 year olds in Dodger blue with last peak  < 5,000
+TF <- hake_all_2019.6.20$ID %in% c(6, 12, 20)
+set.seed(c(747, 787)[2])
+points(jitter(hake_all_2019.6.20$longitude[TF], 0.05), jitter(hake_all_2019.6.20$latitude[TF], 0.05), col = 'cyan', pch = 16) # 2 year olds in red with lat peak > 5,000
 
 
 #  Otie weight
@@ -464,6 +489,12 @@ names(hake_all_2019.6.20[, -(2:(sum(!is.na(as.numeric(names(hake_all_2019.6.20))
 Table(hake_all_2019.6.20$broken) # 98 oties are broken
 hake_all_2019.6.20[hake_all_2019.6.20$broken == 1, "ID"]
 
+Table(hake_all_2019.6.20$crystallized)
+hake_all_2019.6.20[hake_all_2019.6.20$crystallized == 1, "ID"]
+
+
+
+hake_all_2019.6.20[hake_all_2019.6.20$ID %in% c(595, 1083), -(2:(sum(!is.na(as.numeric(names(hake_all_2019.6.20)))) + 1))]
 
 plotly.Spec(hake_all_2019.6.20, nrow(hake_all_2019.6.20))
 
@@ -748,11 +779,23 @@ sum(abs(Reference_Age - round(Predicted_Age)))
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
 
 
-#   Support Vector Machine and RPART
-      
-set.seed(c(777, 747)[2])
+#  ----------  Support Vector Machine and RPART --------------------
+lib(caret)
+lib(gmodels)
+
+setwd("W:/ALL_USR/JRW/SIDT/2019 Hake")
+base::load(file = "hake_all_2019.6.20 6 Oct 2022.RData")
 index <- 1:nrow(hake_all_2019.6.20)
-testindex <- sample(index, trunc(length(index)/3))
+    
+# set.seed(c(777, 747)[2])
+# testindex <- sample(index, trunc(length(index)/3))
+
+# Use Hake_OPUS test and train sets
+#  is.na(hake_all_2019.6.20$Age_OPUS) == TRUE appears to be calibration (70%) and FALSE is test (validation) set (30%)
+testindex <- index[!is.na(hake_all_2019.6.20$Age_OPUS)]
+length(testindex)/length(index)
+
+
 (AgeColNum <- grep('Age', names(hake_all_2019.6.20))[1])
 # Columns <- 2:1113 # All Wavelengths 
 Columns.set <- (562:1112) + 1  # Only Wavelengths between 3,600 and 8,000
@@ -760,6 +803,8 @@ x.testset <- hake_all_2019.6.20[testindex, Columns.set]
 x.trainset <- hake_all_2019.6.20[-testindex, Columns.set]   
 y.test <- hake_all_2019.6.20[testindex, AgeColNum]
 y.train <- hake_all_2019.6.20[-testindex, AgeColNum]   
+
+
 
 #  ## In PLS the "test set" creates the model????????????????????????????????????????
 #  #
@@ -783,6 +828,7 @@ y.train <- hake_all_2019.6.20[-testindex, AgeColNum]
 #  #sum(abs(round(rpart.pred)- y.train)) # 1434
 
 
+confusionMatrix(
 
 
 # svm using e1071 package
@@ -792,7 +838,30 @@ svm.pred <- predict(svm.model, x.testset)
 Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.test)   
 e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.test)) #  $diag   0.3855337
 e1071::classAgreement(Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.test) , match.names = TRUE) #  $diag   0.3855337
+
+caret::confusionMatrix(rbind(Table(NIRS_SVM_AGE = round(svm.pred), TMA = y.test), "14" = rep(0, 16), "15" = rep(0, 16), "17" = rep(0, 16)))
+
+gmodels::CrossTable(round(svm.pred), y.test)
 sum(abs(round(svm.pred)- y.test)) # 1432
+
+
+# Hake_OPUS 
+sum(is.na(hake_all_2019.6.20$Age_OPUS[testindex])) # 0
+len(hake_all_2019.6.20$Age_OPUS[testindex])
+len(y.test)
+Table(NIRS_OPUS_AGE = round(hake_all_2019.6.20$Age_OPUS[testindex]), TMA = y.test)   
+e1071::classAgreement(Table(NIRS_OPUS_AGE = round(hake_all_2019.6.20$Age_OPUS[testindex]), TMA = y.test)) 
+e1071::classAgreement(Table(NIRS_OPUS_AGE = round(hake_all_2019.6.20$Age_OPUS[testindex]), TMA = y.test)  , match.names = TRUE) 
+
+NIRS_OPUS_AGE <- round(hake_all_2019.6.20$Age_OPUS[testindex])
+NIRS_OPUS_AGE[NIRS_OPUS_AGE < 1] <- 1
+Table(NIRS_OPUS_AGE = NIRS_OPUS_AGE, TMA = y.test)  
+caret::confusionMatrix(rbind(Table(NIRS_OPUS_AGE = NIRS_OPUS_AGE, TMA = y.test), "17" = rep(0, 16)))
+
+sum(abs(NIRS_OPUS_AGE - y.test)) 
+
+
+
 
 svm.pred.train <- predict(svm.model)
 Table(NIRS_SVM_AGE = round(svm.pred.train), TMA = y.train)   
