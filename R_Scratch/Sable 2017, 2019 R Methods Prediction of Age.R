@@ -162,13 +162,31 @@ FALSE  TRUE
 
 sable_all_2019.6.20 <- dat
 
+# Create 'shortName' with Species, Year, and Number from 'filenames'
 Sp_Year_Num_Extract <- function(x) {
    Subs <- get.subs(x, sep = "_")
    Subs[2] <- substr(Subs[2], 6, 9)
    paste(Subs[1:3], collapse = "_")
 }
-
 sable_all_2019.6.20$shortName <- apply(sable_all_2019.6.20[, 'filenames', drop = FALSE], 1, Sp_Year_Num_Extract)
+
+# Extract Year
+Year_Extract <- function(x) {
+   Subs <- get.subs(x, sep = "_")
+   substr(Subs[2], 6, 9)
+}
+sable_all_2019.6.20$Year <- as.numeric(apply(sable_all_2019.6.20[, 'filenames', drop = FALSE], 1, Year_Extract))
+Table(sable_all_2019.6.20$Year)
+
+# Extract Year & Group
+Year_Group <- function(x) {
+   Subs <- get.subs(x, sep = "_")
+   Subs[1] <- substr(Subs[2], 6, 9)
+   Subs[2] <- substr(Subs[2], 15, 15)
+   paste(Subs[1:2], collapse = "_")
+}   
+sable_all_2019.6.20$Group <- apply(sable_all_2019.6.20[, 'filenames', drop = FALSE], 1, Year_Group)
+Table(sable_all_2019.6.20$Group)
 
 options(digits = 11)
 sable_all_2019.6.20$ID <- strSplit(sable_all_2019.6.20$shortName, sep = "_", elements = 2:3, decimal_factor = 10000)
@@ -176,15 +194,37 @@ sable_all_2019.6.20 <- sort.f(sable_all_2019.6.20, "ID")
 
 save(sable_all_2019.6.20, file = "sable_all_2019.6.20 18 Oct 2022.RData")
 
+base::load(file = "sable_all_2019.6.20 18 Oct 2022.RData")
+    
 sable_all_2019.6.20$Age <- sample(1:17, nrow(sable_all_2019.6.20), replace = TRUE)
 plotly.Spec(sable_all_2019.6.20, 200)
-plotly.Spec(sable_all_2019.6.20, NULL)
 
+# Remove extreme scans
+dim(sable_all_2019.6.20)    
+sable_all_2019.6.20 <- sable_all_2019.6.20[sable_all_2019.6.20[,  '4004'] < 0.7, ]    
+dim(sable_all_2019.6.20)  
+
+plotly.Spec(sable_all_2019.6.20, 100, colorGroup = 'Year')
+plotly.Spec(sable_all_2019.6.20, 600, colorGroup = 'Year')
+
+plotly.Spec(sable_all_2019.6.20, 200, colorGroup = 'Group')
+plotly.Spec(sable_all_2019.6.20, 600, colorGroup = 'Group')
+    
+sable_all_2019.6.20$Age <- sample(1:17, nrow(sable_all_2019.6.20), replace = TRUE)
+plotly.Spec(sable_all_2019.6.20, 200)
+plotly.Spec(sable_all_2019.6.20, 'All')
+
+plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2017, ], 300,  ylim = c(0.35, 0.70), main = "2017")
+plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 300, ylim = c(0.35, 0.70), main = "2019")
+
+plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2017, ], 300, colorGroup = 'Group', ylim = c(0.35, 0.70))
+plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 300, colorGroup = 'Group', ylim = c(0.35, 0.70))
+plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 'all', colorGroup = 'Group')
 
 
 #   ==========================  Analysis  =========================================================
 
-base::load(file = "sable_all_2019.6.20 6 Oct 2022.RData")
+base::load(file = "sable_all_2019.6.20 18 Oct 2022.RData")
 # sable_all_2019.6.20[1:5, c(1:3, 1112:1120, 1135:(ncol(int2_data) + ncol(haul_data) - 1))]
 
 dim(sable_all_2019.6.20)
