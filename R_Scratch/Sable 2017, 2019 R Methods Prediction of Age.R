@@ -189,19 +189,30 @@ sable_all_2019.6.20$Group <- apply(sable_all_2019.6.20[, 'filenames', drop = FAL
 Table(sable_all_2019.6.20$Group)
 
 options(digits = 11)
-sable_all_2019.6.20$ID <- strSplit(sable_all_2019.6.20$shortName, sep = "_", elements = 2:3, decimal_factor = 10000)
+sable_all_2019.6.20$ID <- JRWToolBox::strSplit(sable_all_2019.6.20$shortName, sep = "_", elements = 2:3, decimal_factor = 10000)
 sable_all_2019.6.20 <- sort.f(sable_all_2019.6.20, "ID")
 
 save(sable_all_2019.6.20, file = "sable_all_2019.6.20 18 Oct 2022.RData")
 
 base::load(file = "sable_all_2019.6.20 18 Oct 2022.RData")
+options(digits = 11)
+sable_all_2019.6.20[1:3, c(1:3, 1155:1160)]
+
+                           filenames         12490         12482          3595        shortName        ID Year  Group Age
+1 SABLEFISH_COMBO201701203A_2_OD1.0 0.42185163498 0.42148122191 0.60346448421 SABLEFISH_2017_2 2017.0002 2017 2017_A  15
+2 SABLEFISH_COMBO201701203A_3_OD1.0 0.40333580971 0.40440806746 0.61744445562 SABLEFISH_2017_3 2017.0003 2017 2017_A   1
+3 SABLEFISH_COMBO201701203A_6_OD1.0 0.40662613511 0.40739360452 0.61092805862 SABLEFISH_2017_6 2017.0006 2017 2017_A  10
+
     
 sable_all_2019.6.20$Age <- sample(1:17, nrow(sable_all_2019.6.20), replace = TRUE)
-plotly.Spec(sable_all_2019.6.20, 200)
+plotly.Spec(sable_all_2019.6.20, 300)
 
 # Remove extreme scans
+# Most of the last scans starting from 2019.0851 have elevated frequencies - 41 scans in total 
+sable_all_2019.6.20[sable_all_2019.6.20[, '4004'] > 0.7, "ID"]   
+
 dim(sable_all_2019.6.20)    
-sable_all_2019.6.20 <- sable_all_2019.6.20[sable_all_2019.6.20[,  '4004'] < 0.7, ]    
+sable_all_2019.6.20 <- sable_all_2019.6.20[sable_all_2019.6.20[, '4004'] < 0.7, ]    
 dim(sable_all_2019.6.20)  
 
 plotly.Spec(sable_all_2019.6.20, 100, colorGroup = 'Year')
@@ -210,7 +221,6 @@ plotly.Spec(sable_all_2019.6.20, 600, colorGroup = 'Year')
 plotly.Spec(sable_all_2019.6.20, 200, colorGroup = 'Group')
 plotly.Spec(sable_all_2019.6.20, 600, colorGroup = 'Group')
     
-sable_all_2019.6.20$Age <- sample(1:17, nrow(sable_all_2019.6.20), replace = TRUE)
 plotly.Spec(sable_all_2019.6.20, 200)
 plotly.Spec(sable_all_2019.6.20, 'All')
 
@@ -220,6 +230,34 @@ plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 300, ylim
 plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2017, ], 300, colorGroup = 'Group', ylim = c(0.35, 0.70))
 plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 300, colorGroup = 'Group', ylim = c(0.35, 0.70))
 plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 'all', colorGroup = 'Group')
+
+
+# ggplot2 with facets
+
+d <- plotly.Spec(sable_all_2019.6.20, 'all', colorGroup = 'Age', facetGroup = 'Group', plot = FALSE)
+d$Age <- as.character(d$Age)
+d[1:4,]
+                Scan Band         Value Age  Group
+1 SABLEFISH_2017_370 8000 0.42734450102   1 2017_A
+2 SABLEFISH_2017_370 7992 0.42738452554   1 2017_A
+3 SABLEFISH_2017_370 7985 0.42739531398   1 2017_A
+4 SABLEFISH_2017_370 7977 0.42741751671   1 2017_A
+
+p <- ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Age), size = 0.2) + facet_wrap(~ Group)
+ggplotly(p)
+
+
+
+# Back to all data to show elevated values
+base::load(file = "sable_all_2019.6.20 18 Oct 2022.RData")
+sable_all_2019.6.20$Age <- sample(1:17, nrow(sable_all_2019.6.20), replace = TRUE)
+d_all <- plotly.Spec(sable_all_2019.6.20, 'all', colorGroup = 'Age', facetGroup = 'Group', plot = FALSE)
+d_all$Age <- as.character(d_all$Age)
+
+p <- ggplot(data = d_all, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Age), size = 0.2) + facet_wrap(~ Group)
+ggplotly(p)
+
+
 
 
 #   ==========================  Analysis  =========================================================
@@ -983,13 +1021,5 @@ sum(abs(round(rpart.pred)- y.test)) # 1434
                      optimal_model = 1, # In N_opt, use the best model
                      validation = "testset", 
                      training_set = training_set_MDKS)
-
-
-
-
-
-
-
-
 
 
