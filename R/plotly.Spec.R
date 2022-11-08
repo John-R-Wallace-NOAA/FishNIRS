@@ -1,4 +1,4 @@
-plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, colorGroup = 'Age', facetGroup = 'scanGroup', WaveRange = c(0, 8000), 
+plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, colorGroup = 'TMA', facetGroup = NULL, WaveRange = c(0, 8000), 
                   scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, reverse.plot.order = FALSE, 
                   bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, ...) {
     
@@ -71,15 +71,18 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
          print(Spec[1:4,])                
       }   
       if(plot) {
-         print(plot_ly(Spec, 
-                      x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
-                      colors = rainbow(length(unique(Spec$Color))), 
-                      hoverinfo = 'text',
-                      text = ~paste('Scan: ', Scan,
-                                    '</br></br> x-axis: ', Band,
-                                    '</br> y-axis: ', Value), ...) %>%
-             layout(title = main, plot_bgcolor = bgcolor, xaxis = xax, yaxis = yax) %>%
-             add_lines(line = list(width = 0.75)))
+         #  print(plot_ly(Spec, 
+         #               x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
+         #               colors = rainbow(length(unique(Spec$Color))), 
+         #               hoverinfo = 'text',
+         #               text = ~paste('Scan: ', Scan,
+         #                             '</br></br> x-axis: ', Band,
+         #                             '</br> y-axis: ', Value), ...) %>%
+         #      layout(title = main, plot_bgcolor = bgcolor, xaxis = xax, yaxis = yax) %>%
+         #      add_lines(line = list(width = 0.75)))
+             
+         print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2, colors = rainbow(length(unique(Spec$Color))))))
+           
       }     
           
       if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
@@ -117,20 +120,10 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
          print(str(Spec))
          print(Spec[1:4,])                
       }   
-      # if(plot) {
-      #    print(plot_ly(Spec, 
-      #                 x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
-      #                 colors = rainbow(length(unique(Spec$Color))), 
-      #                 hoverinfo = 'text',
-      #                 text = ~paste('Scan: ', Scan,
-      #                               '</br></br> x-axis: ', Band,
-      #                               '</br> y-axis: ', Value), ...) %>%
-      #        layout(title = main, plot_bgcolor = bgcolor, xaxis = xax, yaxis = yax) %>%
-      #        add_lines(line = list(width = 0.75)))
-      # }     
+     
       if(plot) {
-          p <- ggplot(data = d_all, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_wrap(~ Facet)
-          ggplotly(p)
+          p <- ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_wrap(~ Facet)
+          print(ggplotly(p))
       }
           
       if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
