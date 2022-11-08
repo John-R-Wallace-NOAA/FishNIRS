@@ -14,6 +14,7 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 
+lib(openxlsx)
 lib(data.table)
 lib(mdatools)
 lib(dplyr)
@@ -22,6 +23,7 @@ lib(prospectr)
 lib(e1071)
 lib(rpart)
 lib(vegan)
+
 
 # install and load simplerspec
 # install.packages("remotes")
@@ -64,7 +66,7 @@ str(ldf[[1]]) # check first element
 ldf[[1]]$wavenumbers[1:20] # 8th Element
 
 save(ldf, file = 'ldf.RData')
- 
+base::load(file = 'ldf.RData') 
 
 # Interpolate
 # prospectr::resample()  uses spline interpolation method
@@ -107,60 +109,92 @@ dat_spc[1:10, 1:5]
 (filenames <- unlist(sapply(ldf, function(x) x[[1]][2]), use.names = FALSE))[1:10]
 (dat <- cbind(filenames, dat_spc))[1:5, c(1:5, 1150:1155)]
 
+# Extract Year 
+Year <- function(x) {
+   Subs <- get.subs(x, sep = "_")
+   substr(Subs[2], 6, 9)
+}   
+dat$Year <- as.numeric(apply(dat[, 'filenames', drop = FALSE], 1, Year))
+Table(dat$Year)
+
+
+# Extract Sequence number
+dat$Sequence <- as.numeric(apply(dat[, 'filenames', drop = FALSE], 1, function(x) get.subs(x, sep = "_")[3]))
+Table(dat$Sequence)[1:10]
+
+dat <- sort.f(dat, c("Year", "Sequence"))
+dat[1:10, 1:4]
+
 save(dat, file = 'dat 18 Oct 2022.RData')
 
-base::load(file = 'dat 6 Oct 2022.RData')
+base::load("dat 18 Oct 2022.RData")
 
 
 
-# ADD VESSEL, CRUISE, REGION, LOCATION, AND BIO METADATA
-scan_data <- read.csv(paste0(PATH, "sable_scandata_2019.csv"), strip.white = TRUE) #load in ancillary data
-(int_data <- left_join(dat, scan_data, by = "filenames"))[1:5, c(1:3, 1112:1120, 1135:(ncol(dat) + ncol(scan_data) - 1))]
+
+# ADD VESSEL, CRUISE, REGION, LOCATION,  BIO, and AGE metadata
+meta_data_2017 <- read.xlsx(paste0(PATH, "FT_NIR_NWFSC_Combo_2017_SABL.xlsx")) #load in ancillary data
+names(meta_data_2017)[grep('age_structure_weigth_g', names(meta_data_2017))] <- 'age_structure_weight_g'
+meta_data_2017$Year <- 2017
+Table(meta_data_2017$Year)
+
+meta_data_2019 <- read.xlsx(paste0(PATH, "FT_NIR_NWFSC_Combo_2019_SABL.xlsx")) 
+meta_data_2019$age_structure_weight_g <- NA
+meta_data_2019$Year <- 2019
+Table(meta_data_2019$Year)
+
+# [1:5, c(1:3, 1112:1120, 1135:(ncol(dat) + ncol(scan_data) - 1))]
+Sable_2017_2019 <- left_join(dat, rbind(meta_data_2017, meta_data_2019), by = c("Year" = "Year", "Sequence" = "specimen"))
+#  Sable_2017_2019 <- match.f(dat, rbind(meta_data_2017, meta_data_2019), c("Year", "Sequence"), c("Year","specimen"))
+
+Sable_2017_2019[1:2, 1153:1172]
+       3610      3603      3595 Year Sequence cruise_number vessel_code haul date_collected     region common_name
+1 0.6086814 0.6070352 0.6034645 2017        2     201703008           8    1       42875.59 NE Pacific   Sablefish
+2 0.6221674 0.6203897 0.6174445 2017        3     201703008           8    1       42875.59 NE Pacific   Sablefish
+     scientific_name latitude longitude length weight sex fish_age   Barcode age_structure_weight_g
+1 Anoplopoma fimbria 45.12444 -124.2961    320    280   2        1 102118142                 0.0092
+2 Anoplopoma fimbria 45.12444 -124.2961    550   1540   2        4 102118143                 0.0200
+
+dim(Sable_2017_2019)
+[1] 1601 1172
+
+len(unique(Sable_2017_2019$Barcode))
+[1] 1601
+
+sum(is.na(Sable_2017_2019$Barcode))
+[1] 0
 
 
-# ADD AGE DATA
-age_data <- read.csv(paste0(PATH, "sable_agedata_2019.csv"), strip.white = TRUE) #load in age data
-(int2_data <- left_join(int_data, age_data, by = "sequence"))[1:5, c(1:3, 1112:1120, 1135:(ncol(int_data) + ncol(age_data) - 1))]
+
+# #    # ADD Sable_OPUS.RData
+# #    load('Sable_OPUS.RData') 
+# #    Sable_OPUS[1:5, ]
+# #    names(Sable_OPUS)[2] <- "filenames"
+# #    Sable_OPUS[1:5, ]
+# #    
+# #    base::load(file = "Sable_2017_2019 6 Oct 2022.RData")
+# #    preJoinNumCol <- ncol(Sable_2017_2019)
+# #    (Sable_2017_2019 <- left_join(Sable_2017_2019, Sable_OPUS[, 2:4], by = "filenames"))[1:5, c(1:3, 1112:1120, 1155:(preJoinNumCol + ncol(Sable_OPUS[, 2:4]) - 1))]
+# #    
+# #    for( i in 1:nrow(Sable_OPUS)) # No match for row 714.  ID = 1239
+# #       cat("\n", i, Sable_2017_2019$filenames[grep(Sable_OPUS[i,2],  Sable_2017_2019$filenames)])
+# #    
+# #    grep('PACIFIC_HAKE_BMS201906206D_1239_OD1.0',  Sable_2017_2019$filenames)
+# #    integer(0)
+# #    
+# #    
+# #    Table(is.na(Sable_2017_2019$Age_OPUS))
+# #    FALSE  TRUE 
+# #      854  1995 
+# #    
+# #    # With missing row:
+# #     855/(855 + 1995)
+# #    [1] 0.3
+# #      
+# #    # is.na(Sable_2017_2019$Age_OPUS) == TRUE appears to be calibration and FALSE is test (validation) set
+# #    
 
 
-# ADD HAUL METADATA
-haul_data <- read.csv(paste0(PATH, "sable_haulmetadata_2019.csv"))
-(all_data <- left_join(int2_data, haul_data, by = "Barcode"))[1:5, c(1:3, 1112:1120, 1135:(ncol(int2_data) + ncol(haul_data) - 1))]
-
-sable_all_2019.6.20 <- all_data
-sable_all_2019.6.20$Group <- substr(sable_all_2019.6.20$filenames, 26, 26)
-sable_all_2019.6.20$GroupNum <- as.numeric(factor(sable_all_2019.6.20$Group))
-
-
-# ADD Sable_OPUS.RData
-load('Sable_OPUS.RData') 
-Sable_OPUS[1:5, ]
-names(Sable_OPUS)[2] <- "filenames"
-Sable_OPUS[1:5, ]
-
-base::load(file = "sable_all_2019.6.20 6 Oct 2022.RData")
-preJoinNumCol <- ncol(sable_all_2019.6.20)
-(sable_all_2019.6.20 <- left_join(sable_all_2019.6.20, Sable_OPUS[, 2:4], by = "filenames"))[1:5, c(1:3, 1112:1120, 1155:(preJoinNumCol + ncol(Sable_OPUS[, 2:4]) - 1))]
-
-for( i in 1:nrow(Sable_OPUS)) # No match for row 714.  ID = 1239
-   cat("\n", i, sable_all_2019.6.20$filenames[grep(Sable_OPUS[i,2],  sable_all_2019.6.20$filenames)])
-
-grep('PACIFIC_HAKE_BMS201906206D_1239_OD1.0',  sable_all_2019.6.20$filenames)
-integer(0)
-
-
-Table(is.na(sable_all_2019.6.20$Age_OPUS))
-FALSE  TRUE 
-  854  1995 
-
-# With missing row:
- 855/(855 + 1995)
-[1] 0.3
-  
-# is.na(sable_all_2019.6.20$Age_OPUS) == TRUE appears to be calibration and FALSE is test (validation) set
-
-
-sable_all_2019.6.20 <- dat
 
 # Create 'shortName' with Species, Year, and Number from 'filenames'
 Sp_Year_Num_Extract <- function(x) {
@@ -168,15 +202,15 @@ Sp_Year_Num_Extract <- function(x) {
    Subs[2] <- substr(Subs[2], 6, 9)
    paste(Subs[1:3], collapse = "_")
 }
-sable_all_2019.6.20$shortName <- apply(sable_all_2019.6.20[, 'filenames', drop = FALSE], 1, Sp_Year_Num_Extract)
+Sable_2017_2019$shortName <- apply(Sable_2017_2019[, 'filenames', drop = FALSE], 1, Sp_Year_Num_Extract)
 
-# Extract Year
-Year_Extract <- function(x) {
-   Subs <- get.subs(x, sep = "_")
-   substr(Subs[2], 6, 9)
-}
-sable_all_2019.6.20$Year <- as.numeric(apply(sable_all_2019.6.20[, 'filenames', drop = FALSE], 1, Year_Extract))
-Table(sable_all_2019.6.20$Year)
+# #    # Extract Year
+# #    Year_Extract <- function(x) {
+# #       Subs <- get.subs(x, sep = "_")
+# #       substr(Subs[2], 6, 9)
+# #    }
+# #    Sable_2017_2019$Year <- as.numeric(apply(Sable_2017_2019[, 'filenames', drop = FALSE], 1, Year_Extract))
+# #    Table(Sable_2017_2019$Year)
 
 # Extract Year & Group
 Year_Group <- function(x) {
@@ -185,56 +219,83 @@ Year_Group <- function(x) {
    Subs[2] <- substr(Subs[2], 15, 15)
    paste(Subs[1:2], collapse = "_")
 }   
-sable_all_2019.6.20$Group <- apply(sable_all_2019.6.20[, 'filenames', drop = FALSE], 1, Year_Group)
-Table(sable_all_2019.6.20$Group)
+Sable_2017_2019$scanGroup <- apply(Sable_2017_2019[, 'filenames', drop = FALSE], 1, Year_Group)
+Table(Sable_2017_2019$scanGroup)
 
+# Extract ID ********** New strSplit() which takes vectors ***********
 options(digits = 11)
-sable_all_2019.6.20$ID <- JRWToolBox::strSplit(sable_all_2019.6.20$shortName, sep = "_", elements = 2:3, decimal_factor = 10000)
-sable_all_2019.6.20 <- sort.f(sable_all_2019.6.20, "ID")
+Sable_2017_2019$ID <- JRWToolBox::strSplit(Sable_2017_2019$shortName, sep = "_", elements = 2:3, decimal_factor = 10000)
+Sable_2017_2019$ID[1:10]
+Sable_2017_2019 <- sort.f(Sable_2017_2019, "ID")
 
-save(sable_all_2019.6.20, file = "sable_all_2019.6.20 18 Oct 2022.RData")
+names(Sable_2017_2019)[grep('fish_age', names(Sable_2017_2019))] <- "TMA"
 
-base::load(file = "sable_all_2019.6.20 18 Oct 2022.RData")
+save(Sable_2017_2019, file = "Sable_2017_2019 7 Nov 2022.RData")
+
+base::load(file = "Sable_2017_2019 18 Oct 2022.RData")
 options(digits = 11)
-sable_all_2019.6.20[1:3, c(1:3, 1155:1160)]
+Sable_2017_2019[1:2, c(1:3, (ncol(Sable_2017_2019) - 22):ncol(Sable_2017_2019))]
 
-                           filenames         12490         12482          3595        shortName        ID Year  Group Age
-1 SABLEFISH_COMBO201701203A_2_OD1.0 0.42185163498 0.42148122191 0.60346448421 SABLEFISH_2017_2 2017.0002 2017 2017_A  15
-2 SABLEFISH_COMBO201701203A_3_OD1.0 0.40333580971 0.40440806746 0.61744445562 SABLEFISH_2017_3 2017.0003 2017 2017_A   1
-3 SABLEFISH_COMBO201701203A_6_OD1.0 0.40662613511 0.40739360452 0.61092805862 SABLEFISH_2017_6 2017.0006 2017 2017_A  10
+                         filenames         12490         12482          3610          3603          3595 Year Sequence
+1 SABLEFISH_COMBO201701203A_2_OD1.0 0.42185163498 0.42148122191 0.60868144035 0.60703516006 0.60346448421 2017        2
+2 SABLEFISH_COMBO201701203A_3_OD1.0 0.40333580971 0.40440806746 0.62216740847 0.62038969994 0.61744445562 2017        3
+  cruise_number vessel_code haul date_collected     region common_name    scientific_name    latitude     longitude length
+1     201703008           8    1   42875.587859 NE Pacific   Sablefish Anoplopoma fimbria 45.12444444 -124.29611111    320
+2     201703008           8    1   42875.587859 NE Pacific   Sablefish Anoplopoma fimbria 45.12444444 -124.29611111    550
+  weight sex TMA   Barcode age_structure_weight_g        shortName  scanGroup        ID
+1    280   2   1 102118142                 0.0092 SABLEFISH_2017_2     2017_A 2017.0002
+2   1540   2   4 102118143                 0.0200 SABLEFISH_2017_3     2017_A 2017.0003
 
-    
-sable_all_2019.6.20$Age <- sample(1:17, nrow(sable_all_2019.6.20), replace = TRUE)
-plotly.Spec(sable_all_2019.6.20, 300)
+
+# Look at the data with plotly.Spec()
+plotly.Spec(Sable_2017_2019, 200)
+plotly.Spec(Sable_2017_2019, 'all')
+plotly.Spec(Sable_2017_2019, 300, colorGroup = 'TMA', facetGroup = 'scanGroup')
+plotly.Spec(Sable_2017_2019, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup')
+
 
 # Remove extreme scans
 # Most of the last scans starting from 2019.0851 have elevated frequencies - 41 scans in total 
-sable_all_2019.6.20[sable_all_2019.6.20[, '4004'] > 0.7, "ID"]   
+Sable_2017_2019[Sable_2017_2019[, '4004'] > 0.7, "ID"]   
 
-dim(sable_all_2019.6.20)    
-sable_all_2019.6.20 <- sable_all_2019.6.20[sable_all_2019.6.20[, '4004'] < 0.7, ]    
-dim(sable_all_2019.6.20)  
+dim(Sable_2017_2019)    
+Sable_2017_2019_noEx <- Sable_2017_2019[Sable_2017_2019[, '4004'] < 0.7, ]    
+dim(Sable_2017_2019_noEx)  
+ 
 
-plotly.Spec(sable_all_2019.6.20, 100, colorGroup = 'Year')
-plotly.Spec(sable_all_2019.6.20, 600, colorGroup = 'Year')
+plotly.Spec(Sable_2017_2019_noEx, 300)
+plotly.Spec(Sable_2017_2019_noEx, 'all')
+plotly.Spec(Sable_2017_2019_noEx, 300, colorGroup = 'TMA', facetGroup = 'scanGroup')
+plotly.Spec(Sable_2017_2019_noEx, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup')
 
-plotly.Spec(sable_all_2019.6.20, 200, colorGroup = 'Group')
-plotly.Spec(sable_all_2019.6.20, 600, colorGroup = 'Group')
+plotly.Spec(Sable_2017_2019_noEx, 300, colorGroup = 'scanGroup')
+
+plotly.Spec(Sable_2017_2019_noEx, 300, colorGroup = 'scanGroup', facetGroup = 'TMA')
+plotly.Spec(Sable_2017_2019_noEx, 300, colorGroup = 'TMA', facetGroup = 'TMA')
+
+
+
+
+plotly.Spec(Sable_2017_2019, 100, colorGroup = 'Year')
+plotly.Spec(Sable_2017_2019, 600, colorGroup = 'Year')
+
+plotly.Spec(Sable_2017_2019, 200, colorGroup = 'scanGroup')
+plotly.Spec(Sable_2017_2019, 600, colorGroup = 'scanGroup')
     
-plotly.Spec(sable_all_2019.6.20, 200)
-plotly.Spec(sable_all_2019.6.20, 'All')
+plotly.Spec(Sable_2017_2019, 200)
+plotly.Spec(Sable_2017_2019, 'All')
 
-plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2017, ], 300,  ylim = c(0.35, 0.70), main = "2017")
-plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 300, ylim = c(0.35, 0.70), main = "2019")
+plotly.Spec(Sable_2017_2019[Sable_2017_2019$Year %in% 2017, ], 300,  ylim = c(0.35, 0.70), main = "2017")
+plotly.Spec(Sable_2017_2019[Sable_2017_2019$Year %in% 2019, ], 300, ylim = c(0.35, 0.70), main = "2019")
 
-plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2017, ], 300, colorGroup = 'Group', ylim = c(0.35, 0.70))
-plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 300, colorGroup = 'Group', ylim = c(0.35, 0.70))
-plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$Year %in% 2019, ], 'all', colorGroup = 'Group')
+plotly.Spec(Sable_2017_2019[Sable_2017_2019$Year %in% 2017, ], 300, colorGroup = 'scanGroup', ylim = c(0.35, 0.70))
+plotly.Spec(Sable_2017_2019[Sable_2017_2019$Year %in% 2019, ], 300, colorGroup = 'scanGroup', ylim = c(0.35, 0.70))
+plotly.Spec(Sable_2017_2019[Sable_2017_2019$Year %in% 2019, ], 'all', colorGroup = 'scanGroup')
 
 
 # ggplot2 with facets
 
-d <- plotly.Spec(sable_all_2019.6.20, 'all', colorGroup = 'Age', facetGroup = 'Group', plot = FALSE)
+d <- plotly.Spec(Sable_2017_2019, 'all', colorGroup = 'Age', facetGroup = 'scanGroup', plot = FALSE)
 d$Age <- as.character(d$Age)
 d[1:4,]
                 Scan Band         Value Age  Group
@@ -249,9 +310,9 @@ ggplotly(p)
 
 
 # Back to all data to show elevated values
-base::load(file = "sable_all_2019.6.20 18 Oct 2022.RData")
-sable_all_2019.6.20$Age <- sample(1:17, nrow(sable_all_2019.6.20), replace = TRUE)
-d_all <- plotly.Spec(sable_all_2019.6.20, 'all', colorGroup = 'Age', facetGroup = 'Group', plot = FALSE)
+base::load(file = "Sable_2017_2019 18 Oct 2022.RData")
+Sable_2017_2019$Age <- sample(1:17, nrow(Sable_2017_2019), replace = TRUE)
+d_all <- plotly.Spec(Sable_2017_2019, 'all', colorGroup = 'Age', facetGroup = 'scanGroup', plot = FALSE)
 d_all$Age <- as.character(d_all$Age)
 
 p <- ggplot(data = d_all, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Age), size = 0.2) + facet_wrap(~ Group)
@@ -262,20 +323,20 @@ ggplotly(p)
 
 #   ==========================  Analysis  =========================================================
 
-base::load(file = "sable_all_2019.6.20 18 Oct 2022.RData")
-# sable_all_2019.6.20[1:5, c(1:3, 1112:1120, 1135:(ncol(int2_data) + ncol(haul_data) - 1))]
+base::load(file = "Sable_2017_2019 18 Oct 2022.RData")
+# Sable_2017_2019[1:5, c(1:3, 1112:1120, 1135:(ncol(int2_data) + ncol(haul_data) - 1))]
 
-dim(sable_all_2019.6.20)
+dim(Sable_2017_2019)
 [1] 1601 1157
 
-sable_all_2019.6.20[1:5, c(1:3, 1112:1120, 1153:ncol(sable_all_2019.6.20))]
+Sable_2017_2019[1:5, c(1:3, 1112:1120, 1153:ncol(Sable_2017_2019))]
 
-len(!duplicated(sable_all_2019.6.20$Barcode))
+len(!duplicated(Sable_2017_2019$Barcode))
 [1] 2849
 
-names(sable_all_2019.6.20[, 2:1114])  # Check end of wavelengths
+names(Sable_2017_2019[, 2:1114])  # Check end of wavelengths
 
-(WaveLengths <- as.numeric(names(sable_all_2019.6.20[, 2:1155])))
+(WaveLengths <- as.numeric(names(Sable_2017_2019[, 2:1155])))
 len(WaveLengths)
 
 # Plot by group
@@ -285,16 +346,16 @@ pie(rep(1, length(Cols)), col = Cols)
 
 N <- 400    # Number in random sample
 dev.new(height = 8, width = 14)
-plot(WaveLengths, sable_all_2019.6.20[1, 2:1113], type = 'l', ylab = 'Reflectance', col = 'black',
-   ylim = c(floor(min(sable_all_2019.6.20[, 2:1113])*100)/100, ceiling(max(sable_all_2019.6.20[, 2:1113])*100)/100))
-for (i in sample(2:nrow(sable_all_2019.6.20), N)) {
-   lines(WaveLengths, sable_all_2019.6.20[i, 2:1113], col = Cols[sable_all_2019.6.20$GroupNum[i]])
+plot(WaveLengths, Sable_2017_2019[1, 2:1113], type = 'l', ylab = 'Reflectance', col = 'black',
+   ylim = c(floor(min(Sable_2017_2019[, 2:1113])*100)/100, ceiling(max(Sable_2017_2019[, 2:1113])*100)/100))
+for (i in sample(2:nrow(Sable_2017_2019), N)) {
+   lines(WaveLengths, Sable_2017_2019[i, 2:1113], col = Cols[Sable_2017_2019$GroupNum[i]])
    # cat(paste0('Row = ', i, "\n"))
    # ask()
 }
 
 
-names(sable_all_2019.6.20)[-(2:1113)]
+names(Sable_2017_2019)[-(2:1113)]
  [1] "filenames"         "vessel_code"       "cruise_number"     "date_collected"    "collection_year"   "region"            "latitude"         
  [8] "longitude"         "sequence"          "length"            "weight"            "sex"               "read_age"          "test_age"         
 [15] "final_age"         "readability"       "unscannable"       "broken"            "crystallized"      "other_problem"     "percent_affected" 
@@ -306,34 +367,34 @@ names(sable_all_2019.6.20)[-(2:1113)]
 
 
 
-Table(sable_all_2019.6.20$Age, sable_all_2019.6.20$Group)
+Table(Sable_2017_2019$Age, Sable_2017_2019$Group)
 
 
 # Some of the 'A' group have shifted signature in the reflectance 
-plotly.Spec(sable_all_2019.6.20, 200, 'Group')
+plotly.Spec(Sable_2017_2019, 200, 'scanGroup')
 
 # Remove all of group A for now...
-# sable_all_2019.6.20 <- sable_all_2019.6.20[!sable_all_2019.6.20$Group == 'A', ]
-# Table(sable_all_2019.6.20$Group) # Check all the 'A' group was removed
+# Sable_2017_2019 <- Sable_2017_2019[!Sable_2017_2019$Group == 'A', ]
+# Table(Sable_2017_2019$Group) # Check all the 'A' group was removed
 
-plotly.Spec(sable_all_2019.6.20, 50)
+plotly.Spec(Sable_2017_2019, 50)
 
-plotly.Spec(sable_all_2019.6.20, 150)
+plotly.Spec(Sable_2017_2019, 150)
 
-plotly.Spec(sable_all_2019.6.20, 500)
+plotly.Spec(Sable_2017_2019, 500)
 
-plotly.Spec(sable_all_2019.6.20, 40, 'Sex')
+plotly.Spec(Sable_2017_2019, 40, 'Sex')
 
-plotly.Spec(sable_all_2019.6.20, 200, 'fork_length')
+plotly.Spec(Sable_2017_2019, 200, 'fork_length')
 
-test <- plotly.Spec(sable_all_2019.6.20, 100)
+test <- plotly.Spec(Sable_2017_2019, 100)
 
 Glm <- glm(Age ~ poly(Value, 4) + poly(Band, 5), data = test)
 Age_Hat <- round(predict(Glm))
 Age_Hat[Age_Hat < 1] <- 1
 Table(test$Age, round(Age_Hat))
 
-test <- plotly.Spec(sable_all_2019.6.20, 300, plot = FALSE)
+test <- plotly.Spec(Sable_2017_2019, 300, plot = FALSE)
 
 
 Glm <- glm(Age ~ poly(Value, 4) + poly(Band, 5), data = test[test$Band <= 8000, ])
@@ -351,9 +412,9 @@ classAgreement(Table(round(Age_Hat), test[test$Band <= 8000, ]$Age))
 sum(abs(round(Age_Hat) - test[test$Band <= 8000, ]$Age))
 
 
-plot(WaveLengths, sable_all_2019.6.20[1, 2:1113], type = 'l')
+plot(WaveLengths, Sable_2017_2019[1, 2:1113], type = 'l')
 
-# matplot(WaveLengths, t(sable_all_2019.6.20[1:3, 2:1113]), type = 'l')
+# matplot(WaveLengths, t(Sable_2017_2019[1:3, 2:1113]), type = 'l')
 
 
 # Plot scans changing colors by age
@@ -365,10 +426,10 @@ pie(rep(1, length(Cols)), col = Cols)
 # Only plot a random sample - including group A
 N <- 100
 dev.new(height = 8, width = 14)
-plot(WaveLengths, sable_all_2019.6.20[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[sable_all_2019.6.20$Age[1]],
-   ylim = c(floor(min(sable_all_2019.6.20[, 2:1113])*100)/100, ceiling(max(sable_all_2019.6.20[, 2:1113])*100)/100), lwd = 0.5)
-for (i in sample(2:nrow(sable_all_2019.6.20), N)) {
-   lines(WaveLengths, sable_all_2019.6.20[i, 2:1113], col = Cols[sable_all_2019.6.20$Age[i]], lwd = 0.5)
+plot(WaveLengths, Sable_2017_2019[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[Sable_2017_2019$Age[1]],
+   ylim = c(floor(min(Sable_2017_2019[, 2:1113])*100)/100, ceiling(max(Sable_2017_2019[, 2:1113])*100)/100), lwd = 0.5)
+for (i in sample(2:nrow(Sable_2017_2019), N)) {
+   lines(WaveLengths, Sable_2017_2019[i, 2:1113], col = Cols[Sable_2017_2019$Age[i]], lwd = 0.5)
    # cat(paste0('Row = ', i, "\n"))
    # ask()
 } 
@@ -378,10 +439,10 @@ for (i in sample(2:nrow(sable_all_2019.6.20), N)) {
 # Only plot  a random sample
 N <- 100
 dev.new(height = 8, width = 14)
-plot(WaveLengths, sable_all_2019.6.20[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[sable_all_2019.6.20$Age[1]],
-   ylim = c(floor(min(sable_all_2019.6.20[, 2:1113])*100)/100, ceiling(max(sable_all_2019.6.20[, 2:1113])*100)/100))
-for (i in sample(2:nrow(sable_all_2019.6.20), N)) {
-   lines(WaveLengths, sable_all_2019.6.20[i, 2:1113] - ifelse(grepl('6A', sable_all_2019.6.20$filenames[i], 1000, 0), col = Cols[sable_all_2019.6.20$Age[i]])
+plot(WaveLengths, Sable_2017_2019[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[Sable_2017_2019$Age[1]],
+   ylim = c(floor(min(Sable_2017_2019[, 2:1113])*100)/100, ceiling(max(Sable_2017_2019[, 2:1113])*100)/100))
+for (i in sample(2:nrow(Sable_2017_2019), N)) {
+   lines(WaveLengths, Sable_2017_2019[i, 2:1113] - ifelse(grepl('6A', Sable_2017_2019$filenames[i], 1000, 0), col = Cols[Sable_2017_2019$Age[i]])
    cat(paste0('Row = ', i, "\n"))
    ask()
 }
@@ -391,35 +452,35 @@ for (i in sample(2:nrow(sable_all_2019.6.20), N)) {
 
 # Plot all the scans by age
 dev.new(height = 8, width = 14)
-plot(WaveLengths, sable_all_2019.6.20[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[sable_all_2019.6.20$Age[1]],
-   ylim = c(floor(min(sable_all_2019.6.20[, 2:1113])*100)/100, ceiling(max(sable_all_2019.6.20[, 2:1113])*100)/100))
-for (i in 2:nrow(sable_all_2019.6.20))
-   lines(WaveLengths, sable_all_2019.6.20[i, 2:1113], col = Cols[sable_all_2019.6.20$Age[i]])
+plot(WaveLengths, Sable_2017_2019[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[Sable_2017_2019$Age[1]],
+   ylim = c(floor(min(Sable_2017_2019[, 2:1113])*100)/100, ceiling(max(Sable_2017_2019[, 2:1113])*100)/100))
+for (i in 2:nrow(Sable_2017_2019))
+   lines(WaveLengths, Sable_2017_2019[i, 2:1113], col = Cols[Sable_2017_2019$Age[i]])
 
 # Two outliers are seen in the plot  - need only the 8,000 freq. less than 0.4 reflectance
-dim(sable_all_2019.6.20)
-sable_all_2019.6.20 <- sable_all_2019.6.20[sable_all_2019.6.20['8000'] < 0.38, ]
-dim(sable_all_2019.6.20)
+dim(Sable_2017_2019)
+Sable_2017_2019 <- Sable_2017_2019[Sable_2017_2019['8000'] < 0.38, ]
+dim(Sable_2017_2019)
 
 
 # Plot all the scans by age - no extreme outlies now
 dev.new(height = 8, width = 14)
-plot(WaveLengths, sable_all_2019.6.20[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[sable_all_2019.6.20$Age[1]],
-   ylim = c(floor(min(sable_all_2019.6.20[, 2:1113])*100)/100, ceiling(max(sable_all_2019.6.20[, 2:1113])*100)/100))
-for (i in 2:nrow(sable_all_2019.6.20))
-   lines(WaveLengths, sable_all_2019.6.20[i, 2:1113], col = Cols[sable_all_2019.6.20$Age[i]])
+plot(WaveLengths, Sable_2017_2019[1, 2:1113], type = 'l', ylab = 'Reflectance', col = Cols[Sable_2017_2019$Age[1]],
+   ylim = c(floor(min(Sable_2017_2019[, 2:1113])*100)/100, ceiling(max(Sable_2017_2019[, 2:1113])*100)/100))
+for (i in 2:nrow(Sable_2017_2019))
+   lines(WaveLengths, Sable_2017_2019[i, 2:1113], col = Cols[Sable_2017_2019$Age[i]])
 
 
 # Models
 
 set.seed(c(777, 747)[2])
-index <- 1:nrow(sable_all_2019.6.20)
+index <- 1:nrow(Sable_2017_2019)
 testindex <- sample(index, trunc(length(index)/2))
-(AgeColNum <- grep('Age', names(sable_all_2019.6.20))[1])
+(AgeColNum <- grep('Age', names(Sable_2017_2019))[1])
 # Columns <- c(2:1113, AgeColNum)  # All Wavelengths 
 Columns <- c((562:1112) + 1, AgeColNum)  # Only Wavelengths between 3,600 and 8,000
-testset <- sable_all_2019.6.20[testindex, Columns]
-trainset <- sable_all_2019.6.20[-testindex, Columns]   
+testset <- Sable_2017_2019[testindex, Columns]
+trainset <- Sable_2017_2019[-testindex, Columns]   
 
 
 # svm using e1071 package
@@ -443,20 +504,20 @@ sum(abs(round(rpart.pred) - testset[, grep('Age', names(testset))]))
    
 
 # Hack in OPUS age for comparison -  a look at limited data from OPUS model by  Brenna, Alica, Beverely, or Irina???????????  
-names(sable_all_2019.6.20)[grep('Age', names(sable_all_2019.6.20))]
+names(Sable_2017_2019)[grep('Age', names(Sable_2017_2019))]
 # [1] "Age"      "Age_BB"   "Age_OPUS"
 
-(AgeColNum_OPUS <- grep('Age', names(sable_all_2019.6.20))[3])
-names(sable_all_2019.6.20)[AgeColNum_OPUS]
+(AgeColNum_OPUS <- grep('Age', names(Sable_2017_2019))[3])
+names(Sable_2017_2019)[AgeColNum_OPUS]
 
 Columns <- c((562:1112) + 1, AgeColNum, AgeColNum_OPUS)
 
-testset_OPUS <- sable_all_2019.6.20[testindex, Columns]
+testset_OPUS <- Sable_2017_2019[testindex, Columns]
 dim(testset_OPUS)
 # testset_OPUS <- testset_OPUS[is.finite(testset_OPUS[, ncol(testset_OPUS)]), ]
 # dim(testset_OPUS)
 
-trainset_OPUS <- sable_all_2019.6.20[-testindex, Columns]   
+trainset_OPUS <- Sable_2017_2019[-testindex, Columns]   
 dim(trainset_OPUS)
 # trainset_OPUS <- trainset_OPUS[is.finite(trainset_OPUS[, ncol(trainset_OPUS)]), ]
 # dim(trainset_OPUS)
@@ -485,12 +546,12 @@ sum(abs(round(testset_OPUS[!is.na(testset_OPUS[, ncol(testset_OPUS)]), grep('Age
           
 # =============== iPLSR - following Jordan =========================
      
-base::load("W:\\ALL_USR\\JRW\\SIDT\\2019 Sable\\sable_all_2019.6.20 6 Oct 2022.RData")
+base::load("W:\\ALL_USR\\JRW\\SIDT\\2019 Sable\\Sable_2017_2019 6 Oct 2022.RData")
 source("W:\\ALL_USR\\JRW\\SIDT\\2019 Sable\\plotly.Spec.R")
       
       
-Sable_Spectra_2019 <- sable_all_2019.6.20[, (562:1112) + 1] #spectra matrix
-Sable_Age_2019 <- as.numeric(sable_all_2019.6.20$Age) #Vector of Ages       
+Sable_Spectra_2019 <- Sable_2017_2019[, (562:1112) + 1] #spectra matrix
+Sable_Age_2019 <- as.numeric(Sable_2017_2019$Age) #Vector of Ages       
 Sable_Age_2019.fac <- factor(Sable_Age_2019)      
 
 
@@ -498,107 +559,107 @@ Sable_Age_2019.fac <- factor(Sable_Age_2019)
 ###Quick view data in plotly ###
 ################################
 
-sable_all_2019.6.20$ID <- as.numeric(subStr(sable_all_2019.6.20$shortName, "_", elements = 2))
-sable_all_2019.6.20 <- sort.f(sable_all_2019.6.20, "ID")
-sable_all_2019.6.20[1:4, c(1:2, 1160:1164)]
+Sable_2017_2019$ID <- as.numeric(subStr(Sable_2017_2019$shortName, "_", elements = 2))
+Sable_2017_2019 <- sort.f(Sable_2017_2019, "ID")
+Sable_2017_2019[1:4, c(1:2, 1160:1164)]
 # #                            filenames     12488 GroupNum Age_BB Age_OPUS shortName ID
 # # 1 PACIFIC_HAKE_BMS201906206A_1_OD1.0 0.2087611        1      1   0.9209    HAKE_1  1
 # # 2 PACIFIC_HAKE_BMS201906206A_2_OD1.0 0.1907212        1      1   0.1541    HAKE_2  2
 # # 3 PACIFIC_HAKE_BMS201906206A_3_OD1.0 0.1880061        1     NA       NA    HAKE_3  3
 
 
-# plotly.Spec(sable_all_2019.6.20, WaveRange = c(0, Inf))
+# plotly.Spec(Sable_2017_2019, WaveRange = c(0, Inf))
 
-plotly.Spec(sable_all_2019.6.20)
+plotly.Spec(Sable_2017_2019)
 
-plotly.Spec(sable_all_2019.6.20, 500)
+plotly.Spec(Sable_2017_2019, 500)
 
-plotly.Spec(sable_all_2019.6.20, NULL, reverse = TRUE)
+plotly.Spec(Sable_2017_2019, NULL, reverse = TRUE)
 
-plotly.Spec(rbind(sable_all_2019.6.20[sable_all_2019.6.20$ID <= 150, ], sable_all_2019.6.20[sable_all_2019.6.20$ID > 200 & sable_all_2019.6.20$ID < 300, ]), NULL)
-plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$ID <= 150, ], NULL) 
-plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$ID > 150, ], NULL) 
-# plotly.Spec(sable_all_2019.6.20[sable_all_2019.6.20$ID >= 151 & sable_all_2019.6.20$ID < 700, ], NULL) 
+plotly.Spec(rbind(Sable_2017_2019[Sable_2017_2019$ID <= 150, ], Sable_2017_2019[Sable_2017_2019$ID > 200 & Sable_2017_2019$ID < 300, ]), NULL)
+plotly.Spec(Sable_2017_2019[Sable_2017_2019$ID <= 150, ], NULL) 
+plotly.Spec(Sable_2017_2019[Sable_2017_2019$ID > 150, ], NULL) 
+# plotly.Spec(Sable_2017_2019[Sable_2017_2019$ID >= 151 & Sable_2017_2019$ID < 700, ], NULL) 
 
-cbind(140:150, sable_all_2019.6.20[140:150, 'ID' ]) # 2 Oties missing below 150 ID
-plotly.Spec(sable_all_2019.6.20, N_Samp = 150, randomAfterSampNum = 148)
-plotly.Spec(sable_all_2019.6.20, N_Samp = 0, randomAfterSampNum = 148)
+cbind(140:150, Sable_2017_2019[140:150, 'ID' ]) # 2 Oties missing below 150 ID
+plotly.Spec(Sable_2017_2019, N_Samp = 150, randomAfterSampNum = 148)
+plotly.Spec(Sable_2017_2019, N_Samp = 0, randomAfterSampNum = 148)
 
 dev.new()
-plot(sable_all_2019.6.20$ID, sable_all_2019.6.20$Age)
+plot(Sable_2017_2019$ID, Sable_2017_2019$Age)
 dev.new()
-plot(sable_all_2019.6.20$ID, sable_all_2019.6.20$Oto_Weight)
+plot(Sable_2017_2019$ID, Sable_2017_2019$Oto_Weight)
 dev.new()
-plot(sable_all_2019.6.20$ID, sable_all_2019.6.20$fork_length)
+plot(Sable_2017_2019$ID, Sable_2017_2019$fork_length)
 
-plot(sable_all_2019.6.20$latitude, sable_all_2019.6.20$Age)
+plot(Sable_2017_2019$latitude, Sable_2017_2019$Age)
 "Oto_Weight"        "OtolithSide"       "Processed.by"      "Shipped.Date"      "CatchDate"        
 [37] "sex_determination" "fork_length"  
 
 
 
-plot(jitter(sable_all_2019.6.20$Age), jitter(sable_all_2019.6.20$latitude, 100), ylim = c(31, 48.5))
-points(jitter(sable_all_2019.6.20$Age[sable_all_2019.6.20$ID <= 100]), jitter(sable_all_2019.6.20$latitude[sable_all_2019.6.20$ID <= 150], 100), col = 'red', pch = 16)
-points(jitter(sable_all_2019.6.20$Age[sable_all_2019.6.20$ID %in% c(15, 113, 122)]), sable_all_2019.6.20$latitude[sable_all_2019.6.20$ID %in% c(15, 113, 122)], col = 'green', pch = 16) 
+plot(jitter(Sable_2017_2019$Age), jitter(Sable_2017_2019$latitude, 100), ylim = c(31, 48.5))
+points(jitter(Sable_2017_2019$Age[Sable_2017_2019$ID <= 100]), jitter(Sable_2017_2019$latitude[Sable_2017_2019$ID <= 150], 100), col = 'red', pch = 16)
+points(jitter(Sable_2017_2019$Age[Sable_2017_2019$ID %in% c(15, 113, 122)]), Sable_2017_2019$latitude[Sable_2017_2019$ID %in% c(15, 113, 122)], col = 'green', pch = 16) 
 
 
 dev.new()
 # imap(latrange = c(26, 49), longrange = c(-128, -113), zoom = FALSE)
 imap(latrange = c(34, 36), longrange = c(-122, -120), zoom = FALSE)
-TF <- sable_all_2019.6.20$ID > 150
-points(jitter(sable_all_2019.6.20$longitude[TF], 200), jitter(sable_all_2019.6.20$latitude[TF], 20))
-TF <- sable_all_2019.6.20$ID <= 150
-points(jitter(sable_all_2019.6.20$longitude[TF], 1), jitter(sable_all_2019.6.20$latitude[TF], 1), col = 'red')
-TF <- sable_all_2019.6.20$ID %in% c(15, 113)
-points(sable_all_2019.6.20$longitude[TF], sable_all_2019.6.20$latitude[TF], col = 'green', pch =16) # 2 year olds in green with last peak  < 5,000
-TF <- sable_all_2019.6.20$ID %in% 122
-points(sable_all_2019.6.20$longitude[TF], sable_all_2019.6.20$latitude[TF], col = 'dodger blue', pch =16) # 1 year olds in Dodger blue with last peak  < 5,000
-TF <- sable_all_2019.6.20$ID %in% c(6, 12, 20)
+TF <- Sable_2017_2019$ID > 150
+points(jitter(Sable_2017_2019$longitude[TF], 200), jitter(Sable_2017_2019$latitude[TF], 20))
+TF <- Sable_2017_2019$ID <= 150
+points(jitter(Sable_2017_2019$longitude[TF], 1), jitter(Sable_2017_2019$latitude[TF], 1), col = 'red')
+TF <- Sable_2017_2019$ID %in% c(15, 113)
+points(Sable_2017_2019$longitude[TF], Sable_2017_2019$latitude[TF], col = 'green', pch =16) # 2 year olds in green with last peak  < 5,000
+TF <- Sable_2017_2019$ID %in% 122
+points(Sable_2017_2019$longitude[TF], Sable_2017_2019$latitude[TF], col = 'dodger blue', pch =16) # 1 year olds in Dodger blue with last peak  < 5,000
+TF <- Sable_2017_2019$ID %in% c(6, 12, 20)
 set.seed(c(747, 787)[2])
-points(jitter(sable_all_2019.6.20$longitude[TF], 0.05), jitter(sable_all_2019.6.20$latitude[TF], 0.05), col = 'cyan', pch = 16) # 2 year olds in red with lat peak > 5,000
+points(jitter(Sable_2017_2019$longitude[TF], 0.05), jitter(Sable_2017_2019$latitude[TF], 0.05), col = 'cyan', pch = 16) # 2 year olds in red with lat peak > 5,000
 
 
 #  Otie weight
 dev.new()
-TF <- sable_all_2019.6.20$ID > 150
-plot(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$Oto_Weight[TF], xlim = c(-5, 3000), na.rm = TRUE)
-TF <- sable_all_2019.6.20$ID <= 150
-points(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$Oto_Weight[TF], col = 'red')
-TF <- sable_all_2019.6.20$ID %in% c(15, 113)
-points(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$Oto_Weight[TF], col = 'green', pch =16) # 2 year olds in green
-cbind(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$Oto_Weight[TF])  # Missing otie weight on #113
-TF <- sable_all_2019.6.20$ID %in% 122
-points(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$Oto_Weight[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
+TF <- Sable_2017_2019$ID > 150
+plot(Sable_2017_2019$ID[TF], Sable_2017_2019$Oto_Weight[TF], xlim = c(-5, 3000), na.rm = TRUE)
+TF <- Sable_2017_2019$ID <= 150
+points(Sable_2017_2019$ID[TF], Sable_2017_2019$Oto_Weight[TF], col = 'red')
+TF <- Sable_2017_2019$ID %in% c(15, 113)
+points(Sable_2017_2019$ID[TF], Sable_2017_2019$Oto_Weight[TF], col = 'green', pch =16) # 2 year olds in green
+cbind(Sable_2017_2019$ID[TF], Sable_2017_2019$Oto_Weight[TF])  # Missing otie weight on #113
+TF <- Sable_2017_2019$ID %in% 122
+points(Sable_2017_2019$ID[TF], Sable_2017_2019$Oto_Weight[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
 
 
 # Fork length
 dev.new()
-TF <- sable_all_2019.6.20$ID > 150
-plot(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$fork_length[TF], ylim = c(16.5, 73), xlim = c(-5, 3000), na.rm = TRUE)
-TF <- sable_all_2019.6.20$ID <= 150
-points(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$fork_length[TF], col = 'red')
-TF <- sable_all_2019.6.20$ID %in% c(15, 113)
-points(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$fork_length[TF], col = 'green', pch =16) # 2 year olds in green
-cbind(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$fork_length[TF])  # Missing otie weight on #113
-TF <- sable_all_2019.6.20$ID %in% 122
-points(sable_all_2019.6.20$ID[TF], sable_all_2019.6.20$fork_length[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
+TF <- Sable_2017_2019$ID > 150
+plot(Sable_2017_2019$ID[TF], Sable_2017_2019$fork_length[TF], ylim = c(16.5, 73), xlim = c(-5, 3000), na.rm = TRUE)
+TF <- Sable_2017_2019$ID <= 150
+points(Sable_2017_2019$ID[TF], Sable_2017_2019$fork_length[TF], col = 'red')
+TF <- Sable_2017_2019$ID %in% c(15, 113)
+points(Sable_2017_2019$ID[TF], Sable_2017_2019$fork_length[TF], col = 'green', pch =16) # 2 year olds in green
+cbind(Sable_2017_2019$ID[TF], Sable_2017_2019$fork_length[TF])  # Missing otie weight on #113
+TF <- Sable_2017_2019$ID %in% 122
+points(Sable_2017_2019$ID[TF], Sable_2017_2019$fork_length[TF], col = 'dodger blue', pch =16) #1 year olds in Dodger blue
 
 
  
 # Find names of all metadata columns 
-names(sable_all_2019.6.20[, -(2:(sum(!is.na(as.numeric(names(sable_all_2019.6.20)))) + 1))])
+names(Sable_2017_2019[, -(2:(sum(!is.na(as.numeric(names(Sable_2017_2019)))) + 1))])
 
-Table(sable_all_2019.6.20$broken) # 98 oties are broken
-sable_all_2019.6.20[sable_all_2019.6.20$broken == 1, "ID"]
+Table(Sable_2017_2019$broken) # 98 oties are broken
+Sable_2017_2019[Sable_2017_2019$broken == 1, "ID"]
 
-Table(sable_all_2019.6.20$crystallized)
-sable_all_2019.6.20[sable_all_2019.6.20$crystallized == 1, "ID"]
+Table(Sable_2017_2019$crystallized)
+Sable_2017_2019[Sable_2017_2019$crystallized == 1, "ID"]
 
 
 
-sable_all_2019.6.20[sable_all_2019.6.20$ID %in% c(595, 1083), -(2:(sum(!is.na(as.numeric(names(sable_all_2019.6.20)))) + 1))]
+Sable_2017_2019[Sable_2017_2019$ID %in% c(595, 1083), -(2:(sum(!is.na(as.numeric(names(Sable_2017_2019)))) + 1))]
 
-plotly.Spec(sable_all_2019.6.20, nrow(sable_all_2019.6.20))
+plotly.Spec(Sable_2017_2019, nrow(Sable_2017_2019))
 
 
 
@@ -652,8 +713,8 @@ plot(pca_scores.sg$sites[,1], pca_scores.sg$sites[,2], pch=21, bg = rainbow(30),
 arrows(0,0,pca_scores.sg$species[,1],pca_scores.sg$species[,2],lwd=1,length=0.2)
  
 
-Sable_Spectra_2019 <- sable_all_2019.6.20[, (562:1112) + 1] # Spectra matrix
-Sable_Meta_2019 <- sable_all_2019.6.20[, -((1:1112) + 1)] # Meta data  
+Sable_Spectra_2019 <- Sable_2017_2019[, (562:1112) + 1] # Spectra matrix
+Sable_Meta_2019 <- Sable_2017_2019[, -((1:1112) + 1)] # Meta data  
 Sable_Meta_2019$Lat.1.degree <- round(Sable_Meta_2019$latitude) 
 names(Sable_Meta_2019)
  [1] "filenames"         "vessel_code"       "cruise_number"     "date_collected"    "collection_year"   "region"           
@@ -884,15 +945,15 @@ write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
 #   Support Vector Machine and RPART
       
 set.seed(c(777, 747)[2])
-index <- 1:nrow(sable_all_2019.6.20)
+index <- 1:nrow(Sable_2017_2019)
 testindex <- sample(index, trunc(length(index)/3))
-(AgeColNum <- grep('Age', names(sable_all_2019.6.20))[1])
+(AgeColNum <- grep('Age', names(Sable_2017_2019))[1])
 # Columns <- 2:1113 # All Wavelengths 
 Columns.set <- (562:1112) + 1  # Only Wavelengths between 3,600 and 8,000
-x.testset <- sable_all_2019.6.20[testindex, Columns.set]
-x.trainset <- sable_all_2019.6.20[-testindex, Columns.set]   
-y.test <- sable_all_2019.6.20[testindex, AgeColNum]
-y.train <- sable_all_2019.6.20[-testindex, AgeColNum]   
+x.testset <- Sable_2017_2019[testindex, Columns.set]
+x.trainset <- Sable_2017_2019[-testindex, Columns.set]   
+y.test <- Sable_2017_2019[testindex, AgeColNum]
+y.train <- Sable_2017_2019[-testindex, AgeColNum]   
 
 #  ## In PLS the "test set" creates the model????????????????????????????????????????
 #  #
@@ -967,59 +1028,5 @@ sum(abs(round(rpart.pred)- y.test)) # 1434
 
 
 
-
-
-
-
-
-# ================================ PLS  using plantspec package  - TOO OLD!!!!!!!!!!!!!=====================================================
-
-
-# Select the component of interest (i.e., Age)
-  TMA_Age <- sable_all_2019.6.20$Age 
-  
-# Tried this first........  
-  
-# Optimize the preprocessing for spectra and spectral subsetting to emphasize
-# the important spectra features related to predicting N. This can be very time
-# consuming.
-  N_opt <- optimizePLS(component = TMA_Age, 
-                       spectra = sable_all_2019.6.20[, (562:1112) + 1], 
-                       training_set = !testindex)
-  
-# Fit our PLS regression using the optimal setting from our optimization.
-  N_cal <- calibrate(component = TMA_Age, 
-                     spectra = sable_all_2019.6.20[, (562:1112) + 1], 
-                     optimal_params = N_opt, 
-                     optimal_model = 1, # In N_opt, use the best model
-                     validation = "testset", 
-                     training_set = testindex)
-
-# -------------------------------------  
-  
-
-# Select a training set for model fitting (i.e., FALSE values for test set)
-#  - use "!" because subdivideDataset() returns TRUE for test set selections.
-#  - use "type = 'validation'" so both training and test data are representative. 
-  training_set_MDKS <- !(subdivideDataset(spectra = sable_all_2019.6.20[, (562:1112) + 1], 
-                                          component = TMA_Age, 
-                                          method = "MDKS", 
-                                          p = 0.5, # 10% for this example  
-                                          type = "validation")) 
-
-# Optimize the preprocessing for spectra and spectral subsetting to emphasize
-# the important spectra features related to predicting N. This can be very time
-# consuming.
-  N_opt <- optimizePLS(component = TMA_Age, 
-                       spectra = sable_all_2019.6.20[, (562:1112) + 1], 
-                       training_set = training_set_MDKS)
-  
-# Fit our PLS regression using the optimal setting from our optimization.
-  N_cal <- calibrate(component = TMA_Age, 
-                     spectra = sable_all_2019.6.20[, (562:1112) + 1], 
-                     optimal_params = N_opt, 
-                     optimal_model = 1, # In N_opt, use the best model
-                     validation = "testset", 
-                     training_set = training_set_MDKS)
 
 
