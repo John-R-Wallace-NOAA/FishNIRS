@@ -93,14 +93,12 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
             #           scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = c(1, rep(alpha, length(unique(Spec$Color)) - 1))))))           
       }
       
-      if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
-          Spec$Color <- as.numeric(Spec$Color)    
+      #  if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
+      #    Spec$Color <- as.numeric(Spec$Color)    
           
       names(Spec)[4] <- colorGroup
       
-      print(ggplotly(ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = age_structure_weight_g), size = 0.2)))
-      
-   } else {
+     } else {
    
       spectraMeta <- spectraMeta[, c(scanUniqueName, WaveSubset, colorGroup, facetGroup)] 
       
