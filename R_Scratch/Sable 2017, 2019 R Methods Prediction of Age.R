@@ -266,64 +266,200 @@ dim(Sable_2017_2019)
 Sable_2017_2019_noEx <- Sable_2017_2019[Sable_2017_2019[, '4004'] < 0.7, ]    
 dim(Sable_2017_2019_noEx)  
  
-# TMA
+# 2D  
+# TMA  with extremes removed
 plotly.Spec(Sable_2017_2019_noEx, 300)
 plotly.Spec(Sable_2017_2019_noEx[Sable_2017_2019_noEx$TMA <= 1, ], 'all', alpha = c(1, rep(0.15, length(unique(Sable_2017_2019_noEx$TMA))))) # ***** Best to show age zeros
 
-plotly.Spec(Sable_2017_2019_noEx[Sable_2017_2019_noEx$TMA <= 1, ], 'all', , facetGroup = 'scanGroup', alpha = c(1, rep(0.15, length(unique(Sable_2017_2019_noEx$TMA)))))
+plotly.Spec(Sable_2017_2019_noEx[Sable_2017_2019_noEx$TMA <= 1, ], 'all',  facetGroup = 'scanGroup', alpha = c(1, rep(0.15, length(unique(Sable_2017_2019_noEx$TMA)))))
 
 plotly.Spec(Sable_2017_2019_noEx, 'all')
 plotly.Spec(Sable_2017_2019_noEx, 300, colorGroup = 'TMA', facetGroup = 'scanGroup')
 plotly.Spec(Sable_2017_2019_noEx, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup')
 
-
+# TMA  with extremes included
 d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE)
 plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
 plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$TMA)))) 
 
-Sable_Spec_Cor <- renum(data.frame(Freq = as.numeric(names(Sable_2017_2019[, 2:1155])), Cor = cor(Sable_2017_2019[, 2:1155], Sable_2017_2019$TMA, use = "na.or.complete")))
+
+# 3D
+# TMA ( without group_by(Scan)  you don't get single lines for each scan)
+d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$TMA), ], 'all', colorGroup = 'TMA', plot = FALSE)
+plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+
+
+# scanGroup shows the extremes scan done at the end of the last group
+d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$scanGroup), ], 'all', colorGroup = 'scanGroup', plot = FALSE)
+plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~scanGroup, colors = rainbow(length(unique(d$Scan)))) 
+
+# Subset with 'shortName' as color group - mostly a test of plotly() and the browser
+d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$shortName), ], 400, colorGroup = 'shortName', plot = FALSE)
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~shortName, colors = rainbow(length(unique(d$Scan)))) 
+
+
+# 3D with extremes removed
+# TMA
+d <- plotly.Spec(Sable_2017_2019_noEx[!is.na(Sable_2017_2019_noEx$TMA), ], 'all', colorGroup = 'TMA', plot = FALSE) 
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+
+# Below does NOT work to add a label to the  color axis
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) %>% 
+       layout(coloraxis = list(title = 'TMA'))  # Nor this:   layout(scene = list(coloraxis = list(title = 'TMA')))   
+
+# Making TMA numeric no longer sorts the color variable       
+d$TMA <- as.numeric(d$TMA)
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+
+   
+# --- 3D using rgl package - no labels for lines ---
+lib(rgl)
+d <- na.omit(d)
+d <- sort.f(d, "TMA") # Sorting didn't help order below
+change(d)
+# plot3d(Band, Value, TMA, type = 'p', col = rainbow(length(Scan)/length(unique(Scan))))
+# plot3d(Band, Value, as.numeric(factor(Scan)), type = 'p', col = rep(rainbow(length(unique(Scan))), each = 572))
+Col <- rainbow(max(as.numeric(TMA)) + 1)
+plot3d(Band, Value, as.numeric(factor(Scan)), type = 'p', col = Col[as.numeric(TMA) + 1])
+plot3d(Band, Value, TMA, type = 'p', col = Col[as.numeric(TMA) + 1], pch = 0.25)
+
+# 3D using rgl package with multi-figures
+d$Scan <- as.numeric(factor(d$Scan))
+d <- sort.f(d, "TMA")
+change(d)
+TMA_Levels <- unique(d$TMA)
+Col <- rainbow(length(TMA_Levels))
+
+mfrow3d(5, 5, sharedMouse = TRUE)
+# for (i in 1:length(TMA_Levels)) {
+for (i in 1:25) {
+  change(d[d$TMA %in% TMA_Levels[i], ], verbose = FALSE)
+  plot3d(Band, Value, Scan, type = 'p', col = Col[i], main = paste0("TMA = ", TMA_Levels[i]))
+}  
+ -
+#----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+# Correlation with extremes removed
+Sable_Spec_Cor <- renum(data.frame(Freq = as.numeric(names(Sable_2017_2019_noEx[, 2:1155])), Cor = cor(Sable_2017_2019_noEx[, 2:1155], Sable_2017_2019_noEx$TMA, use = "na.or.complete")))
 sort.f(Sable_Spec_Cor, 'Cor', rev = T)[1:5,]
-  Freq           Cor
-1 4027 0.29440307056
-2 4035 0.29439584030
-3 4019 0.29430211277
-4 4042 0.29419416200
-5 4012 0.29407242655
+  Freq       Cor
+1 4081 0.7233784
+2 4073 0.7233294
+3 4089 0.7229155
+4 4066 0.7228655
+5 4058 0.7220165
+
 dev.new()
 plot(Sable_Spec_Cor$Freq, Sable_Spec_Cor$Cor)
 
 dev.new()
-plot(Sable_2017_2019[, '4027'], Sable_2017_2019$TMA)
-cor(Sable_2017_2019[, '4027'], Sable_2017_2019$TMA,  use = "na.or.complete")
-
-
+plot(Sable_2017_2019_noEx[, '4081'], Sable_2017_2019_noEx$TMA)
 
 dev.new()
-plot(Sable_2017_2019[Sable_2017_2019[, '4027'] < 0.68, '4027'], Sable_2017_2019$TMA[Sable_2017_2019[, '4027'] < 0.68])
-cor(Sable_2017_2019[Sable_2017_2019[, '4027'] < 0.68, '4027'], Sable_2017_2019$TMA[Sable_2017_2019[, '4027'] < 0.68],  use = "na.or.complete")
-[1] 0.71555905997
+plot(jitter(Sable_2017_2019_noEx[, '4081']), jitter(Sable_2017_2019_noEx$TMA))
+
+cor(Sable_2017_2019_noEx[, '4081'], Sable_2017_2019_noEx$TMA,  use = "na.or.complete")
+[1] 0.7233784
 
 
-Sable_2017_2019.lt.68 <- Sable_2017_2019[Sable_2017_2019[, '4027'] < 0.68, ]
-Sable_Spec_Cor <- renum(data.frame(Freq = as.numeric(names(Sable_2017_2019.lt.68[, 2:1155])), Cor = cor(Sable_2017_2019.lt.68[, 2:1155], Sable_2017_2019.lt.68$TMA, use = "na.or.complete")))
-sort.f(Sable_Spec_Cor, 'Cor', rev = T)[1:5,]
-  Freq           Cor
-1 4081 0.72337836850
-2 4073 0.72332938867
-3 4089 0.72291546179
-4 4066 0.72286547252
-5 4058 0.72201654203
+# Use correlation plot to define the best freg. areas to use
 
-dev.new()
-plot(Sable_2017_2019.lt.68[, '4081'], Sable_2017_2019.lt.68$TMA)
-cor(Sable_2017_2019.lt.68[, '4081'], Sable_2017_2019.lt.68$TMA,  use = "na.or.complete")
+Sable_Spec_Cor[c(936, 1148), ]
+     Freq           Cor
+936  5277 0.46227826962
+1148 3641 0.46627681593
 
-LM <- lm(Sable_2017_2019.lt.68$TMA ~ Sable_2017_2019.lt.68[, '4081'])
+d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE)
+dim(d)
+
+# WB = Wide Best area from correlation plot
+Sable_WB <- d[d$Band >= 3641 & d$Band <= 5277, ]
+dim(Sable_WB)
+
+Sable_WB %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------------------------------------------------------------
+
+LM <- lm(Sable_2017_2019_noEx$TMA ~ Sable_2017_2019_noEx[, '4081'])
 summary(LM)
-abline(LM$coef)
+abline(LM$coef, col = 'red')
 
-summary(glm(Sable_2017_2019.lt.68$TMA ~ poly(Sable_2017_2019.lt.68[, '4081'], 2)))
-summary(glm(Sable_2017_2019.lt.68$TMA ~ poly(Sable_2017_2019.lt.68[, '4081'], 3)))
+
+
+TF <- !is.na(Sable_2017_2019_noEx$TMA)
+
+
+summary(GLM1 <- glm(Sable_2017_2019_noEx$TMA[TF] ~ poly(Sable_2017_2019_noEx[TF, '4081'], 2)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM1), col = 'magenta')
+
+summary(GLM2 <- glm(Sable_2017_2019_noEx$TMA[TF] ~ poly(Sable_2017_2019_noEx[TF, '4081'], 2)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM2), col = 'green')
+
+summary(GLM3 <- glm(Sable_2017_2019_noEx$TMA[TF] ~ poly(Sable_2017_2019_noEx[TF, '4081'], 3)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM3), col = 'blue')
+
+summary(GLM4 <- glm(Sable_2017_2019_noEx$TMA[TF] ~ poly(Sable_2017_2019_noEx[TF, '4081'], 4)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM4), col = 'cyan')
+
+summary(GLM5 <- glm(Sable_2017_2019_noEx$TMA[TF] ~ poly(Sable_2017_2019_noEx[TF, '4081'], 5)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM5), col = 'dodgerblue')
+
+
+# Log
+dim(Sable_2017_2019_noEx)
+TF <- !is.na(Sable_2017_2019_noEx$TMA)
+sum(TF)
+
+Sable_2017_2019_noEx$TMA[Sable_2017_2019_noEx$TMA == 0] <- 0.5
+
+dev.new()
+# plot(Sable_2017_2019_noEx[, '4081'], log(Sable_2017_2019_noEx$TMA))
+plot(Sable_2017_2019_noEx[, '4081'], Sable_2017_2019_noEx$TMA)
+
+summary(GLM1 <- glm(log(Sable_2017_2019_noEx$TMA[TF]) ~ Sable_2017_2019_noEx[TF, '4081']))
+# points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM1), col = 'magenta')
+points(Sable_2017_2019_noEx[TF, '4081'], exp(predict(GLM1)), col = 'magenta')
+
+summary(GLM1.ll <- glm(Sable_2017_2019_noEx$TMA[TF] ~ Sable_2017_2019_noEx[TF, '4081']), link = 'log')
+# points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM1), col = 'magenta')
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM1.ll, type = 'response'), col = 'red')
+
+
+
+
+
+summary(GLM2 <- glm(log(Sable_2017_2019_noEx$TMA[TF]) ~ poly(Sable_2017_2019_noEx[TF, '4081'], 2)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM2), col = 'green')
+
+summary(GLM3 <- glm(log(Sable_2017_2019_noEx$TMA[TF]) ~ poly(Sable_2017_2019_noEx[TF, '4081'], 3)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM3), col = 'blue')
+
+summary(GLM4 <- glm(log(Sable_2017_2019_noEx$TMA[TF]) ~ poly(Sable_2017_2019_noEx[TF, '4081'], 4)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM4), col = 'cyan')
+
+summary(GLM5 <- glm(log(Sable_2017_2019_noEx$TMA[TF]) ~ poly(Sable_2017_2019_noEx[TF, '4081'], 5)))
+points(Sable_2017_2019_noEx[TF, '4081'], predict(GLM5), col = 'dodgerblue')
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Sex
@@ -334,22 +470,26 @@ plotly.Spec(Sable_2017_2019_noEx[Sable_2017_2019_noEx$sex %in% 1:2, ], 300, face
 # age_structure_weight_g
 plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'age_structure_weight_g', contColorVar = TRUE)
 
-d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'age_structure_weight_g', facetGroup = 'scanGroup', plot = FALSE)
-d$age_structure_weight_g <- as.character(round(as.numeric(d$age_structure_weight_g) * 100 + 1))
+d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'age_structure_weight_g', contColorVar = TRUE, facetGroup = 'scanGroup')
+# d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'age_structure_weight_g', facetGroup = 'scanGroup', plot = FALSE)
+
+# d$age_structure_weight_g <- as.character(round(as.numeric(d$age_structure_weight_g) * 100 + 1))
 
 Table(d$age_structure_weight_g)
 str(d)
 d[1:4,]
-                Scan Band         Value age_structure_weight_g scanGroup
-1 SABLEFISH_2017_766 8000 0.43275234103                 0.0171    2017_B
-2 SABLEFISH_2017_766 7992 0.43273034692                 0.0171    2017_B
-3 SABLEFISH_2017_766 7985 0.43275848031                 0.0171    2017_B
-4 SABLEFISH_2017_766 7977 0.43281388283                 0.0171    2017_B
+               Scan Band     Value age_structure_weight_g scanGroup
+1 SABLEFISH_2017_2 8000 0.4512354                 0.0092    2017_A
+2 SABLEFISH_2017_2 7992 0.4513096                 0.0092    2017_A
+3 SABLEFISH_2017_2 7985 0.4513483                 0.0092    2017_A
+4 SABLEFISH_2017_2 7977 0.4514019                 0.0092    2017_A
 
-print(ggplotly(ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = age_structure_weight_g), size = 0.2)))
-print(ggplotly(ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = age_structure_weight_g), size = 0.2) + facet_wrap(~ scanGroup)))
-print(ggplotly(ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = age_structure_weight_g), size = 0.2) + facet_grid(rows = vars(scanGroup))))
+ggplotly(ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = age_structure_weight_g), size = 0.2))
+ggplotly(ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = age_structure_weight_g), size = 0.2) + facet_wrap(~ scanGroup))
+ggplotly(ggplot(data = d, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = age_structure_weight_g), size = 0.2) + facet_grid(rows = vars(scanGroup)))
 
+
+# 3D
 d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'age_structure_weight_g', facetGroup = 'scanGroup', plot = FALSE)
 plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~age_structure_weight_g, colors = rainbow(length(unique(d$Scan)))) 
 
@@ -1115,5 +1255,6 @@ Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.test)
 e1071::classAgreement(Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.test)) # $diag 0.4424157
 e1071::classAgreement(Table(NIRS_RPART_AGE = round(rpart.pred), TMA = y.test) , match.names = TRUE) # $diag 0.3735955
 sum(abs(round(rpart.pred)- y.test)) # 1434
+
 
 
