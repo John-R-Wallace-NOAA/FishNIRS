@@ -98,7 +98,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
           
       names(Spec)[4] <- colorGroup
       
-     } else {
+   } else {
    
       spectraMeta <- spectraMeta[, c(scanUniqueName, WaveSubset, colorGroup, facetGroup)] 
       
