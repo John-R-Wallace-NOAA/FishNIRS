@@ -37,7 +37,9 @@ PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
 setwd(PATH) # set working directory to folder containing spectral files
 getwd()
 
-base::load(file = "Sable_2017_2019 7 Nov 2022.RData")
+base::load(file = "Sable_2017_2019 21 Nov 2022.RData")
+options(digits = 11)
+Sable_2017_2019[1:2, c(1:2, 1153:1184)]
 
 dim(Sable_2017_2019)    
 Sable_2017_2019_noEx <- Sable_2017_2019[Sable_2017_2019[, '4004'] < 0.7, ]    
@@ -87,20 +89,42 @@ sum(Bands.TF) #   213
 dim(Sable_2017_2019_noEx)
 [1] 1560 1175
 
-Sable_2017_2019_WB <- Sable_2017_2019_noEx[, c(T, Bands.TF, rep(T, len(1156:1175)))]
+Sable_2017_2019_WB <- Sable_2017_2019_noEx[, c(T, Bands.TF, rep(T, len(1156:1184)))]
 Sable_2017_2019_WB <- Sable_2017_2019_WB[!is.na(Sable_2017_2019_WB$TMA), ]
 
 plotly.Spec(Sable_2017_2019_WB, 'all')
-par(mfrow = c(2,1))
+
 plotly.Spec(Sable_2017_2019_WB[Sable_2017_2019_WB$Year %in% 2017, ], 'all')
 plotly.Spec(Sable_2017_2019_WB[Sable_2017_2019_WB$Year %in% 2019, ], 'all')
+
 
 plotly.Spec(Sable_2017_2019_WB, 'all', facetGroup = 'scanGroup')
 
 
+
+#  Year with nrows = 2 
+plotly.Spec(Sable_2017_2019_WB, 'all', facetGroup = 'Year')
+
+plotly.Spec(Sable_2017_2019_WB, 'all', facetGroup = 'Year', contColorVar = TRUE)
+
+
+# #    # Year with nrows = 2  using subplot()
+# #    d1 <- plotly.Spec(Sable_2017_2019_WB[Sable_2017_2019_WB$Year %in% 2017, ], 'all', plot = FALSE)
+# #    p1 <- d1 %>% plot_ly(x = ~Band, y = ~Value) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+# #    
+# #    d2 <- plotly.Spec(Sable_2017_2019_WB[Sable_2017_2019_WB$Year %in% 2019, ], 'all', plot = FALSE)
+# #    p2 <- d2 %>% plot_ly(x = ~Band, y = ~Value) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+# #    
+# #    subplot(p1, p2, nrows = 2, shareX = TRUE, titleX = FALSE)
+
+
+# 3D
 d <- plotly.Spec(Sable_2017_2019_WB[!is.na(Sable_2017_2019_noEx$TMA), ], 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE) 
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(TMA) %>% add_lines(color = ~scanGroup, colors = rainbow(length(unique(d$Scan)))) 
+
+
 
 
 
@@ -289,6 +313,9 @@ sum(abs(Reference_Age - round(Predicted_Age))) # 2679
 
 # Store results in an excel.csv file
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
+
+
+
 
 
 
