@@ -109,54 +109,56 @@ dat_spc[1:10, 1:5]
 (filenames <- unlist(sapply(ldf, function(x) x[[1]][2]), use.names = FALSE))[1:10]
 (dat <- cbind(filenames, dat_spc))[1:5, c(1:5, 1150:1155)]
 
-# Extract Year 
-Year <- function(x) {
-   Subs <- get.subs(x, sep = "_")
-   substr(Subs[2], 6, 9)
-}   
-dat$Year <- as.numeric(apply(dat[, 'filenames', drop = FALSE], 1, Year))
-Table(dat$Year)
-
-
-# Extract Sequence number
-dat$Sequence <- as.numeric(apply(dat[, 'filenames', drop = FALSE], 1, function(x) get.subs(x, sep = "_")[3]))
-Table(dat$Sequence)[1:10]
-
-dat <- sort.f(dat, c("Year", "Sequence"))
-dat[1:10, 1:4]
+#   #  # Extract Year 
+#   #  Year <- function(x) {
+#   #     Subs <- get.subs(x, sep = "_")
+#   #     substr(Subs[2], 6, 9)
+#   #  }   
+#   #  dat$Year <- as.numeric(apply(dat[, 'filenames', drop = FALSE], 1, Year))
+#   #  Table(dat$Year)
+#   #  
+#   #  
+#   #  # Extract Sequence number
+#   #  dat$Sequence <- as.numeric(apply(dat[, 'filenames', drop = FALSE], 1, function(x) get.subs(x, sep = "_")[3]))
+#   #  Table(dat$Sequence)[1:10]
+#   #  
+#   #  dat <- sort.f(dat, c("Year", "Sequence"))
+#   #  dat[1:10, 1:4]
 
 save(dat, file = 'dat 18 Oct 2022.RData')
 
 base::load("dat 18 Oct 2022.RData")
 
 
+# #   # ADD VESSEL, CRUISE, REGION, LOCATION,  BIO, and AGE metadata
+# #   meta_data_2017 <- read.xlsx(paste0(PATH, "FT_NIR_NWFSC_Combo_2017_SABL.xlsx")) #load in ancillary data
+# #   names(meta_data_2017)[grep('age_structure_weigth_g', names(meta_data_2017))] <- 'age_structure_weight_g'
+# #   meta_data_2017$Year <- 2017
+# #   Table(meta_data_2017$Year)
+# #   
+# #   meta_data_2019 <- read.xlsx(paste0(PATH, "FT_NIR_NWFSC_Combo_2019_SABL.xlsx")) 
+# #   meta_data_2019$age_structure_weight_g <- NA
+# #   meta_data_2019$Year <- 2019
+# #   Table(meta_data_2019$Year)
+# #   
+# #   # [1:5, c(1:3, 1112:1120, 1135:(ncol(dat) + ncol(scan_data) - 1))]
+# #   Sable_2017_2019 <- left_join(dat, rbind(meta_data_2017, meta_data_2019), by = c("Year" = "Year", "Sequence" = "specimen"))
+# #   #  Sable_2017_2019 <- match.f(dat, rbind(meta_data_2017, meta_data_2019), c("Year", "Sequence"), c("Year","specimen"))
 
 
-# ADD VESSEL, CRUISE, REGION, LOCATION,  BIO, and AGE metadata
-meta_data_2017 <- read.xlsx(paste0(PATH, "FT_NIR_NWFSC_Combo_2017_SABL.xlsx")) #load in ancillary data
-names(meta_data_2017)[grep('age_structure_weigth_g', names(meta_data_2017))] <- 'age_structure_weight_g'
-meta_data_2017$Year <- 2017
-Table(meta_data_2017$Year)
+# Using Meredith's meta files with full oty names
+meta_data_2017_2019 <- read.xlsx(paste0(PATH, "NWFSC_Combo_2017_2019_SABL_ID_Age_Biodata_NIRname_Data.xlsx")) # Load in ancillary data
+Sable_2017_2019 <- left_join(dat, meta_data_2017_2019, by = c("filenames" = "NIR_file_name"))
 
-meta_data_2019 <- read.xlsx(paste0(PATH, "FT_NIR_NWFSC_Combo_2019_SABL.xlsx")) 
-meta_data_2019$age_structure_weight_g <- NA
-meta_data_2019$Year <- 2019
-Table(meta_data_2019$Year)
+(Oty_Issues <- Sable_2017_2019[Sable_2017_2019$unscannable == TRUE | Sable_2017_2019$broken == TRUE | Sable_2017_2019$crystallized == TRUE |
+                Sable_2017_2019$other_problem == TRUE | !is.na(Sable_2017_2019$comments), 
+                c('filenames', 'unscannable', 'broken', 'crystallized', 'other_problem', 'percent_affected', 'comments')])
 
-# [1:5, c(1:3, 1112:1120, 1135:(ncol(dat) + ncol(scan_data) - 1))]
-Sable_2017_2019 <- left_join(dat, rbind(meta_data_2017, meta_data_2019), by = c("Year" = "Year", "Sequence" = "specimen"))
-#  Sable_2017_2019 <- match.f(dat, rbind(meta_data_2017, meta_data_2019), c("Year", "Sequence"), c("Year","specimen"))
+write.xlsx(Oty_Issues, "Sable 2017 2019 Oty Issues.xlsx")
 
-Sable_2017_2019[1:2, 1153:1172]
-       3610      3603      3595 Year Sequence cruise_number vessel_code haul date_collected     region common_name
-1 0.6086814 0.6070352 0.6034645 2017        2     201703008           8    1       42875.59 NE Pacific   Sablefish
-2 0.6221674 0.6203897 0.6174445 2017        3     201703008           8    1       42875.59 NE Pacific   Sablefish
-     scientific_name latitude longitude length weight sex fish_age   Barcode age_structure_weight_g
-1 Anoplopoma fimbria 45.12444 -124.2961    320    280   2        1 102118142                 0.0092
-2 Anoplopoma fimbria 45.12444 -124.2961    550   1540   2        4 102118143                 0.0200
 
 dim(Sable_2017_2019)
-[1] 1601 1172
+[1] 1601 1181
 
 len(unique(Sable_2017_2019$Barcode))
 [1] 1601
@@ -230,33 +232,39 @@ Sable_2017_2019 <- sort.f(Sable_2017_2019, "ID")
 
 names(Sable_2017_2019)[grep('fish_age', names(Sable_2017_2019))] <- "TMA"
 
-save(Sable_2017_2019, file = "Sable_2017_2019 7 Nov 2022.RData")
+save(Sable_2017_2019, file = "Sable_2017_2019 21 Nov 2022.RData")
 
-base::load(file = "Sable_2017_2019 7 Nov 2022.RData")
+base::load(file = "Sable_2017_2019 21 Nov 2022.RData")
+
 options(digits = 11)
-Sable_2017_2019[1:2, c(1:3, (ncol(Sable_2017_2019) - 22):ncol(Sable_2017_2019))]
+Sable_2017_2019[1:2, c(1:2, 1153:1184)]
+                          filenames         12490          3610          3603          3595 age_structure_id   Barcode Year
+1 SABLEFISH_COMBO201701203A_2_OD1.0 0.42185163498 0.60868144035 0.60703516006 0.60346448421 102118142-SABL-O 102118142 2017
+2 SABLEFISH_COMBO201701203A_3_OD1.0 0.40333580971 0.62216740847 0.62038969994 0.61744445562 102118143-SABL-O 102118143 2017
+  cruise_number vessel_code haul date_collected     region common_name    scientific_name specimen    latitude     longitude length
+1     201703008           8    1   42875.587859 NE Pacific   Sablefish Anoplopoma fimbria        2 45.12444444 -124.29611111    320
+2     201703008           8    1   42875.587859 NE Pacific   Sablefish Anoplopoma fimbria        3 45.12444444 -124.29611111    550
+  weight sex TMA       session_title unscannable broken crystallized other_problem percent_affected instrument_name comments
+1    280   2   1 NIR_COMBO201701203A           0      0            0             0               NA   DEMO_MPA_AFSC     <NA>
+2   1540   2   4 NIR_COMBO201701203A           0      0            0             0               NA   DEMO_MPA_AFSC     <NA>
+     timestamp        shortName scanGroup        ID
+1 44552.522917 SABLEFISH_2017_2    2017_A 2017.0002
+2 44552.523611 SABLEFISH_2017_3    2017_A 2017.0003
 
-                         filenames         12490         12482          3610          3603          3595 Year Sequence
-1 SABLEFISH_COMBO201701203A_2_OD1.0 0.42185163498 0.42148122191 0.60868144035 0.60703516006 0.60346448421 2017        2
-2 SABLEFISH_COMBO201701203A_3_OD1.0 0.40333580971 0.40440806746 0.62216740847 0.62038969994 0.61744445562 2017        3
-  cruise_number vessel_code haul date_collected     region common_name    scientific_name    latitude     longitude length
-1     201703008           8    1   42875.587859 NE Pacific   Sablefish Anoplopoma fimbria 45.12444444 -124.29611111    320
-2     201703008           8    1   42875.587859 NE Pacific   Sablefish Anoplopoma fimbria 45.12444444 -124.29611111    550
-  weight sex TMA   Barcode age_structure_weight_g        shortName  scanGroup        ID
-1    280   2   1 102118142                 0.0092 SABLEFISH_2017_2     2017_A 2017.0002
-2   1540   2   4 102118143                 0.0200 SABLEFISH_2017_3     2017_A 2017.0003
 
+# ------------------------- Looking at the data ------------------------------------------------------------------------
 
+# 2D  
 # Look at the data with plotly.Spec()
 plotly.Spec(Sable_2017_2019, 600)
 plotly.Spec(Sable_2017_2019, 300, alpha = c(1, rep(0.15, length(unique(Sable_2017_2019$TMA)))))
 plotly.Spec(Sable_2017_2019[Sable_2017_2019$TMA <= 1, ], 'all', alpha = c(1, rep(0.15, length(unique(Sable_2017_2019$TMA)))))
 
-
 plotly.Spec(Sable_2017_2019, 'all')
+
+# scanGroup as facet variable shows the last scan of the last group were elevated  - laser going out on demo MPA???
 plotly.Spec(Sable_2017_2019, 300, colorGroup = 'TMA', facetGroup = 'scanGroup')
 plotly.Spec(Sable_2017_2019, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup')
-
 
 # Remove extreme scans
 # Most of the last scans starting from 2019.0851 have elevated frequencies - 41 scans in total 
@@ -266,7 +274,6 @@ dim(Sable_2017_2019)
 Sable_2017_2019_noEx <- Sable_2017_2019[Sable_2017_2019[, '4004'] < 0.7, ]    
 dim(Sable_2017_2019_noEx)  
  
-# 2D  
 # TMA  with extremes removed
 plotly.Spec(Sable_2017_2019_noEx, 300)
 plotly.Spec(Sable_2017_2019_noEx[Sable_2017_2019_noEx$TMA <= 1, ], 'all', alpha = c(1, rep(0.15, length(unique(Sable_2017_2019_noEx$TMA))))) # ***** Best to show age zeros
@@ -277,25 +284,25 @@ plotly.Spec(Sable_2017_2019_noEx, 'all')
 plotly.Spec(Sable_2017_2019_noEx, 300, colorGroup = 'TMA', facetGroup = 'scanGroup')
 plotly.Spec(Sable_2017_2019_noEx, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup')
 
-# TMA  with extremes included
-d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$age_structure_weight_g), ], 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE)
-plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
-plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$TMA)))) 
-
 
 # 3D
+# TMA  with extremes included
+d <- plotly.Spec(Sable_2017_2019, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE)
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$TMA)))) 
+
 # TMA ( without group_by(Scan)  you don't get single lines for each scan)
 d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$TMA), ], 'all', colorGroup = 'TMA', plot = FALSE)
-plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+d %>% plot_ly( x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
 
-
-# scanGroup shows the extremes scan done at the end of the last group
-d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$scanGroup), ], 'all', colorGroup = 'scanGroup', plot = FALSE)
-plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~scanGroup, colors = rainbow(length(unique(d$Scan)))) 
+# scanGroup as colors variable shows the last scan of the last group were elevated  - laser going out on demo MPA???
+plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$scanGroup), ], 'all', colorGroup = 'scanGroup', plot = FALSE)
+d %>% plot_ly(d, x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~scanGroup, colors = rainbow(length(unique(d$Scan)))) 
 
 # Subset with 'shortName' as color group - mostly a test of plotly() and the browser
 d <- plotly.Spec(Sable_2017_2019[!is.na(Sable_2017_2019$shortName), ], 400, colorGroup = 'shortName', plot = FALSE)
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~shortName, colors = rainbow(length(unique(d$Scan)))) 
+
 
 
 # 3D with extremes removed
@@ -307,7 +314,7 @@ d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) %>% 
        layout(coloraxis = list(title = 'TMA'))  # Nor this:   layout(scene = list(coloraxis = list(title = 'TMA')))   
 
-# Making TMA numeric no longer sorts the color variable       
+# Making TMA a numeric no longer sorts by the discrete color variable       
 d$TMA <- as.numeric(d$TMA)
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
 
@@ -321,7 +328,9 @@ change(d)
 # plot3d(Band, Value, as.numeric(factor(Scan)), type = 'p', col = rep(rainbow(length(unique(Scan))), each = 572))
 Col <- rainbow(max(as.numeric(TMA)) + 1)
 plot3d(Band, Value, as.numeric(factor(Scan)), type = 'p', col = Col[as.numeric(TMA) + 1])
+plot3d(Band, Value, as.numeric(factor(Scan)), type = 'l', col = Col[as.numeric(TMA) + 1])
 plot3d(Band, Value, TMA, type = 'p', col = Col[as.numeric(TMA) + 1], pch = 0.25)
+plot3d(Band, Value, TMA, type = 'l', col = Col[as.numeric(TMA) + 1], pch = 0.25)
 
 # 3D using rgl package with multi-figures
 d$Scan <- as.numeric(factor(d$Scan))
@@ -330,13 +339,21 @@ change(d)
 TMA_Levels <- unique(d$TMA)
 Col <- rainbow(length(TMA_Levels))
 
+mfrow3d(4, 4, sharedMouse = TRUE)
+# for (i in 1:length(TMA_Levels)) {
+for (i in 1:16) {
+  change(d[d$TMA %in% TMA_Levels[i], ], verbose = FALSE)
+  plot3d(Band, Value, Scan, type = 'p', col = Col[i], main = paste0("TMA = ", TMA_Levels[i]))
+}  
+ 
+
 mfrow3d(5, 5, sharedMouse = TRUE)
 # for (i in 1:length(TMA_Levels)) {
 for (i in 1:25) {
   change(d[d$TMA %in% TMA_Levels[i], ], verbose = FALSE)
   plot3d(Band, Value, Scan, type = 'p', col = Col[i], main = paste0("TMA = ", TMA_Levels[i]))
 }  
- -
+ 
 #----------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1194,7 +1211,8 @@ sum(abs(Reference_Age - round(Predicted_Age)))
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
 
 
-#   Support Vector Machine and RPART
+
+#  --------------- Support Vector Machine and RPART -------------------------
       
 set.seed(c(777, 747)[2])
 index <- 1:nrow(Sable_2017_2019)
