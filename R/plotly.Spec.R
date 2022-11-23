@@ -134,10 +134,10 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
      
       if(plot) {
           if(contColorVar)
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_wrap(~ Facet) + labs(colour = colorGroup))) 
+             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup))) 
           else 
-            print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_wrap(~ Facet) + labs(colour = colorGroup) + 
-                       scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha)))) 
+            print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + 
+                       scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha))))            
       }                  
                
       # if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
