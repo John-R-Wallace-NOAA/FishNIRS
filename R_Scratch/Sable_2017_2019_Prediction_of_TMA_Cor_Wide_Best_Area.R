@@ -1,18 +1,35 @@
 
-sourceFunctionURL <- function (URL) {
+# Set Path
+PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
+setwd(PATH) # set working directory to folder containing spectral files
+getwd()
+
+sourceFunctionURL <- function (URL, sourceFile = TRUE) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        require(httr)
        File.ASCII <- tempfile()
-       on.exit(file.remove(File.ASCII))
+       if(sourceFile)
+         on.exit(file.remove(File.ASCII))
        getTMP <- httr::GET(URL)
-       write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
-       source(File.ASCII)}
+       
+       if(sourceFile) {
+         write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+         source(File.ASCII)
+       } else {
+         fileName <- strsplit(URL, "/")[[1]]
+         fileName <- rev(fileName)[1]
+         write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
+       }  
+}
 
-    
+           
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+
+# Source GitHub saved code
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable_2017_2019_Prediction_of_TMA_Cor_Wide_Best_Area.R", sourceFile = FALSE)
 
 lib(openxlsx)
 lib(data.table)
@@ -31,6 +48,8 @@ lib(vegan)
 # library(simplerspec)
 lib("philipp-baumann/simplerspec") # https://github.com/philipp-baumann/simplerspec
 
+# --------------------------------------------------------------------
+
 # upload all spectral files
 PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
 setwd(PATH) # set working directory to folder containing spectral files
@@ -44,7 +63,7 @@ dim(Sable_2017_2019)
 Sable_2017_2019_noEx <- Sable_2017_2019[Sable_2017_2019[, '4004'] < 0.7, ]    
 dim(Sable_2017_2019_noEx)  
 
-# -----------------
+# --------------------------------------------------------------------
 
 
 # Correlation with extremes removed
@@ -312,6 +331,9 @@ sum(abs(Reference_Age - round(Predicted_Age))) # 2679
 
 # Store results in an excel.csv file
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
+
+
+
 
 
 
