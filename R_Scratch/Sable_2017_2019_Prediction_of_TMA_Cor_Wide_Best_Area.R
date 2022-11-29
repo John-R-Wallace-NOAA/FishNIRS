@@ -1,4 +1,3 @@
-{
 
 sourceFunctionURL <- function (URL) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -313,9 +312,6 @@ sum(abs(Reference_Age - round(Predicted_Age))) # 2679
 
 # Store results in an excel.csv file
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
-
-}
-
 
 
 
