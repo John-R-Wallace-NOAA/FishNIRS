@@ -1,9 +1,4 @@
 
-# Set Path
-PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
-setwd(PATH) # set working directory to folder containing spectral files
-getwd()
-openwd()
 
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -27,12 +22,20 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
            
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/openwd.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 
 # Source the saved code on GitHub
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017 2019 Prediction of TMA Cor Wide Best Area.R", type = "script")
+# gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017 2019 Prediction of TMA Cor Wide Best Area.R", type = "script", verbose = TRUE)
 
-# gitAFile("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017 2019 Prediction of TMA Cor Wide Best Area.R", type = "script")
+
+# Set Path
+PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
+setwd(PATH) # set working directory to folder containing spectral files
+getwd()
+openwd()
+
 
 
 lib(openxlsx)
