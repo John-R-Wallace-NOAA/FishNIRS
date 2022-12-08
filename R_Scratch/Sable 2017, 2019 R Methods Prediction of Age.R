@@ -1,18 +1,38 @@
 
-sourceFunctionURL <- function (URL) {
+# Set Path
+PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
+setwd(PATH) # set working directory to folder containing spectral files
+getwd()
+
+sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        require(httr)
        File.ASCII <- tempfile()
-       on.exit(file.remove(File.ASCII))
-       getTMP <- httr::GET(URL)
-       write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
-       source(File.ASCII)}
+       if(type == "function")
+         on.exit(file.remove(File.ASCII))
+       getTMP <- httr::GET(gsub(' ', '%20', URL))
+       
+       if(type == "function") {
+         write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+         source(File.ASCII)
+       } 
+       if(type == "script") {
+         fileName <- strsplit(URL, "/")[[1]]
+         fileName <- rev(fileName)[1]
+         write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
+       }  
+}
 
-    
+           
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+
+# Source the saved code on GitHub
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017, 2019 R Methods Prediction of Age.R", type = "script")
+# gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017, 2019 R Methods Prediction of Age.R", type = "script", verbose = TRUE)
+
 
 lib(openxlsx)
 lib(data.table)
@@ -30,6 +50,8 @@ lib(vegan)
 # remotes::install_github("philipp-baumann/simplerspec")
 # library(simplerspec)
 lib("philipp-baumann/simplerspec") # https://github.com/philipp-baumann/simplerspec
+
+# --------------------------------------------------------------------------------------------
 
 # upload all spectral files
 PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
