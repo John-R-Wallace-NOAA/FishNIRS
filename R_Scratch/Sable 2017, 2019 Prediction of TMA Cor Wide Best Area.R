@@ -26,8 +26,8 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 
 # Source the saved code on GitHub
-# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017 2019 Prediction of TMA Cor Wide Best Area.R", type = "script")
-# gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017 2019 Prediction of TMA Cor Wide Best Area.R", type = "script", verbose = TRUE)
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017, 2019 Prediction of TMA Cor Wide Best Area.R", type = "script")
+# gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017, 2019 Prediction of TMA Cor Wide Best Area.R", type = "script", verbose = TRUE)
 
 
 # Set Path
