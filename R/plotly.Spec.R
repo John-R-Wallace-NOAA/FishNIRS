@@ -1,7 +1,8 @@
 plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, colorGroup = 'TMA', contColorVar = FALSE, facetGroup = NULL, WaveRange = c(0, 8000), 
                   scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, alpha = 1, 
                   bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, ...) {
-    
+   
+   require(ggplot2)   
    require(plotly)
    renum <- function(x, no.num = F) {
       "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R"
@@ -23,14 +24,29 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
   
    xax <- list(title = xlab, range = xlim)
    yax <- list(title = ylab, range = ylim)
+   
+   oldOpts <- options(warn = -1)
+   
+   # Remove 'X' prefix from freq names, if present
+   oldNames <- names(spectraMeta)
+   N <- length(oldNames)
+   newNames <- oldNames
+   
+   for(i in 1:N) {
+
+     if(is.na(as.numeric(substr(oldNames[i], 1, 1))) & !is.na(as.numeric(substring(oldNames[i], 2))))
+          newNames[i] <- substring(oldNames[i], 2)
+   }
+   names(spectraMeta) <- newNames
+  
   
    if(is.null(freqNum))  {   
-      optOLD <- options(warn = -1)
-      on.exit(options(optOLD))      
       freqNum <- sum(!is.na(as.numeric(names(spectraMeta))))
       if(verbose)
          cat("\nNumber of Frequencies = ", freqNum, "\n")      
    }
+   
+   options(oldOpts)
    
    WaveLengths <- as.numeric(names(spectraMeta[, 2:(freqNum + 1)]))
    WaveSubset <- as.character(WaveLengths[WaveLengths >= WaveRange[1] & WaveLengths <= WaveRange[2]])
