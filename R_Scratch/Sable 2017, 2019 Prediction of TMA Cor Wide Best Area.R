@@ -425,32 +425,25 @@ plotly.Spec(Sable_Spectra_2017_2019.sg.iPLS.PLOT, 'all')
 
 
 
-
-# Plot the transformed spectra by age
-(Sable_Spectra_2017_2019.Age.sg.iPLS.Long <- data.table::melt(Sable_Spectra_2017_2019.Age.sg.iPLS, id = 'Age', variable.name = 'Freq', value.name = 'Absorbance'))[1:4, ]
-
+# Plot the transformed spectra by age using only variables selected using iPLS
+(Sable_Spectra_2017_2019.Age.sg.iPLS.Long <- reshape2::melt(Sable_Spectra_2017_2019.Age.sg.iPLS, id = 'Age', variable.name = 'Freq', value.name = 'Absorbance'))[1:4, ]
 Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Freq <- as.numeric(substring(Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Freq, 2))
 Sable_Spectra_2017_2019.Age.sg.iPLS.Long <- sort.f(Sable_Spectra_2017_2019.Age.sg.iPLS.Long, 'Freq')
-dev.new()
+
+dev.new(width = 18, height = 10)
 xyplot(Absorbance ~ Freq, group = factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long, type = 'l')  
 xyplot(Absorbance ~ Freq | factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long, type = 'l')  
-
 xyplot(Absorbance ~ Freq, group = factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long[Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age %in% 10, ])  
 xyplot(Absorbance ~ Freq | factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long[Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age %in% c(1, 5, 30, 40), ], type = 'l')  
 xyplot(Absorbance ~ Freq | factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long[Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age %in% c(1, 5, 30, 40), ]) 
 
-
-
+# plotly::ggplotly
 Sable_Spectra_2017_2019.Age.sg.iPLS.Agg <- aggregate(list(Absorbance = Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Absorbance), 
      list(Freq = Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Freq, Age = Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age), mean, na.rm = TRUE)
-
-Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Freq <- as.numeric(substring(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Freq, 2))
-Sable_Spectra_2017_2019.Age.sg.iPLS.Agg <- sort.f(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg, 'Freq')
-
+ 
 Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age <- ordered(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age, sort(unique(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age)))
-ggplotly(ggplot(data = Sable_Spectra_2017_2019.Age.sg.iPLS.Agg, aes(x = Freq, y = Absorbance, z = Age)) + geom_line(aes(colour = Age), size = 0.2) + 
+plotly::ggplotly(ggplot2::ggplot(data = Sable_Spectra_2017_2019.Age.sg.iPLS.Agg, aes(x = Freq, y = Absorbance, z = Age)) + geom_line(aes(colour = Age), size = 0.2) + 
                     scale_color_manual(values=rainbow(length(unique(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age)), alpha = 1)))
-
 
 
 
@@ -478,7 +471,8 @@ PLSr <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F,
 summary(PLSr)
 dev.new()
 plot(PLSr)
-           
+
+# No test set           
 PLSr <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F, cv = 100,
             method = "simpls", alpha = 0.05, ncomp.selcrit = "min")            
 summary(PLSr)
