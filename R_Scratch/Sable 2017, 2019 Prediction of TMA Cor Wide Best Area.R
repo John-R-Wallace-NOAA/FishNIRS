@@ -1,5 +1,4 @@
 
-
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        require(httr)
@@ -24,6 +23,12 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/openwd.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/sort.f.R")
+
+
+# Chat GPT suggestion doesn't work
+# remotes::install_url("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/text/lib.txt")
+
 
 # Source the saved code on GitHub
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017, 2019 Prediction of TMA Cor Wide Best Area.R", type = "script")
@@ -36,8 +41,7 @@ setwd(PATH) # set working directory to folder containing spectral files
 getwd()
 openwd()
 
-
-
+#  Packages
 lib(openxlsx)
 lib(data.table)
 lib(mdatools)
@@ -47,6 +51,8 @@ lib(prospectr)
 lib(e1071)
 lib(rpart)
 lib(vegan)
+lib(ggplot2)
+lib(plotly)
 
 # install and load simplerspec
 # install.packages("remotes")
@@ -61,15 +67,44 @@ base::load(file = "Sable_2017_2019 21 Nov 2022.RData")
 options(digits = 11)
 Sable_2017_2019[1:2, c(1:2, 1153:1184)]
 
+# Remove extreme data
 dim(Sable_2017_2019)    
 Sable_2017_2019_noEx <- Sable_2017_2019[Sable_2017_2019[, '4004'] < 0.7, ]    
 dim(Sable_2017_2019_noEx)  
 
-# --------------------------------------------------------------------
 
 
-# Correlation with extremes removed
-Sable_Spec_Cor <- renum(data.frame(Freq = as.numeric(names(Sable_2017_2019_noEx[, 2:1155])), Cor = cor(Sable_2017_2019_noEx[, 2:1155], Sable_2017_2019_noEx$TMA, use = "na.or.complete")))
+# plotly.Spec() on Sable_2017_2019_noEx 
+plotly.Spec(Sable_2017_2019_noEx, 'all') # Missing TMA (NA) included as grey lines
+plotly.Spec(Sable_2017_2019_noEx[!is.na(Sable_2017_2019_noEx$TMA), ], 'all') #Removed missing TMA 
+
+
+# -------------- Look at correlations for best freq band and best single band ------------------------------------------------------
+
+# Plot of all lowess smooths from each Freq vs TMA, colored by Freq level
+dev.new()
+Freq <-  as.numeric(names(Sable_2017_2019_noEx[, 2:1155]))
+Cols <- rainbow(1.2 * length(Freq))
+smoothing.param <- 2/3
+plot.lowess(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% Freq[1]], smoothing.param, 
+   line.col = col.alpha(Cols[1]), type = 'n', ylim = c(0.38, 0.68))
+for(i in 2:length(Freq)) 
+   lowess.line(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% Freq[i]], smoothing.param, col = col.alpha(Cols[i]))
+
+lowess.line(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% 4081], smoothing.param, col = 'black', lwd = 1.5) 
+
+
+# Correlation, with extremes removed, of each scan freq. versus  TMA ages
+
+# Highest freq => low absorbance 
+dev.new()
+plot.lowess(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% '12490'])
+
+# Low freq => highish absorbance
+dev.new()
+plot.lowess(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% '3595'])
+
+(Sable_Spec_Cor <- renum(data.frame(Freq = as.numeric(names(Sable_2017_2019_noEx[, 2:1155])), Cor = cor(Sable_2017_2019_noEx[, 2:1155], Sable_2017_2019_noEx$TMA, use = "na.or.complete"))))[1:4,]
 sort.f(Sable_Spec_Cor, 'Cor', rev = T)[1:5,]
   Freq       Cor
 1 4081 0.7233784
@@ -78,21 +113,154 @@ sort.f(Sable_Spec_Cor, 'Cor', rev = T)[1:5,]
 4 4066 0.7228655
 5 4058 0.7220165
 
+# Best cor
+dev.new()
+plot.lowess(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% '4081'])
+
+
+# Best top 5 cor using lowess.  
+# Methods: "fmm", "periodic", "natural", "monoH.FC", "hyman" are available in lowess() via the stats::splinefun() function - the methods appear to make no difference here
+# The  NA's have to be removed for lowess(), but not for the 'newer' loess() below
+dev.new()
+plot.lowess(rep(Sable_2017_2019_noEx$TMA, 5), c(as.matrix(Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% c('4081', '4073', '4089', '4066', '4058')])), method = 'fmm')
+
+tmp <- na.omit(cbind(rep(Sable_2017_2019_noEx$TMA, 5), c(as.matrix(Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% c('4081', '4073', '4089', '4066', '4058')]))))
+lo.Sable <- lowess(tmp[,1], tmp[,2])
+x.new <- c(0, 3, 5, 6, 20, 25, 43, 55, 100)
+points(x.new, predict.lowess(lo.Sable, x.new, method = 'fmm'), col = 'red', pch =19) 
+
+dev.new()  
+plot.lowess.range(rep(Sable_2017_2019_noEx$TMA, 5), c(as.matrix(Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% c('4081', '4073', '4089', '4066', '4058')])))
+
+
+# Best top 5 cor using loess
+dev.new()
+plot.loess(rep(Sable_2017_2019_noEx$TMA, 5), c(as.matrix(Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% c('4081', '4073', '4089', '4066', '4058')])))
+
+loess.Sable <- loess(c(as.matrix(Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% c('4081', '4073', '4089', '4066', '4058')])) ~ rep(Sable_2017_2019_noEx$TMA, 5)) 
+x.new <- c(0, 3, 5, 6, 20, 25, 43, 55, 100)
+points(x.new, predict(loess.Sable, x.new), col = 'red', pch =19) 
+
+dev.new() 
+plot.loess.range(rep(Sable_2017_2019_noEx$TMA, 5), c(as.matrix(Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% c('4081', '4073', '4089', '4066', '4058')])))
+
+
+# Plot of all lowess smooths from each Freq vs TMA, colored by correlation level
+dev.new()
+Freq <-  as.numeric(names(Sable_2017_2019_noEx[, 2:1155]))
+Cols <- rainbow(1.2 * length(Freq))
+smoothing.param <- 2/3
+plot.lowess(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% Freq[1]], smoothing.param, type = 'n',
+     line.col = col.alpha(Cols[1000 * Sable_Spec_Cor$Cor[Sable_Spec_Cor$Freq %in% Freq[1]]]), ylim = c(0.38, 0.68))
+for(i in 2:length(Freq)) 
+   lowess.line(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% Freq[i]], smoothing.param, 
+              col = Cols[1000 * abs(Sable_Spec_Cor$Cor[Sable_Spec_Cor$Freq %in% Freq[i]])])
+           
+lowess.line(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% 4081], smoothing.param, col = 'black', lwd = 1.5) 
+
+
+
+# Look at loess fit to predict ages using freq. - doesn't work well :-/  But I now can predict values using lowess() and loess()  :-)
+#  Top cor only
+Freq_Cor_Top <- Sable_2017_2019_noEx[, '4081']
+TMA <- Sable_2017_2019_noEx$TMA
+
+loess.Sable <- loess(TMA ~ Freq_Cor_Top, span = 0.75) 
+loess_Pred_Ages <- predict(loess.Sable, Freq_Cor_Top_5)
+# Table(round(loess_5_Pred_Ages), TMA)
+
+dev.new()
+plot(Freq_Cor_Top, jitter(TMA))
+points(Freq_Cor_Top, loess_Pred_Ages, col = 'red', pch =19) 
+
+
+# Top 5 cor
+Freq_Cor_Top_5 <- c(as.matrix(Sable_2017_2019_noEx[, names(Sable_2017_2019_noEx) %in% c('4081', '4073', '4089', '4066', '4058')])) 
+TMA_5 <- rep(Sable_2017_2019_noEx$TMA, 5)
+
+loess.Sable <- loess(TMA_5 ~ Freq_Cor_Top_5, span = 0.35) 
+loess_5_Pred_Ages <- predict(loess.Sable, Freq_Cor_Top_5)
+# Table(round(loess_5_Pred_Ages), TMA_5)
+
+dev.new()
+plot(Freq_Cor_Top_5, jitter(TMA_5))
+points(Freq_Cor_Top_5, loess_5_Pred_Ages, col = 'red', pch =19) 
+
+
+
+
+# ------ Predict age using only the best correlated freq ------
+
+# Best cor
+dev.new()
+plot.lowess(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, '4081'])
+
+Sable_2017_2019_Best_Cor <- na.omit(Sable_2017_2019_noEx[, c('4081', 'TMA')])
+names(Sable_2017_2019_Best_Cor)[1] <- 'Freq_4081'
+
+
+#  ---- Straight line and polynomial fits ----
+dev.new()
+plot.lowess(Sable_2017_2019_Best_Cor$Freq_4081, Sable_2017_2019_Best_Cor$TMA)
+
+summary(G1 <- glm(TMA ~ Freq_4081, data = Sable_2017_2019_Best_Cor ))
+points(Sable_2017_2019_Best_Cor$Freq_4081, predict(G1), col = 'violet')
+
+summary(G2 <- glm(TMA ~ poly(Freq_4081, 2), data = Sable_2017_2019_Best_Cor ))
+points(Sable_2017_2019_Best_Cor$Freq_4081, predict(G2), col = 'red')
+
+summary(G3 <- glm(TMA ~ poly(Freq_4081, 3), data = Sable_2017_2019_Best_Cor ))
+points(Sable_2017_2019_Best_Cor$Freq_4081, predict(G3), col = 'dodgerblue')
+
+summary(G4 <- glm(TMA ~ poly(Freq_4081, 4), data = Sable_2017_2019_Best_Cor ))
+points(Sable_2017_2019_Best_Cor$Freq_4081, predict(G4), col = 'magenta')
+
+summary(G5 <- glm(TMA ~ poly(Freq_4081, 5), data = Sable_2017_2019_Best_Cor ))
+points(Sable_2017_2019_Best_Cor$Freq_4081, predict(G5), col = 'cyan')
+
+# AIC goes up with 6th degree poly
+summary(G6 <- glm(TMA ~ poly(Freq_4081, 6), data = Sable_2017_2019_Best_Cor ))
+points(Sable_2017_2019_Best_Cor$Freq_4081, predict(G6), col = 'purple')
+
+# Therefore back to 5th degreee poly
+summary(lm(Sable_2017_2019_Best_Cor$TMA ~ predict(G5)))$r.squared
+Table(Best_Freq_Cor_AGE = round(predict(G5)), TMA = Sable_2017_2019_Best_Cor$TMA)
+e1071::classAgreement(Table(Best_Freq_Cor_AGE = round(predict(G5)), TMA = Sable_2017_2019_Best_Cor$TMA)) # $diag 0.16126656848
+e1071::classAgreement(Table(Best_Freq_Cor_AGE = round(predict(G5)), TMA = Sable_2017_2019_Best_Cor$TMA), match.names = TRUE) # diag  0.10162002946
+
+sum(abs(Sable_2017_2019_Best_Cor$TMA - round(predict(G5)))) # 5660
+
+
+
+# TableCurveFit 2D best nonlinear fit - Power y = a +bX^c  - Doesn't work as good as the iPLSR method below 
+# Sable_2017_2019_Best_Cor$TMA_Power_Eq_Predict  <-  -5.3167806 + 1627183.4 * Sable_2017_2019_Best_Cor$Freq_4081 ^ 20.528681
+Sable_2017_2019_Best_Cor$TMA_Power_Eq_Predict  <-  25777445 + 26.24.2351 * Sable_2017_2019_Best_Cor$Freq_4081
+
+dev.new()
+plot.lowess(Sable_2017_2019_Best_Cor$Freq_4081, Sable_2017_2019_Best_Cor$TMA)
+points(Sable_2017_2019_Best_Cor$Freq_4081, Sable_2017_2019_Best_Cor$TMA_Power_Eq_Predict, col = 'red')
+
+Table(round(Sable_2017_2019_Best_Cor$TMA_Power_Eq_Predict), Sable_2017_2019_Best_Cor$TMA)
+
+
+
+
+# -------- Defining the Wide Best area (WB) via  correlations --------
 dev.new()
 plot(Sable_Spec_Cor$Freq, Sable_Spec_Cor$Cor)
 
 dev.new()
-plot(Sable_2017_2019_noEx[, '4081'], Sable_2017_2019_noEx$TMA)
+plot.lowess(Sable_2017_2019_noEx$TMA, Sable_2017_2019_noEx[, '4081'])
 
 dev.new()
-plot(jitter(Sable_2017_2019_noEx[, '4081']), jitter(Sable_2017_2019_noEx$TMA))
+plot.lowess(jitter(Sable_2017_2019_noEx$TMA), Sable_2017_2019_noEx[, '4081'])
+
 
 cor(Sable_2017_2019_noEx[, '4081'], Sable_2017_2019_noEx$TMA,  use = "na.or.complete")
 [1] 0.7233784
 
 
 # Use correlation plot to define the best freg. areas to use [using identify()]
-
 Sable_Spec_Cor[c(936, 1148), ]
      Freq           Cor
 936  5277 0.46227826962
@@ -111,17 +279,21 @@ dim(Sable_2017_2019_noEx) #  1560 1175
 Sable_2017_2019_WB <- Sable_2017_2019_noEx[, c(T, Bands.TF, rep(T, len(1156:1184)))]
 Sable_2017_2019_WB <- Sable_2017_2019_WB[!is.na(Sable_2017_2019_WB$TMA), ]
 
+
+# ---- 2D plotly.Spec() and 3D plot_ly() plots -------
+
+#  2D plotly.Spec()
 plotly.Spec(Sable_2017_2019_WB, 'all')
+plotly.Spec(Sable_2017_2019_WB, 'all', colorGroup = 'scanGroup')
 
 plotly.Spec(Sable_2017_2019_WB[Sable_2017_2019_WB$Year %in% 2017, ], 'all')
 plotly.Spec(Sable_2017_2019_WB[Sable_2017_2019_WB$Year %in% 2019, ], 'all')
-
 
 plotly.Spec(Sable_2017_2019_WB, 'all', facetGroup = 'scanGroup')
 
 
 
-#  Year with nrows = 2 
+#  Year with nrows = 2 - one each for years (2017, 2019)
 plotly.Spec(Sable_2017_2019_WB, 'all', facetGroup = 'Year')
 
 plotly.Spec(Sable_2017_2019_WB, 'all', facetGroup = 'Year', contColorVar = TRUE)
@@ -138,42 +310,70 @@ plotly.Spec(Sable_2017_2019_WB, 'all', facetGroup = 'Year', contColorVar = TRUE)
 
 
 # 3D
-d <- plotly.Spec(Sable_2017_2019_WB[!is.na(Sable_2017_2019_noEx$TMA), ], 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE) 
+d <- plotly.Spec(Sable_2017_2019_WB, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE) 
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
 
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~scanGroup, colors = rainbow(length(unique(d$Scan)))) 
+
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(TMA) %>% add_lines(color = ~scanGroup, colors = rainbow(length(unique(d$Scan)))) 
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(TMA) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
 
-
+79/11
         
-# =============== iPLSR - following Jordan =========================
+# =============== iPLSR - following Jordan using selected data =========================
 
-Sable_Spectra_2017_2019 <- Sable_2017_2019_noEx[!is.na(Sable_2017_2019_noEx$TMA), as.character(Bands)] # Spectra matrix 
-dim(Sable_Spectra_2017_2019) #  1358 1154
+Data_Sel <- c(Sable_2017_2019_noEx = 1, Sable_2017_2019_WB = 2)[c(1, 2)[1]]
+Sable_2017_2019_Sel <- list(Sable_2017_2019_noEx, Sable_2017_2019_WB)[[Data_Sel]]
+Bands_Sel <- list(Bands, Bands.WB)[[Data_Sel]]
 
-# Sable_Spectra_2017_2019 <- Sable_2017_2019_noEx[!is.na(Sable_2017_2019_noEx$TMA), Bands.TF] # Spectra matrix - Wide Best area selected via 'Bands.TMA'
-# dim(Sable_Spectra_2017_2019) #  1358  213
+Sable_2017_2019_Sel <- Sable_2017_2019_Sel[!is.na(Sable_2017_2019_Sel$TMA), ]
+dim(Sable_2017_2019_Sel)
 
-Sable_Age_2017_2019 <- as.numeric(Sable_2017_2019_noEx[!is.na(Sable_2017_2019_noEx$TMA), ]$TMA) # Vector of Ages 
+Sable_Spectra_2017_2019 <- Sable_2017_2019_Sel[, as.character(Bands_Sel)] # Spectra matrix 
+dim(Sable_Spectra_2017_2019) #  1358 1154 for Ex;  1358  213 for WB
+
+
+# Sable_2017_2019_Sel[1:3, c(1:4, 1156:1184)]
+plotly.Spec(Sable_2017_2019_Sel, 'all')
+
+Sable_Age_2017_2019 <- as.numeric(Sable_2017_2019_Sel$TMA) # Vector of Ages 
 length(Sable_Age_2017_2019) #  1358
 Sable_Age_2017_2019.fac <- factor(Sable_Age_2017_2019)      
 
+# Maximum number of components to calculate.
+nComp <- c(10, 15)[2]
 
 ###################################################################################################################
 ### Perform Savitzky-Golay 1st derivative with 17 point window smoothing 2rd order polynomial fit and visualize ###
+### Intro: http://127.0.0.1:30354/library/prospectr/doc/prospectr.html
 ###################################################################################################################
 ### NOTE ### If there are multiple years of data, all subsequent transformations should be applied to the whole data set, then re-subset
-          
-Sable_Spectra_2017_2019.sg <- data.frame(prospectr::savitzkyGolay(Sable_Spectra_2017_2019, p = 2, w = 15, m = 1)) 
-dim(Sable_Spectra_2017_2019.sg) #  1358 1140
+     
+# Savitzky-Golay smoothing     
+Sable_Spectra_2017_2019.sg <- data.frame(prospectr::savitzkyGolay(Sable_Spectra_2017_2019, m = 1, p = 2, w = 15)) 
+# Sable_Spectra_2017_2019.sg <- data.frame(prospectr::gapDer(Sable_Spectra_2017_2019, m = 1, w = 11, s = 5)) 
+dim(Sable_Spectra_2017_2019.sg) #  1358 1140 for Ex; 1358   199 for WB
 
 Sable_Spectra_2017_2019.Age.sg <- data.frame(TMA = Sable_Age_2017_2019, Sable_Spectra_2017_2019.sg) 
+
+# Add back metadata for plotting
+# cbind(Sable_2017_2019_Sel[, 1, drop = FALSE], Sable_Spectra_2017_2019.sg, Sable_2017_2019_Sel[, 1156:1184])[1:3, c(1:4, 1140:1170)]
+Sable_Spectra_2017_2019.sg.PLOT <- cbind(Sable_2017_2019_Sel[, 1, drop = FALSE], Sable_Spectra_2017_2019.sg, Sable_2017_2019_Sel[, 1156:1184])
+
+# 2D plot 
+plotly.Spec(Sable_Spectra_2017_2019.sg.PLOT, 'all')
+
+# 3D plot
+d <- plotly.Spec(Sable_Spectra_2017_2019.sg.PLOT, 'all', colorGroup = 'TMA', facetGroup = 'scanGroup', plot = FALSE) 
+d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
+
 
 ####################################################
 ###  iPLS algorithm in mdatools  ### 
 ####################################################
  
-Sable_Spectra_2017_2019.iPLS.F <- mdatools::ipls(Sable_Spectra_2017_2019.sg, Sable_Age_2017_2019, glob.ncomp = 10, center = T, scale = T, cv = 100,
-                  int.ncomp = 10, int.num = 10, ncomp.selcrit = "min", method = "forward", silent = F)
+Sable_Spectra_2017_2019.iPLS.F <- mdatools::ipls(Sable_Spectra_2017_2019.sg, Sable_Age_2017_2019, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
+                  int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
 # save(Sable_Spectra_2017_2019.iPLS.F, file = 'Sable_Spectra_2017_2019.iPLS.F 11 Nov 2022.RData')              
 
 summary(Sable_Spectra_2017_2019.iPLS.F)
@@ -182,14 +382,14 @@ summary(Sable_Spectra_2017_2019.iPLS.F)
 dev.new()
 plot(Sable_Spectra_2017_2019.iPLS.F)     
 
-# dev.new()
+# dev.new()  - With a main title
 # plot(Sable_Spectra_2017_2019.iPLS.F, main = NULL)          
 
 # plot predictions before and after selection
 dev.new()
 par(mfrow = c(2, 1))
-mdatools::plotPredictions(Sable_Spectra_2017_2019.iPLS.F$gm)
-mdatools::plotPredictions(Sable_Spectra_2017_2019.iPLS.F$om)
+mdatools::plotPredictions(Sable_Spectra_2017_2019.iPLS.F$gm) # gm = global PLS model with all variables included
+mdatools::plotPredictions(Sable_Spectra_2017_2019.iPLS.F$om) # om = optimized PLS model with selected variables
 
 dev.new()
 mdatools::plotRMSE(Sable_Spectra_2017_2019.iPLS.F)
@@ -219,43 +419,38 @@ Sable_Spectra_2017_2019.sg.iPLS <- data.frame(Sable_Spectra_2017_2019.sg[, Sable
 Sable_Spectra_2017_2019.Age.sg.iPLS <- data.frame(Age = Sable_Age_2017_2019, Sable_Spectra_2017_2019.sg.iPLS)
 dim(Sable_Spectra_2017_2019.Age.sg.iPLS)
 
-
-#Split by age - Age.0.avg, Age.1.avg, ...
-AGES <- sort(unique(Sable_Age_2017_2019))
-for (i in AGES) { 
-    Subset <- subset(Sable_Spectra_2017_2019.Age.sg.iPLS, Sable_Age_2017_2019 == i)
-    if(i == 0) cat("\n")
-    cat("Dim of", paste0('Age', i), " = ", dim(Subset), "\n")
-    assign(paste0('Age', i, '.avg'), apply(Subset, 2, mean))  # Character or numeric works  in subset()
-    cat("Length of", paste0('Age', i, '.avg'), " = ", length(eval(parse(text = paste0('Age', i, '.avg')))), "\n\n")
-}
+# 2D plot
+Sable_Spectra_2017_2019.sg.iPLS.PLOT <- cbind(Sable_2017_2019_Sel[, 1, drop = FALSE], Sable_Spectra_2017_2019.sg.iPLS, Sable_2017_2019_Sel[, 1156:1184])
+plotly.Spec(Sable_Spectra_2017_2019.sg.iPLS.PLOT, 'all')
 
 
-### rbind, transpose and plot the averaged spectra matrix-
-age.avg <- NULL
-for (i in AGES)
-     age.avg <- rbind(age.avg, eval(parse(text = paste0('Age', i, '.avg'))))
-
-dim(age.avg)
-age.avg <- sort.f(age.avg)
-age.avg[1:5, 1:10]
-age.avg[1:3, (ncol(age.avg) - 3):ncol(age.avg)]
-p + 1 # vars plus age 
-
-t.age.avg <- data.frame(t(age.avg[, -1])) # remove the age column so there is only an xmatrix
-dim(t.age.avg) # 342  67
-t.age.avg[1:3, 1:5]
 
 
-# Plot the transformed spectra
-dev.new(width = 14, height = 8)
-par(mar=c(5,5,1,1))
-plot(t.age.avg$X10, xlab = "Wavenumber Range", ylab = "Absorbance", cex.lab = 1, type = 'n', xlim = c(-23, nrow(t.age.avg)), 
-            ylim = c(min(t.age.avg, na.rm = TRUE) - abs(min(t.age.avg, na.rm = TRUE) * 0.025), max(t.age.avg, na.rm = TRUE) + abs(max(t.age.avg, na.rm = TRUE) * 0.025)))
-Cols <- rainbow(1.2 * length(AGES))
-for ( i in AGES)
-    lines(t.age.avg[[paste0('X', i)]],  col = Cols[i + 1], lwd = 2)
-legend("topleft", legend = paste(AGES, "Years"), col = c('red', 'blue', Cols[length(AGES)]), lty=1, lwd = 2,cex=.8)
+# Plot the transformed spectra by age
+(Sable_Spectra_2017_2019.Age.sg.iPLS.Long <- data.table::melt(Sable_Spectra_2017_2019.Age.sg.iPLS, id = 'Age', variable.name = 'Freq', value.name = 'Absorbance'))[1:4, ]
+
+Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Freq <- as.numeric(substring(Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Freq, 2))
+Sable_Spectra_2017_2019.Age.sg.iPLS.Long <- sort.f(Sable_Spectra_2017_2019.Age.sg.iPLS.Long, 'Freq')
+dev.new()
+xyplot(Absorbance ~ Freq, group = factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long, type = 'l')  
+xyplot(Absorbance ~ Freq | factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long, type = 'l')  
+
+xyplot(Absorbance ~ Freq, group = factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long[Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age %in% 10, ])  
+xyplot(Absorbance ~ Freq | factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long[Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age %in% c(1, 5, 30, 40), ], type = 'l')  
+xyplot(Absorbance ~ Freq | factor(Age), data = Sable_Spectra_2017_2019.Age.sg.iPLS.Long[Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age %in% c(1, 5, 30, 40), ]) 
+
+
+
+Sable_Spectra_2017_2019.Age.sg.iPLS.Agg <- aggregate(list(Absorbance = Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Absorbance), 
+     list(Freq = Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Freq, Age = Sable_Spectra_2017_2019.Age.sg.iPLS.Long$Age), mean, na.rm = TRUE)
+
+Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Freq <- as.numeric(substring(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Freq, 2))
+Sable_Spectra_2017_2019.Age.sg.iPLS.Agg <- sort.f(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg, 'Freq')
+
+Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age <- ordered(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age, sort(unique(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age)))
+ggplotly(ggplot(data = Sable_Spectra_2017_2019.Age.sg.iPLS.Agg, aes(x = Freq, y = Absorbance, z = Age)) + geom_line(aes(colour = Age), size = 0.2) + 
+                    scale_color_manual(values=rainbow(length(unique(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age)), alpha = 1)))
+
 
 
 
@@ -263,8 +458,8 @@ legend("topleft", legend = paste(AGES, "Years"), col = c('red', 'blue', Cols[len
 ### Conduct PLSr on iPLSr selected data ###
 #########################################
 
-PLSr <- mdatools::pls(Sable_Spectra_2017_2019.sg.iPLS, Sable_Age_2017_2019, ncomp = 10, center = T, scale = F, cv = 100,
-            method = "simpls", alpha = 0.05, ncomp.selcrit = "min")
+PLSr <- mdatools::pls(Sable_Spectra_2017_2019.sg.iPLS, Sable_Age_2017_2019, ncomp = nComp, center = TRUE, scale = FALSE, cv = 100,
+            method = "simpls", alpha = 0.05, gamma = 0.01, ncomp.selcrit = "min")
 summary(PLSr)
 dev.new()
 plot(PLSr)
@@ -278,13 +473,13 @@ x.trainset <- Sable_Spectra_2017_2019.sg.iPLS[-testindex, ]
 y.test <- Sable_Age_2017_2019[testindex]
 y.train <- Sable_Age_2017_2019[-testindex]
 
-PLSr <- mdatools::pls(x.trainset, y.train, ncomp = 10, center = T, scale = F, cv = 100,
+PLSr <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F, cv = 100,
            method = "simpls", alpha = 0.05, ncomp.selcrit = "min", x.test = x.testset, y.test = y.test)
 summary(PLSr)
 dev.new()
 plot(PLSr)
            
-PLSr <- mdatools::pls(x.trainset, y.train, ncomp = 10, center = T, scale = F, cv = 100,
+PLSr <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F, cv = 100,
             method = "simpls", alpha = 0.05, ncomp.selcrit = "min")            
 summary(PLSr)
 dev.new()
@@ -315,7 +510,7 @@ abline(0, 1, lwd = 2)
 abline(0, Slope, col = "dodgerblue", lwd = 2) 
 
 
-# Integer Predicted age with reference age jitter
+# Integer Predicted age with reference age jittered
 # dev.new(height = 8, width = 15)
 par(mar = c(5,5,1,1))
 plot(jitter(Reference_Age), round(Predicted_Age), ylim = c(0,12), xlim = c(0,12), col = "dodgerblue")
@@ -326,12 +521,15 @@ summary(lm(Predicted_Age ~ Reference_Age))$r.squared
 summary(lm(round(Predicted_Age) ~ Reference_Age))$r.squared
 
 Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age)
-e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age)) # $diag 0.03863135
-e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age), match.names = TRUE) # diag  0.1479029
+e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age)) # $diag 0.0386 for Ex; 0.03311 for WB
+
+e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age), match.names = TRUE) # diag  0.14790 for Ex' 0.12914
+
 
 
 (TabRefPredAge <- aggregate(list(Count = rep(1, length(Predicted_Age))), list(NIRS_PLSr_AGE = round(ifelse(Predicted_Age < 0, 0, Predicted_Age)), TMA = as.vector(Reference_Age)), sum))[1:4,]
 agg.table(TabRefPredAge)
+
 
 # Lattice levelplot() of TMA vs NIRS_PLSr_AGE
 dev.new(width = 16, height = 12)
@@ -348,7 +546,6 @@ lattice::levelplot(Count ~ TMA + NIRS_PLSr_AGE , data = TabRefPredAge[TabRefPred
 dev.new(width = 16, height = 12)
 lattice::wireframe(Count ~ TMA + NIRS_PLSr_AGE , data = TabRefPredAge, col.regions = rev(rainbow(max(TabRefPredAge$Count) * 1.3)[1:max(TabRefPredAge$Count)]), 
                    ylim = c(-1, 72), xlim = c(-1, 72), panel = function(...) { panel.wireframe(...); panel.abline(0,1) },  )
-                   
                              
 
 # Lattice cloud() of TMA vs NIRS_PLSr_AGE
@@ -364,6 +561,9 @@ lattice::cloud(Count ~ TMA + NIRS_PLSr_AGE , data = TabRefPredAge, col.regions =
 
 #    https://github.com/wilkelab/ggridges
 #    https://stackoverflow.com/questions/45299043/how-to-reproduce-this-moving-distribution-plot-with-r
+
+lib(ggplot2)
+lib(ggjoy)
 
 d <- data.frame(NIRS_PLSr_AGE = round(ifelse(Predicted_Age < 0, 0, Predicted_Age)), TMA = as.vector(Reference_Age))
 d <- d[d$TMA <= 30,]
@@ -394,7 +594,7 @@ heatmap(Table(NIRS_PLSr_AGE = round(ifelse(Predicted_Age < 0, 0, Predicted_Age))
 
 
 
-sum(abs(Reference_Age - round(Predicted_Age))) # 2679
+sum(abs(Reference_Age - round(Predicted_Age))) # 2679 for Ex; 2730 for WB
 
 (Results <- data.frame(Reference_Age, Predicted_Age))[1:10, ]
 
@@ -466,7 +666,51 @@ write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
 61                                                                                                                                   1                                                     1
 64                                                                                                                                                           1                              
 66                                                                                                                                                                 1                        
-67                                                                                                                                1                                                         
+67             
+
+
+
+# ----------- Old code -----------------         
+#Split by age - Age.0.avg, Age.1.avg, ...
+AGES <- sort(unique(Sable_Age_2017_2019))
+for (i in AGES) { 
+    Subset <- subset(Sable_Spectra_2017_2019.Age.sg.iPLS, Sable_Age_2017_2019 == i)
+    if(i == 0) cat("\n")
+    cat("Dim of", paste0('Age', i), " = ", dim(Subset), "\n")
+    assign(paste0('Age', i, '.avg'), apply(Subset, 2, mean))  # Character or numeric works  in subset()
+    cat("Length of", paste0('Age', i, '.avg'), " = ", length(eval(parse(text = paste0('Age', i, '.avg')))), "\n\n")
+}
+
+
+### rbind, transpose and plot the averaged spectra matrix-
+age.avg <- NULL
+for (i in AGES)
+     age.avg <- rbind(age.avg, eval(parse(text = paste0('Age', i, '.avg'))))
+
+dim(age.avg)
+age.avg <- sort.f(age.avg)
+age.avg[1:5, c(1:4, (ncol(age.avg) - 3):ncol(age.avg))]
+p + 1 # vars plus age 
+
+t.age.avg <- data.frame(t(age.avg[, -1])) # remove the age column so there is only an xmatrix and transpose
+dim(t.age.avg) # 342  67 for Ex; 79  67 for WB
+t.age.avg[1:3, 1:5]
+
+
+
+# Plot the transformed spectra
+dev.new(width = 14, height = 8)
+par(mar=c(5,5,1,1))
+plot(t.age.avg$X10, xlab = "Wavenumber Range", ylab = "Absorbance", cex.lab = 1, type = 'n', xlim = c(-23, nrow(t.age.avg)), 
+            ylim = c(min(t.age.avg, na.rm = TRUE) - abs(min(t.age.avg, na.rm = TRUE) * 0.025), max(t.age.avg, na.rm = TRUE) + 
+            abs(max(t.age.avg, na.rm = TRUE) * 0.025)))
+Cols <- rainbow(1.2 * length(AGES))
+for ( i in AGES)
+    lines(t.age.avg[[paste0('X', i)]],  col = Cols[i + 1], lwd = 2)
+legend("topleft", legend = paste(AGES, "Years"), col = Cols[AGES + 1], lty=1, lwd = 2,cex=0.495)
+
+
+                                                                                                   1                                                         
 
 
 
