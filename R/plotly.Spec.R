@@ -100,12 +100,12 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
       #   }     
       if(plot)  {  
          if(contColorVar)
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + labs(colour = colorGroup)))
+             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup)))
          else    
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + labs(colour = colorGroup) + 
+             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + 
                     scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha))))
                     
-            # print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + 
+            # print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + 
             #           scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = c(1, rep(alpha, length(unique(Spec$Color)) - 1))))))           
       }
       
@@ -150,9 +150,9 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
      
       if(plot) {
           if(contColorVar)
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup))) 
+             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup))) 
           else 
-            print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), size = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + 
+            print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + 
                        scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha))))            
       }                  
                
@@ -165,5 +165,4 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
   
   invisible(Spec)       
 }  
-
 
