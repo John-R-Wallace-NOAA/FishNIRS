@@ -18,12 +18,27 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        }  
 }
 
-           
+#Toolbox functions
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/openwd.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/openwd.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predicted_observed_plot.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/residuals_plot.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/R_squared_RMSE_MAE.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/as.num.R")
+
+#FishNIRS funtion
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/sort.f.R")
+
+
+# Set Path
+PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
+setwd(PATH) # set working directory to folder containing spectral files
+getwd()
+openwd()
+# base::load('.RData')
 
 
 # Chat GPT suggestion doesn't work
@@ -34,12 +49,6 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017, 2019 Prediction of TMA Cor Wide Best Area.R", type = "script")
 # gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R_Scratch/Sable 2017, 2019 Prediction of TMA Cor Wide Best Area.R", type = "script", verbose = TRUE)
 
-
-# Set Path
-PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
-setwd(PATH) # set working directory to folder containing spectral files
-getwd()
-openwd()
 
 #  Packages
 lib(openxlsx)
@@ -52,6 +61,8 @@ lib(e1071)
 lib(rpart)
 lib(vegan)
 lib(ggplot2)
+lib(ggjoy)
+lib(ggridges)
 lib(plotly)
 
 # install and load simplerspec
@@ -336,9 +347,9 @@ dim(Sable_Spectra_2017_2019) #  1358 1154 for Ex;  1358  213 for WB
 # Sable_2017_2019_Sel[1:3, c(1:4, 1156:1184)]
 plotly.Spec(Sable_2017_2019_Sel, 'all')
 
-Sable_Age_2017_2019 <- as.numeric(Sable_2017_2019_Sel$TMA) # Vector of Ages 
-length(Sable_Age_2017_2019) #  1358
-Sable_Age_2017_2019.fac <- factor(Sable_Age_2017_2019)      
+Sable_TMA_2017_2019 <- as.numeric(Sable_2017_2019_Sel$TMA) # Vector of Ages 
+length(Sable_TMA_2017_2019) #  1358
+Sable_TMA_2017_2019.fac <- factor(Sable_TMA_2017_2019)      
 
 # Maximum number of components to calculate.
 nComp <- c(10, 15)[2]
@@ -354,7 +365,7 @@ Sable_Spectra_2017_2019.sg <- data.frame(prospectr::savitzkyGolay(Sable_Spectra_
 # Sable_Spectra_2017_2019.sg <- data.frame(prospectr::gapDer(Sable_Spectra_2017_2019, m = 1, w = 11, s = 5)) 
 dim(Sable_Spectra_2017_2019.sg) #  1358 1140 for Ex; 1358   199 for WB
 
-Sable_Spectra_2017_2019.Age.sg <- data.frame(TMA = Sable_Age_2017_2019, Sable_Spectra_2017_2019.sg) 
+Sable_Spectra_2017_2019.Age.sg <- data.frame(TMA = Sable_TMA_2017_2019, Sable_Spectra_2017_2019.sg) 
 
 # Add back metadata for plotting
 # cbind(Sable_2017_2019_Sel[, 1, drop = FALSE], Sable_Spectra_2017_2019.sg, Sable_2017_2019_Sel[, 1156:1184])[1:3, c(1:4, 1140:1170)]
@@ -372,7 +383,7 @@ d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines
 ###  iPLS algorithm in mdatools  ### 
 ####################################################
  
-Sable_Spectra_2017_2019.iPLS.F <- mdatools::ipls(Sable_Spectra_2017_2019.sg, Sable_Age_2017_2019, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
+Sable_Spectra_2017_2019.iPLS.F <- mdatools::ipls(Sable_Spectra_2017_2019.sg, Sable_TMA_2017_2019, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
                   int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
 # save(Sable_Spectra_2017_2019.iPLS.F, file = 'Sable_Spectra_2017_2019.iPLS.F 11 Nov 2022.RData')              
 
@@ -416,7 +427,7 @@ Sable_Spectra_2017_2019.iPLS.vars <- Sable_Spectra_2017_2019.iPLS.F$var.selected
 (p <- length(Sable_Spectra_2017_2019.iPLS.vars))
 
 Sable_Spectra_2017_2019.sg.iPLS <- data.frame(Sable_Spectra_2017_2019.sg[, Sable_Spectra_2017_2019.iPLS.vars])
-Sable_Spectra_2017_2019.Age.sg.iPLS <- data.frame(Age = Sable_Age_2017_2019, Sable_Spectra_2017_2019.sg.iPLS)
+Sable_Spectra_2017_2019.Age.sg.iPLS <- data.frame(Age = Sable_TMA_2017_2019, Sable_Spectra_2017_2019.sg.iPLS)
 dim(Sable_Spectra_2017_2019.Age.sg.iPLS)
 
 # 2D plot
@@ -449,47 +460,56 @@ plotly::ggplotly(ggplot2::ggplot(data = Sable_Spectra_2017_2019.Age.sg.iPLS.Agg,
 
 #########################################
 ### Conduct PLSr on iPLSr selected data ###
+### https://mdatools.com/docs/index.html
 #########################################
 
-PLSr <- mdatools::pls(Sable_Spectra_2017_2019.sg.iPLS, Sable_Age_2017_2019, ncomp = nComp, center = TRUE, scale = FALSE, cv = 100,
+# All the data 
+PLSr <- mdatools::pls(Sable_Spectra_2017_2019.sg.iPLS, Sable_TMA_2017_2019, ncomp = nComp, center = TRUE, scale = FALSE, cv = 100,
             method = "simpls", alpha = 0.05, gamma = 0.01, ncomp.selcrit = "min")
 summary(PLSr)
 dev.new()
 plot(PLSr)
 
-
+#  Split the data into training set (2/3) and test set (1/3)
 set.seed(c(777, 747)[1])
 index <- 1:nrow(Sable_Spectra_2017_2019.sg.iPLS)
 testindex <- sample(index, trunc(length(index)/3))
 x.testset <- Sable_Spectra_2017_2019.sg.iPLS[testindex, ]
 x.trainset <- Sable_Spectra_2017_2019.sg.iPLS[-testindex, ]   
-y.test <- Sable_Age_2017_2019[testindex]
-y.train <- Sable_Age_2017_2019[-testindex]
+y.test <- Sable_TMA_2017_2019[testindex]
+y.train <- Sable_TMA_2017_2019[-testindex]
 
-PLSr <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F, cv = 100,
+# Test set included in mdatools::pls()
+PLSr_testset <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F, cv = 100,
            method = "simpls", alpha = 0.05, ncomp.selcrit = "min", x.test = x.testset, y.test = y.test)
-summary(PLSr)
+summary(PLSr_testset)
 dev.new()
-plot(PLSr)
+plot(PLSr_testset)
 
-# No test set           
-PLSr <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F, cv = 100,
+# No test set    
+set.seed(c(777, 747)[1])       
+PLSr_No_testset <- mdatools::pls(x.trainset, y.train, ncomp = nComp, center = T, scale = F, cv = 100,
             method = "simpls", alpha = 0.05, ncomp.selcrit = "min")            
-summary(PLSr)
+summary(PLSr_No_testset)
 dev.new()
-plot(PLSr)
+plot(PLSr_No_testset)
 
 
+
+   
 ###########################
 ### Plot the PLSr results ###
 ###########################
 
+PLSr <- PLSr_testset # ************** Just the test set ****************
+
 # pull the prediction values of age from the PLSr object
-compNum <- length(PLSr$res$cal$slope) # Number of selected components
+(compNum <- length(PLSr$res$cal$slope)) # Number of selected components
 Predicted_Age <- data.frame(PLSr$cvres$y.pred[ , , 1])[, compNum]
 
 # Reference Ages
 Reference_Age <- PLSr$cvres$y.ref  # Equals y.train
+sum(Reference_Age - y.train) # 0
 
 # Plot Predicted vs Reference Ages
 (Slope <- PLSr$res$cal$slope[length(PLSr$res$cal$slope)]) #  Slope from PLSr
@@ -499,21 +519,36 @@ par(mfrow = c(2,1))
 # Decimal Predicted age 
 # dev.new(height = 8, width = 15)
 par(mar = c(5,5,1,1))
-plot(Reference_Age, Predicted_Age, ylim = c(0,12), xlim = c(0,12), col = "dodgerblue")
+plot(Reference_Age, Predicted_Age, ylim = c(0, 75), xlim = c(0, 75), col = "dodgerblue")
 abline(0, 1, lwd = 2)
 abline(0, Slope, col = "dodgerblue", lwd = 2) 
-
 
 # Integer Predicted age with reference age jittered
 # dev.new(height = 8, width = 15)
 par(mar = c(5,5,1,1))
-plot(jitter(Reference_Age), round(Predicted_Age), ylim = c(0,12), xlim = c(0,12), col = "dodgerblue")
+plot(jitter(Reference_Age), round(Predicted_Age), ylim = c(0, 75), xlim = c(0 ,75), col = "dodgerblue")
 abline(0, 1, lwd = 2)
 abline(0, Slope, col = "dodgerblue", lwd = 2) 
 
-summary(lm(Predicted_Age ~ Reference_Age))$r.squared
-summary(lm(round(Predicted_Age) ~ Reference_Age))$r.squared
 
+# Plot predicted vs observed values and residuals
+PLSr_pred_obs <- predicted_observed_plot(observed_val = Reference_Age, predicted_val = Predicted_Age,  model_predicted_line = c(0, Slope), model_name = "PLSr")
+PLSr_residuals <- residuals_plot(observed_val = Reference_Age, predicted_val = Predicted_Age, model_name = "PLSr")
+
+PLSr_pred_obs_rndPred <- predicted_observed_plot(observed_val = Reference_Age, predicted_val = round(Predicted_Age), model_predicted_line = c(0, Slope), model_name = "PLSr; Predicted Rounded")
+PLSr_residuals_rndPred <- residuals_plot(observed_val = Reference_Age, predicted_val = round(Predicted_Age), model_name = "PLSr; Predicted Rounded")
+
+dev.new()
+g <- gridExtra::grid.arrange(PLSr_pred_obs, PLSr_residuals, PLSr_pred_obs_rndPred, PLSr_residuals_rndPred)
+
+
+# R squared , RMSE, MAE
+R_squared_RMSE_MAE(Predicted_Age, Reference_Age)
+R_squared_RMSE_MAE(round(Predicted_Age), Reference_Age)
+
+
+
+# Table
 Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age)
 e1071::classAgreement(Table(NIRS_PLSr_AGE = round(Predicted_Age), TMA = Reference_Age)) # $diag 0.0386 for Ex; 0.03311 for WB
 
@@ -551,23 +586,102 @@ lattice::cloud(Count ~ TMA + NIRS_PLSr_AGE , data = TabRefPredAge, col.regions =
                  year = rep(2001:2010, each=100))
 
                  
-# Use ggplot2 and ggjoy packages  
+# Use ggplot2 and ggjoy packages  for ridge plotting
 
 #    https://github.com/wilkelab/ggridges
 #    https://stackoverflow.com/questions/45299043/how-to-reproduce-this-moving-distribution-plot-with-r
 
-lib(ggplot2)
-lib(ggjoy)
 
-d <- data.frame(NIRS_PLSr_AGE = round(ifelse(Predicted_Age < 0, 0, Predicted_Age)), TMA = as.vector(Reference_Age))
-d <- d[d$TMA <= 30,]
+# https://stackoverflow.com/questions/65924548/add-points-to-geom-density-ridges-for-groups-with-small-number-of-observations
+
+Ages <- c('All', 'le 30', 'le 15')[1]
+# d <- data.frame(NIRS_PLSr_AGE = round(ifelse(Predicted_Age < 0, 0, Predicted_Age)), TMA = as.vector(Reference_Age))
+d <- data.frame(NIRS_PLSr_AGE = ifelse(Predicted_Age < 0, 0, Predicted_Age), TMA = as.vector(Reference_Age))
+# d <- data.frame(NIRS_PLSr_AGE = Predicted_Age, TMA = as.vector(Reference_Age))
+
+if(Ages == 'All')
+  dev.new(width = 20, height = 10) # After plotting, resize the window larger
+
+if(Ages == 'le 30') {
+  d <- d[d$TMA <= 30, ]
+  dev.new(width = 20, height = 12)
+}
+
+if(Ages == 'le 15') {
+  d <- d[d$TMA <= 15, ]
+  dev.new(width = 20, height = 12)
+}
+
 d$TMA <- factor(d$TMA)
 
+#  # d_Mean_NIRS_PLSr_AGE <- aggregate(list(NIRS_PLSr_AGE = d$NIRS_PLSr_AGE), list(TMA = d$TMA), mean, na.rm = TRUE)
+#  # names(d_Mean_NIRS_PLSr_AGE) <- names(d_Mean_NIRS_PLSr_AGE)[2:1]
+#  # d_Mean_NIRS_PLSr_AGE$TMA <- factor(round(d_Mean_NIRS_PLSr_AGE$TMA))
+#  # d_Mean_NIRS_PLSr_AGE$NIRS_PLSr_AGE <- as.num(d_Mean_NIRS_PLSr_AGE$NIRS_PLSr_AGE)
+#  # ggplot(d, aes(x = NIRS_PLSr_AGE, y = TMA)) + scale_x_continuous(breaks = as.num(d$TMA)) + geom_density_ridges(scale = 2, alpha = .5, rel_min_height = 0.01, col = 'red', fill = 'cyan') + 
+#  #                 theme_joy() + geom_abline(intercept = 3, slope = 1, col = 'green') + geom_point(data = d_Mean_NIRS_PLSr_AGE, col = 'red', pch = 19) 
+  
+ggplot(d, aes(x = NIRS_PLSr_AGE, y = TMA, fill = TMA)) + scale_x_continuous(breaks = as.num(d$TMA)) + 
+          ggridges::geom_density_ridges(scale = 2, alpha = .5, jittered_points = TRUE, point_alpha = 1, point_shape = 21, rel_min_height = 0.01) + 
+               ggjoy::theme_joy() + geom_abline(intercept = 3, slope = 1, col = 'green', lwd = 1) + guides(fill = FALSE, color = FALSE)
+  
+dev.new(width = 20, height = 10)
+plot(as.num(d$TMA), d$NIRS_PLSr_AGE, xlab = 'TMA', ylab = 'NIRS_PLSr_AGE')
+
+dev.new(width = 20, height = 10)  
+plot(factor(d$TMA), d$NIRS_PLSr_AGE, xlab = 'TMA', ylab = 'NIRS_PLSr_AGE')  
+
+sum(abs(round(d$TMA) - d$NIRS_PLSr_AGE))
+sum(abs(round(d$TMA)[d$NIRS_PLSr_AGE <= 5] - d$NIRS_PLSr_AGE[d$NIRS_PLSr_AGE <= 5]))
+
+absDiff_Table <- Table(absDiff = abs(round(d$NIRS_PLSr_AGE) - d$TMA), TMA = d$TMA)
+absDiff_6 <- data.frame(rowNamesToCol(absDiff_Table[,7, drop = FALSE], 'Diff'))
+sum(absDiff_6$Diff * absDiff_6$X6)
+
+
+  
+# hist()
+ds <- d[as.num(d$TMA) <= 20, ]         
+ds$TMA <- as.num(ds$TMA)        
+   
 dev.new(width = 20, height = 12)
-ggplot(d, aes(x = NIRS_PLSr_AGE, y = TMA)) + scale_x_continuous(breaks = as.num(d$TMA)) + geom_density_ridges(scale = 2, alpha = .5, rel_min_height = 0.01, col = 'red', fill = 'cyan') + 
-               theme_joy() + geom_abline(intercept = 3, slope = 1, col = 'green') 
+par(mfrow = c(3, 7))
+for ( i in sort(unique(ds$TMA))) {
+     hist(ds$NIRS_PLSr_AGE[ds$TMA == i], xlab = paste0('TMA = ', i), main = "", xlim = c(0, 35), ylim = c(0, 108), ylab = "")
+     abline(v = i, col = 'red')
+}     
+  
+dev.new(width = 20, height = 12)
+par(mfrow = c(3, 7))
+for ( i in sort(unique(ds$TMA))) {
+     hist(ds$NIRS_PLSr_AGE[ds$TMA == i], xlab = paste0('TMA = ', i), main = "", xlim = c(0, 35), ylab = "")
+     abline(v = i, col = 'red')
+}   
+
+ds <- d[as.num(d$TMA) >= 21 & as.num(d$TMA) <= 44, ]         
+ds$TMA <- as.num(ds$TMA)          
+  
+dev.new(width = 20, height = 12)
+par(mfrow = c(3, 7))
+for ( i in sort(unique(ds$TMA))) {
+     hist(ds$NIRS_PLSr_AGE[ds$TMA == i], xlab = paste0('TMA = ', i), main = "", xlim = c(0, 60), ylab = "")
+     abline(v = i, col = 'red')
+}
      
-      
+ds <- d[as.num(d$TMA) >= 45 & as.num(d$TMA) <= 71, ]         
+ds$TMA <- as.num(ds$TMA)          
+  
+dev.new(width = 20, height = 12)
+par(mfrow = c(3, 7))
+for ( i in sort(unique(ds$TMA))) {
+     hist(ds$NIRS_PLSr_AGE[ds$TMA == i], xlab = paste0('TMA = ', i), main = "", xlim = c(0, 70), ylab = "")
+     abline(v = i, col = 'red')
+}
+          
+     
+     
+     
+ 
 
 # heatmap()                 
 # dev.new()
@@ -581,7 +695,7 @@ ggplot(d, aes(x = NIRS_PLSr_AGE, y = TMA)) + scale_x_continuous(breaks = as.num(
 # lattice::levelplot(value ~ TMA + NIRS_PLSr_AGE , data = TabRefPredAge_2, col.regions = rev(rainbow(max(TabRefPredAge_2$value) * 1.3)[1:max(TabRefPredAge_2$value)]), 
 #                    ylim = c(-1, 72), xlim = c(-1, 72), panel = function(...) { panel.levelplot(...); panel.abline(0,1) },  )
 # 
-
+# 
 dev.new()
 heatmap(Table(NIRS_PLSr_AGE = round(ifelse(Predicted_Age < 0, 0, Predicted_Age))[Reference_Age <= 25], TMA = Reference_Age[Reference_Age <= 25]))
 
@@ -594,6 +708,17 @@ sum(abs(Reference_Age - round(Predicted_Age))) # 2679 for Ex; 2730 for WB
 
 # Store results in an excel.csv file
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
+
+          TMA
+splsda_AGE   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  44  45  46  47  48  49  50  51  52  53  54
+        0   16   9   2   2   0   0   3   2   2   4   3   1   1   2   0   0   1   0   0   3   1   1   0   2   1   0   1   1   2   0   1   0   1   0   0   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+        1   17 198  17  10   9   0   1   1   0   0   0   0   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+        2            0
+        3    0   5  18 184 102  28  61  17  20  18  14   4   1   4   2   0   0   0   0   0   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+        4    0   0   1  24  24   7  19  10  11   6   5   9   5   2   0   2   1   0   2   1   0   0   0   1   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+        5                        0        
+        6    0   0   0  17  17  29  48  19  24  15  10  11   7   3   9  11   6   7   9   8   5   3   3   2   3   0   0   2   1   2   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
+       
 
                  Count 
 
@@ -662,49 +787,388 @@ write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
 66                                                                                                                                                                 1                        
 67             
 
+# ======================== pls::plsr  ===========================================================================
+
+# Try the pls::plsr() model
+# https://www.tidymodels.org/learn/models/pls/
+
+lib(tidymodels)
+lib(pls)
+lib(modeldata)
+
+Sable_Spectra_2017_2019.Age.Last.sg.iPLS <- data.frame(Sable_Spectra_2017_2019.sg.iPLS, TMA = Sable_TMA_2017_2019)
+
+norm_rec <- 
+  recipe(TMA ~ ., data = Sable_Spectra_2017_2019.Age.Last.sg.iPLS) %>%
+  step_normalize(everything()) 
+
+set.seed(57343)
+folds <- vfold_cv(Sable_Spectra_2017_2019.Age.Last.sg.iPLS, v = 3, repeats = 4)
+
+folds <- 
+  folds %>%
+  mutate(recipes = purrr::map(splits, prepper, recipe = norm_rec))  
 
 
-# ----------- Old code -----------------         
-#Split by age - Age.0.avg, Age.1.avg, ...
-AGES <- sort(unique(Sable_Age_2017_2019))
-for (i in AGES) { 
-    Subset <- subset(Sable_Spectra_2017_2019.Age.sg.iPLS, Sable_Age_2017_2019 == i)
-    if(i == 0) cat("\n")
-    cat("Dim of", paste0('Age', i), " = ", dim(Subset), "\n")
-    assign(paste0('Age', i, '.avg'), apply(Subset, 2, mean))  # Character or numeric works  in subset()
-    cat("Length of", paste0('Age', i, '.avg'), " = ", length(eval(parse(text = paste0('Age', i, '.avg')))), "\n\n")
+get_var_explained <- function(recipe, ...) {
+  
+    # Extract the predictors and outcomes into their own matrices
+    y_mat <- bake(recipe, new_data = NULL, composition = "matrix", all_outcomes())
+    x_mat <- bake(recipe, new_data = NULL, composition = "matrix", all_predictors())
+    
+    # The pls package prefers the data in a data frame where the outcome
+    # and predictors are in _matrices_. To make sure this is formatted
+    # properly, use the `I()` function to inhibit `data.frame()` from making
+    # all the individual columns. `pls_format` should have two columns.
+    pls_format <- data.frame(
+      endpoints = I(y_mat),
+      measurements = I(x_mat)
+    )
+    # Fit the model
+    mod <- pls::plsr(endpoints ~ measurements, data = pls_format)
+    dev.new()
+    par(mfrow = c(2, 2))
+    validationplot(mod, val.type = "RMSEP")
+    validationplot(mod, val.type =  "MSEP")
+    validationplot(mod, val.type =    "R2")
+    
+    # Get the proportion of the predictor variance that is explained
+    # by the model for different number of components. 
+    xve <- explvar(mod)/100 
+   
+    # To do the same for the outcome, it is more complex. This code 
+    # was extracted from pls:::summary.mvr. 
+      mod_R2 <- pls::R2(mod, estimate = "train", intercept = FALSE)  # All for now - not train yet....
+      plot(mod_R2)
+      drop(mod_R2$val) %>% 
+      matrix(nrow = 1, dimnames = list("TMA_Train")) %>%  # Only one dependent variable 
+      
+      # drop(pls::R2(mod, estimate = "adjCV", intercept = FALSE)$val) %>% 
+      # matrix(nrow = 1, dimnames = list("TMA_adjCV")) %>%  # Only one dependent variable 
+      
+      # transpose so that components are in rows
+      t() %>% 
+      as_tibble() %>%
+      # Add the predictor proportions
+      mutate(predictors = cumsum(xve) %>% as.vector(),
+             components = seq_along(xve)) %>%
+      # Put into a tidy format that is tall
+      pivot_longer(
+        cols = c(-components),
+        names_to = "source",
+        values_to = "proportion"
+      )
 }
 
 
-### rbind, transpose and plot the averaged spectra matrix-
-age.avg <- NULL
-for (i in AGES)
-     age.avg <- rbind(age.avg, eval(parse(text = paste0('Age', i, '.avg'))))
+# We compute this data frame for each resample and save the results in the different columns.
 
-dim(age.avg)
-age.avg <- sort.f(age.avg)
-age.avg[1:5, c(1:4, (ncol(age.avg) - 3):ncol(age.avg))]
-p + 1 # vars plus age 
+(folds <- 
+  folds %>%
+  mutate(var = map(recipes, get_var_explained),
+         var = unname(var)))
+ 
+ 
+# To extract and aggregate these data, simple row binding can be used to stack the data vertically. Most of the action happens in the first 15 components 
+#      so let’s filter the data and compute the average proportion.
+variance_data <- 
+  bind_rows(folds[["var"]]) %>%
+  filter(components <= 20) %>%
+  group_by(components, source) %>%
+  summarize(proportion = mean(proportion))
 
-t.age.avg <- data.frame(t(age.avg[, -1])) # remove the age column so there is only an xmatrix and transpose
-dim(t.age.avg) # 342  67 for Ex; 79  67 for WB
-t.age.avg[1:3, 1:5]
+variance_data
+tail(variance_data)  
+  
+  
+  
+# The plot below shows that, if the protein measurement is important, you might require 10 or so components to achieve a good representation of that outcome.
+#      Note that the predictor variance is captured extremely well using a single component. This is due to the high degree of correlation in those data.
+dev.new()
+ggplot(variance_data, aes(x = components, y = proportion, col = source)) + 
+  geom_line(alpha = 0.5, linewidth = 1.2) + 
+  geom_point() 
+  
+
+# --------------- Just do the model -----------------
+
+Sable_Spectra_2017_2019.Age.Last.sg.iPLS <- data.frame(Sable_Spectra_2017_2019.sg.iPLS, TMA = Sable_TMA_2017_2019) #  Copy from above for this section
+
+norm_rec <- 
+  recipe(TMA ~ ., data = Sable_Spectra_2017_2019.Age.Last.sg.iPLS) %>%
+  step_normalize(everything()) 
+  
+# Extract the predictors and outcomes into their own matrices
+y_mat <- bake(prep(norm_rec), new_data = NULL, composition = "matrix", all_outcomes())    
+x_mat <- bake(prep(norm_rec), new_data = NULL, composition = "matrix", all_predictors())
+
+# The pls package prefers the data in a data frame where the outcome
+# and predictors are in _matrices_. To make sure this is formatted
+# properly, use the `I()` function to inhibit `data.frame()` from making
+# all the individual columns. `pls_format` should have two columns.
+pls_format <- data.frame(
+  endpoints = I(y_mat),
+  measurements = I(x_mat)
+)
+
+# Fit the model
+
+# mod <- pls::plsr(endpoints ~ measurements, data = pls_format)    
+mod <- pls::plsr(TMA ~ ., data = Sable_Spectra_2017_2019.Age.Last.sg.iPLS)
+
+    
+summary(mod)
+
+dev.new()
+plot(mod) # Same as predplot(mod)
+
+dev.new()
+scoreplot(mod)
+
+dev.new()
+loadingplot(mod)
+
+dev.new()
+corrplot(mod)     
+    
+    
+dev.new()
+par(mfrow = c(2, 2))
+validationplot(mod, val.type = "RMSEP")
+validationplot(mod, val.type =  "MSEP")
+validationplot(mod, val.type =    "R2")
+
+# Get the proportion of the predictor variance that is explained
+# by the model for different number of components. 
+(xve <- explvar(mod)/100 )[1:10]
+rev(sort(xve))[1:20]
+
+# To do the same for the outcome, it is more complex. This code 
+# was extracted from pls:::summary.mvr. 
+mod_R2 <- pls::R2(mod, estimate = "train", intercept = FALSE)  # All for now - not train yet....
+plot(mod_R2)
+
+NIRS_plrs_AGE <- apply(drop(predict(mod)), 1, mean)
+length(NIRS_plrs_AGE)
+    
+    
+
+d.plrs <- data.frame(NIRS_plrs_AGE = NIRS_plrs_AGE, TMA = Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA)
+
+if(Ages == 'All')
+  dev.new(width = 20, height = 10) # After plotting, resize the window larger
+
+if(Ages == 'le 30') {
+  d.plrs <- d.plrs[d.plrs$TMA <= 30, ]
+  dev.new(width = 20, height = 12)
+}
+
+if(Ages == 'le 15') {
+  d.plrs <- d.plrs[d.plrs$TMA <= 15, ]
+  dev.new(width = 20, height = 12)
+}
+
+d.plrs$TMA <- factor(d.plrs$TMA)
+ 
+ggplot(d.plrs, aes(x = NIRS_plrs_AGE, y = TMA, fill = TMA)) + scale_x_continuous(breaks = as.num(d.plrs$TMA)) + 
+          ggridges::geom_density_ridges(scale = 2, alpha = .5, jittered_points = TRUE, point_alpha = 1, point_shape = 21, rel_min_height = 0.01) + 
+               ggjoy::theme_joy() + geom_abline(intercept = 3, slope = 1, col = 'green', lwd = 1) + guides(fill = FALSE, color = FALSE)
+
+    
+    
+dev.new(width = 20, height = 10)   
+plot(Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA, NIRS_plrs_AGE, xlab = 'TMA', ylab = 'NIRS_plrs_AGE')
+
+dev.new(width = 20, height = 10)   
+plot(factor(Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA), NIRS_plrs_AGE, xlab = 'TMA', ylab = 'NIRS_plrs_AGE')
+
+sum(abs(round(NIRS_plrs_AGE) - Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA))
+sum(abs(round(NIRS_plrs_AGE)[Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA <= 5] - Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA[Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA <= 5]))
+
+absDiff_Table <- Table(absDiff = abs(round(NIRS_plrs_AGE) - Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA), TMA = Sable_Spectra_2017_2019.Age.Last.sg.iPLS$TMA)
+absDiff_6 <- data.frame(rowNamesToCol(absDiff_Table[,7, drop = FALSE], 'Diff'))
+sum(absDiff_6$Diff * absDiff_6$X6)
+
+
+Table(NIRS_plrs_AGE = ifelse(round(d.plrs$NIRS_plrs_AGE) < 0, 0, round(d.plrs$NIRS_plrs_AGE)), TMA = d.plrs$TMA)  
+                TMA
+NIRS_plrs_AGE     1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 65 66 67 71
+              11 73 10 35  4  1                                                                                                                                                                                      0
+           1   7 41 11 34 10     1                                                                                                                                                                                   0
+           2   7 46  8 43 18  3  5        1                                                                                                                                                                          0
+           3   5 26  4 45 29  7  6     1  2                                                                                                                                                                          0
+           4   2 15  2 39 19  5 12  4  3  2  1  1                                                                                                                                                                    0
+           5   1  8  3 21 26 11 18  4  5     1  3                                                                                                                                                                    0
+           6      1    14 23  7 27  6  7  3  1                                                                                                                                                                       0
+           7      1     4 13 10 21  8  7  4  3        1                                                                                                                                                              0
+           8         1  1  7  7 17  6  9  6  5  1  1     1                                                                                                                                                           0
+           9            1  3 10 12 10  6 10  8  2     2                                                                                                                                                              0
+           10     1        1  2  5  6  6  3  3  7  2  1                                                                                                                                                              0
+           11                 1  3  4  4  3  1     4  3     2                                                                                                                                                        0
+           12                    6  1  6  4  5  6  3  2  2  2              2                                                                                                                                         0
+           13              1     2  1  1  3  3  1  2  1  2  3  1  1  1                                                                                                                                               0
+           14                    1     2  1  1  1  1     1  2  2  3  4  2                                                                                                                                            0
+           15                       1        1  1  2     1        1  2  1        1     1                                                                                                                             0
+           16                          1  1  1     1     2  3  2     1  4           1                                                                                                                                0
+           17                                            1        1     1        1                                                                                                                                   0
+           18                                   1     1  2  1  1  2  4     1  1                                                                                                                                      0
+           19                                   1     1  1     2  1  2  1  3  3  1     1        1                                                                                                                    0
+           20                             1     1              2  1     1  3  2        1        1                                                                                                                    0
+           21                                                  1     1  2  1     1  1  1     1  1                                                                                                                    0
+           22                                         2        1        1  1  1     2                                                                                                                                0
+           23                                                        1        2     2  1     1                                                                                                                       0
+           24                                                           1  1        1     1        1  1  1                                                                                                           0
+           25                       1                                            2     1     1  1  1  1     1                                                                                                        0
+           26                                                  1     1           1  1        1     1                                                                                                                 0
+           27                                                        1                                   1        1                                                                                                  0
+           28                                                                                      2                                                                                                                 0
+           29                                                                                1  1  1           2     1     1                                                                                         0
+           30                                                              1     1                                1                                                                                                  0
+           31                                                     1        1              2  1        1  1                 1              1                                                                          0
+           32                                                              1                                   1              1     2                                                                                0
+           33                                                                                      1                                2                                                                                0
+           34                                                                                            1              2        1  1                 1                                                              0
+           35                                                                                                                       1     1  1                                                                       0
+           36                                                                                                                             1                                                                          0
+           37                                                                                            1        1              1                                                                                   0
+           38                                                                          1                                         1                                1                                                  0
+           39                                                                                                           3                          1     1     1                                                     0
+           40                                                                                                                       1  1        1              1              1                                      0
+           43                                                                                                           1                                1                             1  1           1              0
+           44                                                                                                                                                                          1                             0
+           45                                                                                                                                                        2                 1                             0
+           46                                                                                                                    1                       1  1     1     1                                            0
+           48                                                                                                                                                                                      1                 0
+           49                                                                                                                                      1                 1                       1                       0
+           50                                                                                                                                            1                          1        1                       1
+           51                                                                                                                                                                       1                                0
+           53                                                                                                                                                                    1        1           1              0
+           54                                                                                                                                                     1                             1                    0
+           55                                                                                                                                                                                            1           0
+           57                                                                                                                                                                          1                             0
+           58                                                                                                                                                  1                                                  1  0
+           59                                                                                                                                                                          1           1                 0
+           60                                                                                                                                            1                                                     1     0
+           61                                                                                                                                                                    1                                   0
+           62                                                                                                                                                                                1     1        1        0
+           65                                                                                                                                                              1                                         0
+           70                                                                                                                                                                                                        1
+>     
+> 
+ 
+
+# ======================== SPLSDA - does TMA Ages 1-5 better.... ===========================================================================
+  
+# SPLS/SPLSDA
+# https://www.quantargo.com/help/r/latest/packages/spls/2.2-3/splsda
+
+lib(MASS)
+lib(nnet)
+lib(pls)
+lib(spls)
+
+Sable_Spectra_2017_2019.sg.iPLS.mat <- as.matrix(Sable_Spectra_2017_2019.sg.iPLS)
+colnames(Sable_Spectra_2017_2019.sg.iPLS.mat) <- NULL  
+Sable_Spectra_2017_2019.sg.iPLS.mat[1:4, 1:5]
+  
+(mod_splsda <- splsda(as.matrix(Sable_Spectra_2017_2019.sg.iPLS.mat), Sable_TMA_2017_2019, K = 3, eta = 0.8, scale.x = FALSE, classifier = 'logistic'))
+coef.mod_splsda <- coef(mod_splsda)  
+coef.mod_splsda[coef.mod_splsda !=0, ]
+
+splsda_AGE <- as.num(predict(mod_splsda))
+
+Ages <- c('All', 'le 30', 'le 15')[1]
+# d <- data.frame(NIRS_PLSr_AGE = round(ifelse(Predicted_Age < 0, 0, Predicted_Age)), TMA = as.vector(Reference_Age))
+d <- data.frame(NIRS_PLSr_AGE = ifelse(Predicted_Age < 0, 0, Predicted_Age), TMA = as.vector(Reference_Age))
+# d <- data.frame(NIRS_PLSr_AGE = Predicted_Age, TMA = as.vector(Reference_Age))
+
+d.splsda <- data.frame(splsda_AGE = splsda_AGE, TMA = Sable_TMA_2017_2019)
+
+if(Ages == 'All')
+  dev.new(width = 20, height = 10) # After plotting, resize the window larger
+
+if(Ages == 'le 30') {
+  d.splsda <- d.splsda[d.splsda$TMA <= 30, ]
+  dev.new(width = 20, height = 12)
+}
+
+if(Ages == 'le 15') {
+  d.splsda <- d.splsda[d.splsda$TMA <= 15, ]
+  dev.new(width = 20, height = 12)
+}
+
+d.splsda$TMA <- factor(d.splsda$TMA)
+ 
+ggplot(d.splsda, aes(x = splsda_AGE, y = TMA, fill = TMA)) + scale_x_continuous(breaks = as.num(d.splsda$TMA)) + 
+          ggridges::geom_density_ridges(scale = 2, alpha = .5, jittered_points = FALSE, point_alpha = 1, point_shape = 21, rel_min_height = 0.01) + 
+               ggjoy::theme_joy() + geom_abline(intercept = 3, slope = 1, col = 'green', lwd = 1) + guides(fill = FALSE, color = FALSE)
+
+               
+dev.new(width = 20, height = 10)              
+plot(jitter(as.num(d.splsda$TMA)), d.splsda$splsda_AGE, xlab = 'TMA', ylab = 'splsda_AGE')  
+
+dev.new(width = 20, height = 10)             
+plot(factor(d.splsda$TMA), d.splsda$splsda_AGE, xlab = 'TMA', ylab = 'splsda_AGE')
+
+sum(abs(round(d.splsda$splsda_AGE) - as.num(d.splsda$TMA)))
+sum(abs(round(d.splsda$splsda_AGE)[as.num(d.splsda$TMA) <= 5] - as.num(d.splsda$TMA)[as.num(d.splsda$TMA) <= 5]))
+sum(abs(round(d.splsda$splsda_AGE)[as.num(d.splsda$TMA) == 6] - as.num(d.splsda$TMA)[as.num(d.splsda$TMA) == 6]))
+   
+Table(splsda_AGE = d.splsda$splsda_AGE, TMA = d.splsda$TMA)
+apply(Table(splsda_AGE = d.splsda$splsda_AGE, TMA = d.splsda$TMA), 2, sum)
+
+Table(absDiff = abs(round(d.splsda$splsda_AGE) - as.num(d.splsda$TMA)), TMA = d.splsda$TMA)
+
+absDiff_Table <- Table(absDiff = abs(round(d.splsda$splsda_AGE) - as.num(d.splsda$TMA)), TMA = as.num(d.splsda$TMA))
+absDiff_6 <- data.frame(rowNamesToCol(absDiff_Table[,7, drop = FALSE], 'Diff'))
+sum(absDiff_6$Diff * absDiff_6$X6)
+
+                  TMA
+splsda_AGE  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  65  66  67  71
+        0  16   9   2   2           3   2   2   4   3   1   1   2           1           3   1   1       2   1       1   1   2       1       1           1                                                                                                                           0
+        1   17 198  17  10   9       1   1                   1                                                                                                                                                                                                                       0
+        2            0        
+        3        5  18 184 102  28  61  17  20  18  14   4   1   4   2                       1                                                                                                                                                                                       0
+        4            1  24  24   7  19  10  11   6   5   9   5   2       2   1       2   1               1   1                                                                                                                                                                       0
+        5                        0        
+        6               17  17  29  48  19  24  15  10  11   7   3   9  11   6   7   9   8   5   3   3   2   3           2   1   2   1                                                                                                                                               0
+        7                                                            1                                                                                                                                                                                                               0
+        8                            1   1                   1                                                                                                                                                                                                                       0
+        16                                                           1       1       1               2               1               1                                                                                                                                               0
+        18                                               1       1               1           1       1           1   1                                                   1                                                                                                           0
+        19                                                       1                   1                   1                                                                                                                                                                           0
+        20           1               2   1           1           1           1   3   3   1   4   3   1   2   1       2   2   1                               1                   1                                                                                                   0
+        21                                                                                                                   1                   1                                                                                                                                   0
+        22                               1                                   1               1                       1                                                   2                                       1                                                                   0
+        23                   2               1   1   1                       2       1   1   1   1               1                       1           1   1               1                                                                                                           0
+        26                                                                                                                                                                                                   1                                                                       0
+        28                                                                           1           1   1                       1       1       1   1               1   1   1       1       1                   1                   1                                                   0
+        30                                                                                                                                                                                                                                               1                           0
+        35                                                                                                       1           1                   1       1           1           1   1       1       1   1               1                                       1                   0
+        38                                                                                                   1                                           1           1   1                   1                                                                                       0
+        39                                                                                   1                                   1   1       1           1   1       1                           1                                                                                   0
+        41                                                                                                                                                                   1                                                               1   1                                   0
+        47                                                                                                                                                                                           2                                       1   1   1                   1           0
+        49                                                                                                                                                                                                                               2                   1                       0
+        51                                                                                                                                                                                           1                                               1                               1
+        55                                                                                                                                                                                                                   1                                                   1   0
+        56                                                                                                                                                                                                           1                                       1   1                   0
+        57                           1                                                                                                                   1               1                           1           1   1               1       3                       1               1
+        59                                                                                                                                                                                                                                                                   1       0
+        61                                                                                                                                                                                                   1   1   1               1                       1                       0
+        66                                                                                                                                                                                                                                           1                     
 
 
 
-# Plot the transformed spectra
-dev.new(width = 14, height = 8)
-par(mar=c(5,5,1,1))
-plot(t.age.avg$X10, xlab = "Wavenumber Range", ylab = "Absorbance", cex.lab = 1, type = 'n', xlim = c(-23, nrow(t.age.avg)), 
-            ylim = c(min(t.age.avg, na.rm = TRUE) - abs(min(t.age.avg, na.rm = TRUE) * 0.025), max(t.age.avg, na.rm = TRUE) + 
-            abs(max(t.age.avg, na.rm = TRUE) * 0.025)))
-Cols <- rainbow(1.2 * length(AGES))
-for ( i in AGES)
-    lines(t.age.avg[[paste0('X', i)]],  col = Cols[i + 1], lwd = 2)
-legend("topleft", legend = paste(AGES, "Years"), col = Cols[AGES + 1], lty=1, lwd = 2,cex=0.495)
+
+# sPLS2
+
+# pls package
+# https://www.tidymodels.org/learn/models/pls/
 
 
-                                                                                                   1                                                         
+# plsRglm
+# https://cran.r-project.org/web/packages/plsRglm/index.html
 
 
 
@@ -712,3 +1176,48 @@ legend("topleft", legend = paste(AGES, "Years"), col = Cols[AGES + 1], lty=1, lw
 
 
 
+
+
+
+
+#================= Old code ==================        
+         #Split by age - Age.0.avg, Age.1.avg, ...
+         AGES <- sort(unique(Sable_TMA_2017_2019))
+         for (i in AGES) { 
+             Subset <- subset(Sable_Spectra_2017_2019.Age.sg.iPLS, Sable_TMA_2017_2019 == i)
+             if(i == 0) cat("\n")
+             cat("Dim of", paste0('Age', i), " = ", dim(Subset), "\n")
+             assign(paste0('Age', i, '.avg'), apply(Subset, 2, mean))  # Character or numeric works  in subset()
+             cat("Length of", paste0('Age', i, '.avg'), " = ", length(eval(parse(text = paste0('Age', i, '.avg')))), "\n\n")
+         }
+         
+         
+         ### rbind, transpose and plot the averaged spectra matrix-
+         age.avg <- NULL
+         for (i in AGES)
+              age.avg <- rbind(age.avg, eval(parse(text = paste0('Age', i, '.avg'))))
+         
+         dim(age.avg)
+         age.avg <- sort.f(age.avg)
+         age.avg[1:5, c(1:4, (ncol(age.avg) - 3):ncol(age.avg))]
+         p + 1 # vars plus age 
+         
+         t.age.avg <- data.frame(t(age.avg[, -1])) # remove the age column so there is only an xmatrix and transpose
+         dim(t.age.avg) # 342  67 for Ex; 79  67 for WB
+         t.age.avg[1:3, 1:5]
+         
+         
+         
+         # Plot the transformed spectra
+         dev.new(width = 14, height = 8)
+         par(mar=c(5,5,1,1))
+         plot(t.age.avg$X10, xlab = "Wavenumber Range", ylab = "Absorbance", cex.lab = 1, type = 'n', xlim = c(-23, nrow(t.age.avg)), 
+                     ylim = c(min(t.age.avg, na.rm = TRUE) - abs(min(t.age.avg, na.rm = TRUE) * 0.025), max(t.age.avg, na.rm = TRUE) + 
+                     abs(max(t.age.avg, na.rm = TRUE) * 0.025)))
+         Cols <- rainbow(1.2 * length(AGES))
+         for ( i in AGES)
+             lines(t.age.avg[[paste0('X', i)]],  col = Cols[i + 1], lwd = 2)
+         legend("topleft", legend = paste(AGES, "Years"), col = Cols[AGES + 1], lty=1, lwd = 2,cex=0.495)
+
+
+      
