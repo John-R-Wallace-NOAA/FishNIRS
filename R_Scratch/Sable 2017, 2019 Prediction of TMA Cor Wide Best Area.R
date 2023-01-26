@@ -38,6 +38,7 @@ PATH <- "W:/ALL_USR/JRW/SIDT/Sablefish/"
 setwd(PATH) # set working directory to folder containing spectral files
 getwd()
 openwd()
+load('.RData')
 # base::load('.RData')
 
 
@@ -76,7 +77,8 @@ lib(simplerspec)
 
 base::load(file = "Sable_2017_2019 21 Nov 2022.RData")
 options(digits = 11)
-Sable_2017_2019[1:2, c(1:2, 1153:1184)]
+Sable_2017_2019[1:2, c(1:2, 1153:1184)] # Look at first and last columns
+plotly.Spec(Sable_2017_2019, 'all') # Missing TMA (NA) included as grey lines
 
 # Remove extreme data
 dim(Sable_2017_2019)    
@@ -347,7 +349,7 @@ dim(Sable_Spectra_2017_2019) #  1358 1154 for Ex;  1358  213 for WB
 # Sable_2017_2019_Sel[1:3, c(1:4, 1156:1184)]
 plotly.Spec(Sable_2017_2019_Sel, 'all')
 
-Sable_TMA_2017_2019 <- as.numeric(Sable_2017_2019_Sel$TMA) # Vector of Ages 
+Sable_TMA_2017_2019 <- as.numeric(Sable_2017_2019_Sel$TMA) # Vector of Ages  - 1,358 oties
 length(Sable_TMA_2017_2019) #  1358
 Sable_TMA_2017_2019.fac <- factor(Sable_TMA_2017_2019)      
 
@@ -361,9 +363,9 @@ nComp <- c(10, 15)[2]
 ### NOTE ### If there are multiple years of data, all subsequent transformations should be applied to the whole data set, then re-subset
      
 # Savitzky-Golay smoothing     
-Sable_Spectra_2017_2019.sg <- data.frame(prospectr::savitzkyGolay(Sable_Spectra_2017_2019, m = 1, p = 2, w = 15)) 
+Sable_Spectra_2017_2019.sg <- data.frame(prospectr::savitzkyGolay(Sable_Spectra_2017_2019, m = 1, p = 2, w = 15))  # 'Sable_Spectra_2017_2019' is either 'Sable_2017_2019_noEx or 'Sable_2017_2019_WB' selected above
 # Sable_Spectra_2017_2019.sg <- data.frame(prospectr::gapDer(Sable_Spectra_2017_2019, m = 1, w = 11, s = 5)) 
-dim(Sable_Spectra_2017_2019.sg) #  1358 1140 for Ex; 1358   199 for WB
+dim(Sable_Spectra_2017_2019.sg) #  1,358 1,140 for Ex;   1,358   199 for WB
 
 Sable_Spectra_2017_2019.Age.sg <- data.frame(TMA = Sable_TMA_2017_2019, Sable_Spectra_2017_2019.sg) 
 
@@ -379,6 +381,7 @@ d <- plotly.Spec(Sable_Spectra_2017_2019.sg.PLOT, 'all', colorGroup = 'TMA', fac
 d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
 
 
+
 ####################################################
 ###  iPLS algorithm in mdatools  ### 
 ####################################################
@@ -392,6 +395,8 @@ summary(Sable_Spectra_2017_2019.iPLS.F)
 # plot the newly selected spectra regions ??
 dev.new()
 plot(Sable_Spectra_2017_2019.iPLS.F)     
+Sable_Spectra_2017_2019.iPLS.F$int.selected
+sort(Sable_Spectra_2017_2019.iPLS.F$var.selected)
 
 # dev.new()  - With a main title
 # plot(Sable_Spectra_2017_2019.iPLS.F, main = NULL)          
@@ -423,10 +428,9 @@ mdatools::plotRMSE(Sable_Spectra_2017_2019.iPLS.F$om, ylim = c(3.4, 11))
 
 
 # Select out vars
-Sable_Spectra_2017_2019.iPLS.vars <- Sable_Spectra_2017_2019.iPLS.F$var.selected
-(p <- length(Sable_Spectra_2017_2019.iPLS.vars))
+(p <- length(Sable_Spectra_2017_2019.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
 
-Sable_Spectra_2017_2019.sg.iPLS <- data.frame(Sable_Spectra_2017_2019.sg[, Sable_Spectra_2017_2019.iPLS.vars])
+Sable_Spectra_2017_2019.sg.iPLS <- data.frame(Sable_Spectra_2017_2019.sg[, sort(Sable_Spectra_2017_2019.iPLS.F$var.selected)])
 Sable_Spectra_2017_2019.Age.sg.iPLS <- data.frame(Age = Sable_TMA_2017_2019, Sable_Spectra_2017_2019.sg.iPLS)
 dim(Sable_Spectra_2017_2019.Age.sg.iPLS)
 
@@ -455,8 +459,34 @@ Sable_Spectra_2017_2019.Age.sg.iPLS.Agg <- aggregate(list(Absorbance = Sable_Spe
 Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age <- ordered(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age, sort(unique(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age)))
 plotly::ggplotly(ggplot2::ggplot(data = Sable_Spectra_2017_2019.Age.sg.iPLS.Agg, aes(x = Freq, y = Absorbance, z = Age)) + geom_line(aes(colour = Age), size = 0.2) + 
                     scale_color_manual(values=rainbow(length(unique(Sable_Spectra_2017_2019.Age.sg.iPLS.Agg$Age)), alpha = 1)))
+                 
 
+# --------------- Try ipls() with smoothed spectra data and metadata  - NO METADATA WAS SELECTED ------------------------
 
+# Remove NA's with predictors and response together - then resplit
+Sable_Spectra_2017_2019.sg.META <- na.omit(cbind(Sable_Spectra_2017_2019.sg, Sable_2017_2019_Sel[, c("latitude", "longitude", "length", "weight", "sex")], TMA = Sable_TMA_2017_2019))
+Sable_Spectra_2017_2019.sg.META[1:3, c(1:2, 1140:1146)]
+
+TMA.META <- Sable_Spectra_2017_2019.sg.META[,1146]
+Sable_Spectra_2017_2019.sg.META <- Sable_Spectra_2017_2019.sg.META[, -1146]
+   
+Sable_Spectra_2017_2019.iPLS.META.F <- mdatools::ipls(Sable_Spectra_2017_2019.sg.META, TMA.META, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
+                  int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
+
+summary(Sable_Spectra_2017_2019.iPLS.META.F)
+
+# Plot the newly selected spectra regions 
+dev.new()
+plot(Sable_Spectra_2017_2019.iPLS.META.F)     
+
+Sable_Spectra_2017_2019.iPLS.META.F$int.selected
+sort(Sable_Spectra_2017_2019.iPLS.META.F$var.selected)
+
+Sable_Spectra_2017_2019.sg.META[, Sable_Spectra_2017_2019.iPLS.F$var.selected][1:3, c(1:3, 373:380)]
+names(Sable_Spectra_2017_2019.sg.META[, Sable_Spectra_2017_2019.iPLS.F$var.selected])
+                    
+               
+                    
 
 #########################################
 ### Conduct PLSr on iPLSr selected data ###
@@ -495,13 +525,28 @@ dev.new()
 plot(PLSr_No_testset)
 
 
+# -------------- Try mdatools::pls() with metadata - RESULT IS THE SAME AS WITHOUT THE METADATA --------------------------
+
+Sable_Spectra_2017_2019.sg.META.iPLS <- cbind(Sable_Spectra_2017_2019.sg.iPLS, Sable_2017_2019_Sel[, c("latitude", "longitude", "length", "weight", "sex")])
+
+PLSr.META <- mdatools::pls(pca.mvreplace(Sable_Spectra_2017_2019.sg.META.iPLS), Sable_TMA_2017_2019, ncomp = nComp, center = TRUE, scale = FALSE, cv = 100,
+            method = "simpls", alpha = 0.05, gamma = 0.01, ncomp.selcrit = "min")
+summary(PLSr)
+dev.new()
+plot(PLSr)
+
+# pull the prediction values of age from the PLSr object
+(compNum.META <- length(PLSr.META$res$cal$slope)) # Number of selected components
+Predicted_Age.META <- data.frame(PLSr.META$cvres$y.pred[ , , 1])[, compNum]
+plot(Predicted_Age, Predicted_Age.META) #  Same result
+
 
    
 ###########################
 ### Plot the PLSr results ###
 ###########################
 
-PLSr <- PLSr_testset # ************** Just the test set ****************
+PLSr <- PLSr_testset   # ************** Just the test set ****************
 
 # pull the prediction values of age from the PLSr object
 (compNum <- length(PLSr$res$cal$slope)) # Number of selected components
@@ -627,9 +672,15 @@ ggplot(d, aes(x = NIRS_PLSr_AGE, y = TMA, fill = TMA)) + scale_x_continuous(brea
   
 dev.new(width = 20, height = 10)
 plot(as.num(d$TMA), d$NIRS_PLSr_AGE, xlab = 'TMA', ylab = 'NIRS_PLSr_AGE')
+abline(h = 0:70, v = 0:68, col = col.alpha('grey', 0.25))
+abline(h = seq(0, 70, by = 5), v = seq(0, 65, by = 5), col = col.alpha('grey', 0.75))
+abline(0, 1,, col = 'red')
 
 dev.new(width = 20, height = 10)  
 plot(factor(d$TMA), d$NIRS_PLSr_AGE, xlab = 'TMA', ylab = 'NIRS_PLSr_AGE')  
+abline(h = 0:70, v = 0:68, col = col.alpha('grey', 0.25))
+abline(h = seq(0, 70, by = 5), v = seq(0, 65, by = 5), col = col.alpha('grey', 0.75))  # ****** FIX THIS **********************************
+abline(0, 1,, col = 'red')
 
 sum(abs(round(d$TMA) - d$NIRS_PLSr_AGE))
 sum(abs(round(d$TMA)[d$NIRS_PLSr_AGE <= 5] - d$NIRS_PLSr_AGE[d$NIRS_PLSr_AGE <= 5]))
@@ -638,6 +689,8 @@ absDiff_Table <- Table(absDiff = abs(round(d$NIRS_PLSr_AGE) - d$TMA), TMA = d$TM
 absDiff_6 <- data.frame(rowNamesToCol(absDiff_Table[,7, drop = FALSE], 'Diff'))
 sum(absDiff_6$Diff * absDiff_6$X6)
 
+e1071::classAgreement(Table(Best_Freq_Cor_AGE = round(d$NIRS_PLSr_AGE), TMA = d$TMA)) 
+e1071::classAgreement(Table(Best_Freq_Cor_AGE = round(d$NIRS_PLSr_AGE), TMA = d$TMA), match.names = TRUE)
 
   
 # hist()
@@ -678,9 +731,7 @@ for ( i in sort(unique(ds$TMA))) {
      abline(v = i, col = 'red')
 }
           
-     
-     
-     
+      
  
 
 # heatmap()                 
@@ -708,17 +759,6 @@ sum(abs(Reference_Age - round(Predicted_Age))) # 2679 for Ex; 2730 for WB
 
 # Store results in an excel.csv file
 write.csv(Results, file ="10_smoothing_iPLSR_Res.csv", row.names = FALSE)
-
-          TMA
-splsda_AGE   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  44  45  46  47  48  49  50  51  52  53  54
-        0   16   9   2   2   0   0   3   2   2   4   3   1   1   2   0   0   1   0   0   3   1   1   0   2   1   0   1   1   2   0   1   0   1   0   0   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
-        1   17 198  17  10   9   0   1   1   0   0   0   0   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
-        2            0
-        3    0   5  18 184 102  28  61  17  20  18  14   4   1   4   2   0   0   0   0   0   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
-        4    0   0   1  24  24   7  19  10  11   6   5   9   5   2   0   2   1   0   2   1   0   0   0   1   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
-        5                        0        
-        6    0   0   0  17  17  29  48  19  24  15  10  11   7   3   9  11   6   7   9   8   5   3   3   2   3   0   0   2   1   2   1   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0
-       
 
                  Count 
 
@@ -991,6 +1031,12 @@ sum(absDiff_6$Diff * absDiff_6$X6)
 
 
 Table(NIRS_plrs_AGE = ifelse(round(d.plrs$NIRS_plrs_AGE) < 0, 0, round(d.plrs$NIRS_plrs_AGE)), TMA = d.plrs$TMA)  
+
+e1071::classAgreement(Table(NIRS_plrs_AGE = ifelse(round(d.plrs$NIRS_plrs_AGE) < 0, 0, round(d.plrs$NIRS_plrs_AGE)), TMA = d.plrs$TMA)  ) 
+e1071::classAgreement(Table(NIRS_plrs_AGE = ifelse(round(d.plrs$NIRS_plrs_AGE) < 0, 0, round(d.plrs$NIRS_plrs_AGE)), TMA = d.plrs$TMA)  , match.names = TRUE)
+
+
+
                 TMA
 NIRS_plrs_AGE     1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 65 66 67 71
               11 73 10 35  4  1                                                                                                                                                                                      0
@@ -1071,9 +1117,17 @@ Sable_Spectra_2017_2019.sg.iPLS.mat <- as.matrix(Sable_Spectra_2017_2019.sg.iPLS
 colnames(Sable_Spectra_2017_2019.sg.iPLS.mat) <- NULL  
 Sable_Spectra_2017_2019.sg.iPLS.mat[1:4, 1:5]
   
-(mod_splsda <- splsda(as.matrix(Sable_Spectra_2017_2019.sg.iPLS.mat), Sable_TMA_2017_2019, K = 3, eta = 0.8, scale.x = FALSE, classifier = 'logistic'))
-coef.mod_splsda <- coef(mod_splsda)  
+cv <- cv.spls(as.matrix(Sable_Spectra_2017_2019.sg.iPLS.mat), Sable_TMA_2017_2019, eta = seq(0.1,0.9,0.1), K = c(5:10) )  
+  
+  K=3, eta=0.8
+ 
+(mod_splsda <- splsda(as.matrix(Sable_Spectra_2017_2019.sg.iPLS.mat), Sable_TMA_2017_2019, K = 3, eta = 0.8, scale.x = FALSE, classifier = 'logistic')) 
+(mod_splsda <- splsda(as.matrix(Sable_Spectra_2017_2019.sg.iPLS.mat), Sable_TMA_2017_2019, eta = cv$eta.opt, K = cv$K.opt, scale.x = FALSE, classifier = 'logistic'))
+(coef.mod_splsda <- coef(mod_splsda))
 coef.mod_splsda[coef.mod_splsda !=0, ]
+
+plot.spls(mod_splsda, yvar=1)
+coefplot.spls(mod_splsda, nwin=c(2,2), xvar=c(1:4) )
 
 splsda_AGE <- as.num(predict(mod_splsda))
 
@@ -1099,65 +1153,97 @@ if(Ages == 'le 15') {
 
 d.splsda$TMA <- factor(d.splsda$TMA)
  
-ggplot(d.splsda, aes(x = splsda_AGE, y = TMA, fill = TMA)) + scale_x_continuous(breaks = as.num(d.splsda$TMA)) + 
-          ggridges::geom_density_ridges(scale = 2, alpha = .5, jittered_points = FALSE, point_alpha = 1, point_shape = 21, rel_min_height = 0.01) + 
-               ggjoy::theme_joy() + geom_abline(intercept = 3, slope = 1, col = 'green', lwd = 1) + guides(fill = FALSE, color = FALSE)
+ggplot(d.splsda, aes(x = jitter(splsda_AGE), y = TMA, fill = TMA)) + scale_x_continuous(breaks = as.num(d.splsda$TMA)) + 
+          ggridges::geom_density_ridges(scale = 2, alpha = .5, jittered_points = TRUE, point_alpha = 1, point_shape = 21, rel_min_height = 0.01) + 
+               ggjoy::theme_joy() + geom_abline(intercept = 3, slope = 1, col = 'green', lwd = 1) + guides(fill = "none", color = "none")
 
                
 dev.new(width = 20, height = 10)              
 plot(jitter(as.num(d.splsda$TMA)), d.splsda$splsda_AGE, xlab = 'TMA', ylab = 'splsda_AGE')  
+abline(h = 0:70, v = 0:68, col = col.alpha('grey', 0.25))
+abline(h = seq(0, 70, by = 5), v = seq(0, 65, by = 5), col = col.alpha('grey', 0.75))
+abline(0, 1,, col = 'red')
 
 dev.new(width = 20, height = 10)             
 plot(factor(d.splsda$TMA), d.splsda$splsda_AGE, xlab = 'TMA', ylab = 'splsda_AGE')
+abline(h = 0:70, v = 0:68, col = col.alpha('grey', 0.25))
+abline(h = seq(0, 70, by = 5), v = c(1, 6, 11, 16, 21, 26, 31, 36, 41, 45, 50, 55, 60, 65), col = col.alpha('grey', 0.75))
+abline(0, 1,, col = 'red')
 
 sum(abs(round(d.splsda$splsda_AGE) - as.num(d.splsda$TMA)))
 sum(abs(round(d.splsda$splsda_AGE)[as.num(d.splsda$TMA) <= 5] - as.num(d.splsda$TMA)[as.num(d.splsda$TMA) <= 5]))
-sum(abs(round(d.splsda$splsda_AGE)[as.num(d.splsda$TMA) == 6] - as.num(d.splsda$TMA)[as.num(d.splsda$TMA) == 6]))
-   
-Table(splsda_AGE = d.splsda$splsda_AGE, TMA = d.splsda$TMA)
-apply(Table(splsda_AGE = d.splsda$splsda_AGE, TMA = d.splsda$TMA), 2, sum)
-
-Table(absDiff = abs(round(d.splsda$splsda_AGE) - as.num(d.splsda$TMA)), TMA = d.splsda$TMA)
 
 absDiff_Table <- Table(absDiff = abs(round(d.splsda$splsda_AGE) - as.num(d.splsda$TMA)), TMA = as.num(d.splsda$TMA))
 absDiff_6 <- data.frame(rowNamesToCol(absDiff_Table[,7, drop = FALSE], 'Diff'))
 sum(absDiff_6$Diff * absDiff_6$X6)
 
-                  TMA
-splsda_AGE  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  65  66  67  71
-        0  16   9   2   2           3   2   2   4   3   1   1   2           1           3   1   1       2   1       1   1   2       1       1           1                                                                                                                           0
-        1   17 198  17  10   9       1   1                   1                                                                                                                                                                                                                       0
-        2            0        
-        3        5  18 184 102  28  61  17  20  18  14   4   1   4   2                       1                                                                                                                                                                                       0
-        4            1  24  24   7  19  10  11   6   5   9   5   2       2   1       2   1               1   1                                                                                                                                                                       0
-        5                        0        
-        6               17  17  29  48  19  24  15  10  11   7   3   9  11   6   7   9   8   5   3   3   2   3           2   1   2   1                                                                                                                                               0
-        7                                                            1                                                                                                                                                                                                               0
-        8                            1   1                   1                                                                                                                                                                                                                       0
-        16                                                           1       1       1               2               1               1                                                                                                                                               0
-        18                                               1       1               1           1       1           1   1                                                   1                                                                                                           0
-        19                                                       1                   1                   1                                                                                                                                                                           0
-        20           1               2   1           1           1           1   3   3   1   4   3   1   2   1       2   2   1                               1                   1                                                                                                   0
-        21                                                                                                                   1                   1                                                                                                                                   0
-        22                               1                                   1               1                       1                                                   2                                       1                                                                   0
-        23                   2               1   1   1                       2       1   1   1   1               1                       1           1   1               1                                                                                                           0
-        26                                                                                                                                                                                                   1                                                                       0
-        28                                                                           1           1   1                       1       1       1   1               1   1   1       1       1                   1                   1                                                   0
-        30                                                                                                                                                                                                                                               1                           0
-        35                                                                                                       1           1                   1       1           1           1   1       1       1   1               1                                       1                   0
-        38                                                                                                   1                                           1           1   1                   1                                                                                       0
-        39                                                                                   1                                   1   1       1           1   1       1                           1                                                                                   0
-        41                                                                                                                                                                   1                                                               1   1                                   0
-        47                                                                                                                                                                                           2                                       1   1   1                   1           0
-        49                                                                                                                                                                                                                               2                   1                       0
-        51                                                                                                                                                                                           1                                               1                               1
-        55                                                                                                                                                                                                                   1                                                   1   0
-        56                                                                                                                                                                                                           1                                       1   1                   0
-        57                           1                                                                                                                   1               1                           1           1   1               1       3                       1               1
-        59                                                                                                                                                                                                                                                                   1       0
-        61                                                                                                                                                                                                   1   1   1               1                       1                       0
-        66                                                                                                                                                                                                                                           1                     
 
+Table(splsda_AGE = d.splsda$splsda_AGE, TMA = d.splsda$TMA)
+
+e1071::classAgreement(Table(splsda_AGE = d.splsda$splsda_AGE, TMA = d.splsda$TMA)  ) 
+e1071::classAgreement(Table(splsda_AGE = d.splsda$splsda_AGE, TMA = d.splsda$TMA), match.names = TRUE)
+
+
+            TMA
+splsda_AGE       1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  65  66  67  71
+            16   4                   3   3       2   1       1   1       1               2   1           1                                                                                                                                                                           0
+        1   17 200  14   4   3                                                                                                                                                                                                                                                       0
+        2        2   1   1   1                                                                                                                                                                                                                                                       0
+        3        5  18 190  53  13  29   4   3   2   1   2                                                                                                                                                                                                                           0
+        4        1   4  28  60  14  25  11  18   7  12   1   2   2   1                                                                                                                                                                                                               0
+        5                    1   3   1       1   1                                                                                                                                                                                                                                   0
+        6            2  11  23  24  62  18  20  17   6  11   2   5   1   1               2                                                                                                                                                                                           0
+        7                2       1   1   3   4   1   1   2                   1                   1                                                                                                                                                                                   0
+        8                    5   1   5   6   3   4   2   2   3           2   1       1               1       1                                                                                                                                                                       0
+        9                1   1   4   5   1   3   3   5   3   1       2   1       1   1                                                                                                                                                                                               0
+        10                   5   1               3   3       2       2       1   2   2   1   1                                                                                                                                                                                       0
+        11                   1       1   1   3           2                                                   1                                                                                                                                                                       0
+        13                                       1   1       1   2       1   1   1   1   1           1                                   1                                                                                                                                           0
+        14                           1       1           1   2   1   5       1           2   3           1                                                                                                                                                                           0
+        15                           1   3                           1   3   1   1   4   1       1                       1                                                                                                                                                           0
+        16                               1                           1       2       2           1   1   1                       1                                                                                                                                                   0
+        17                       1               1                               3           3                                                                                                                                                                                       0
+        18                       1           1                           2   1   1   2               1   2   1       1   1       1   1                                                                                                                                               0
+        19                           1   1       1       1       1       1           1   4       1               1   1                                                   1                                                                                                           0
+        20                                           1   1       1           1       1       3   2       1   1               1                   1           1           2                                                                                                           0
+        21                                   1                           1   1   1       1   2   1                                   1                       1                                                                                                                       0
+        22                                                                   2                       1       1                                                           1                                                                                                           0
+        23                                                   1                               1   1       2           1       1                                                   1                                                                                                   0
+        24                   1                                                       1                                                                                                                                                                                               0
+        26                                                                           1                                   1                               1                                                                                                                           0
+        27                       1               1   1                                           1   1                   2           1                                                                                                                                               0
+        28                                                                           1                       1               4       1                           1                                           1                                                                       0
+        29                                                   1                                                                       1                                                                                                                                               0
+        30                                                                                           1               1                                                                   1                       1                                                                   0
+        32                                                                                                                                   2                                                                                                                                       0
+        33                                                                                   1                       1                           1                                                                                                                                   0
+        34                                                                                                                                           1                                                                                                                               0
+        35                                                                                                                                       1       4           1   1           1       1                                                                       1               0
+        38                                                                                                                                               1           2                                                                                                               0
+        39                                                                                                       2   1           1           1                       1   1                       1       1   1                                                                       0
+        40                                                                                                                                                                   1                                                                                                       0
+        41                                                                                                                                                                       2                                                                                                   0
+        42                                                       1                                                                                                                                                                                                                   0
+        44                                                                                                   1                                                                                                                                                                       0
+        45                                                                                                                                                                                           1                                                                               0
+        47                                                                                                                                                                                   1       4               1                                                   1           1
+        49                                                                       1                                                                                       1                                   1                                                                       0
+        50                           1                                                               1                       1                                                                                   1                                                                   0
+        51                                                                                                                                                                                                           2                               1                               0
+        52                                                                                                                                                                                                               1                                                           0
+        53                                                                                                                                                                                                                   1                                                       0
+        54                                                                                                                                                                                                                       1                                                   0
+        55                                                                                                                                                                                                                           1                                               0
+        56                                                                                                                                                                                                                               2   1                                       0
+        57                                                                                                                                                                                                                           1       4                                       0
+        58                                                                                                                                                                                                                                       2                                   0
+        59                                                                                                                                                                                                       1                                   2                               0
+        60                                                                                                                                                                                                                                               1                           0
+        61                                                                                                                                                                                                                                                   3                       0
+        62                                                                                                                                                                                                                                                       2                   0
+        66                                                                                                                                                                                                                                                                   1       0
+        67                                                                                                                                                                                                                                                                       1   0
+        71                                                                                                                                                                                                                                                                           1
 
 
 
@@ -1220,4 +1306,11 @@ splsda_AGE  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  1
          legend("topleft", legend = paste(AGES, "Years"), col = Cols[AGES + 1], lty=1, lwd = 2,cex=0.495)
 
 
-      
+                                                                                                   1                                                         
+
+
+
+
+
+
+
