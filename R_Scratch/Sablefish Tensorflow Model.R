@@ -217,6 +217,9 @@ python3 -c "import os; os.environ['CUDA_VISIBLE_DEVICE']='-1'; import tensorflow
 python3 -c "import os; os.environ['CUDA_VISIBLE_DEVICE']='-1'; import tensorflow as tf"
 
 # In R (R Packages are here: /R/x86_64-pc-linux-gnu-library/4.2)
+
+cd /mnt/w/ALL_USR/JRW/SIDT/Sablefish
+
 R
 options(width = 160)
 library(JRWToolBox)
@@ -369,47 +372,354 @@ lines(x, y, col= 'green')
 # Use of Artificial Neural Networks and NIR Spectroscopy for Non-Destructive Grape Texture Prediction
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8834220/
 
+
+
+# ================================== CNN with Keras ===================================================================================
+
 # Getting Started with Keras
 https://cran.r-project.org/web/packages/keras/vignettes/index.html
 
+https://tensorflow.rstudio.com/tutorials/quickstart/beginner
+
+setwd('/mnt/w/ALL_USR/JRW/SIDT/Sablefish')
+base::load('RData')
+
+#  Split the data into training set (2/3) and test set (1/3)
+set.seed(c(777, 747)[1])
+index <- 1:nrow(Sable_Spectra_2017_2019.sg.iPLS)
+testindex <- sample(index, trunc(length(index)/3))
+x.test <- Sable_Spectra_2017_2019.sg.iPLS[testindex, ]
+x.train <- Sable_Spectra_2017_2019.sg.iPLS[-testindex, ]   
+y.test <- Sable_TMA_2017_2019[testindex]
+y.train <- Sable_TMA_2017_2019[-testindex]
+
+
+dim(x.train)  # [1] 906 380
+
+# ???????? keras.backend.clear_session()
+
+model <- keras_model_sequential(input_shape = 380) %>%
+ layer_flatten() %>%
+ layer_dense(32, activation = "relu") %>%
+ layer_dropout(0.2) %>%
+ layer_dense(72)
+
+model %>% compile(
+  optimizer = "adam",
+  loss = loss_fn,
+  metrics = "accuracy"
+)  
+
+model %>% fit(as.matrix(x.train), y.train, epochs = 100, batch_size=32, view_metrics = TRUE)
+
+model %>% evaluate(as.matrix(x.test),  y.test, verbose = 2)
+probability_model <- keras_model_sequential() %>%
+model() %>%  layer_activation_softmax()
+
+
+  model() %>%
+  layer_activation_softmax() %>%
+  layer_lambda(tf$argmax)
+
+probability_model(x_test[1:5, , ])
+
+# y.train.pred <- keras:::predict.keras.engine.training.Model(model, as.matrix(x.train))
+
+y.train.pred <- apply(keras:::predict.keras.engine.training.Model(model, as.matrix(x.train)), 1, mean)
+
+tf$nn$softmax(y.train.pred)
+
+dev.new()
+hist(y.train.pred)
+
+dev.new()
+plot(y.train, y.train.pred)
+
+dev.new()
+plot(y.test, y.test.pred)
+
+
+options(width = 300)
+Table(round(y.test.pred), y.test)
+
+
+model.1 <- model
+
+
+# ---------------------------  NN Regression model -------------------------------------------------------
+ # Vignette or here:
+https://cran.r-project.org/web/packages/keras/vignettes/index.html
+
+#  Split the data into training set (2/3) and test set (1/3)
+
+R
+options(width = 160)
+library(JRWToolBox)
+lib(tensorflow)
+lib(reticulate)
+lib(keras)
+lib(tidyverse)
+lib(recipes)
+lib(rsample)
+lib(GGally)
+lib(skimr)
+lib(e1071)
+
+
+load('Sable_Spectra_2017_2019.sg.iPLS.RData')
+load('Sable_TMA_2017_2019.RData')
+
+set.seed(c(777, 747)[1])
+index <- 1:nrow(Sable_Spectra_2017_2019.sg.iPLS)
+testindex <- sample(index, trunc(length(index)/3))
+x.test <- Sable_Spectra_2017_2019.sg.iPLS[testindex, ]
+x.train <- Sable_Spectra_2017_2019.sg.iPLS[-testindex, ]   
+y.test <- y.test.raw <- Sable_TMA_2017_2019[testindex]
+y.train <- y.train.raw <- Sable_TMA_2017_2019[-testindex]
+
+
+# Change the range of x matries to [0, 1]
+x.train <- as.matrix(x.train)
+x.train <- x.train - min(x.train)
+x.train <- x.train/max(x.train)
+range(x.train)
+
+x.test <- as.matrix(x.test)
+x.test <- x.test - min(x.test)
+x.test <- x.test/max(x.test)
+range(x.test)
+
+# Make y categorical
+# # y.train <- to_categorical(y.train, 72)
+# # y.test <- to_categorical(y.test, 72)
+
+# Setup TensorFlow in R
+path_to_python <- "./home/wallacej/miniconda3/envs/tf-py38/bin/python3.8"
+virtualenv_create("r-reticulate", python = path_to_python)
+tensorflow::install_tensorflow(envname = "r-reticulate")
+
+# Grape texture
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8834220/
+
+dim(x.train)
+[1] 906 380
+
+model <- keras_model_sequential() 
+model %>% 
+   layer_dense(units = 381, activation = 'relu', kernel_initializer = initializer_he_normal(), input_shape = c(380)) %>% 
+#    layer_dropout(rate = 0.4) %>% 
+   layer_dense(units = 190, activation = 'relu', kernel_initializer = initializer_he_normal()) %>%
+#    layer_dropout(rate = 0.3) %>%
+   layer_dense(units = 1, activation = 'relu')  %>%
+ #   layer_dense(units = 1, activation = 'softmax')
+  
+ summary(model)  
+ 
+ 
+ # Loss function that ignores missing target values in keras for R
+ # https://stackoverflow.com/questions/68290705/loss-function-that-ignores-missing-target-values-in-keras-for-r
+ 
+
+ mse_na_loss <- function(y_true = 0, y_pred = 0){k_pow(y_true-y_pred, 2) * k_cast(k_not_equal(y_true, -1), 'float32') }
+ cce_na_loss <- function(y.true = 0, y_pred = 0 ){ - y.true*log(y_pred) * k_cast(k_not_equal(y.true, -1), 'float32') }
+ 
+model %>% compile(
+ #   loss = 'categorical_crossentropy',
+   loss = loss_mean_squared_error(),
+   optimizer = "adam",
+   metrics = metric_mean_absolute_error()
+ )
+
+history <- fit(model, x.train, y.train, epochs = 1000, batch_size = 32, validation_split = 0.2, view_metrics = TRUE)
+summary(history)
+
+dev.new()
+plot(history)
+
+model <- keras_model_sequential(input_shape = 380) %>%
+ layer_flatten() %>%
+ layer_dense(16, activation = "relu") %>%
+ layer_dropout(0.2) %>%
+ layer_dense(72)
+
+model %>% compile(
+  optimizer = "adam",
+  loss = loss_sparse_categorical_crossentropy(from_logits = FALSE),
+  metrics = "accuracy"
+)  
+summary(model)
+
+
+# # file.create('Run_NN_Model.txt', showWarnings = TRUE)
+# # Loop <- 1
+# # Epochs = 100
+# # while(file.exists('Run_NN_Model.txt')) {
+# #    history <- fit(model, as.matrix(x.train), y.train, epochs = Epochs, batch_size=32, view_metrics = TRUE, initial_epoch = (Loop - 1 ) * Epochs + 1)
+# #    Loop <- Loop + 1
+# # }
+
+# Stop this run by putting R in the background (<ctl - z>), remove the flag in the Linux shell (rm Run_NN_Model_Flag) , and put R back in the foreground with 'fg' and the latest run of epochs will finish smoothly.
+file.create('Run_NN_Model_Flag', showWarnings = TRUE)
+Loop <- 1
+while(file.exists('Run_NN_Model_Flag')) {
+   history <- fit(model, as.matrix(x.train), y.train, epochs = 1000, batch_size=32, validation_split = 0.2, view_metrics = TRUE)
+   cat("\n\nLoop =", Loop, "\n")
+   evaluate(model, as.matrix(x.test),  y.test, verbose = 2)
+   cat("\n")
+   Loop <- Loop + 1   
+}
+summary(history)
+dev.new()
+plot(history)
 
 
 
 
+     loss  accuracy
+2.3647032 0.3938053
+
+     loss  accuracy
+2.3128023 0.3960177
+
+   loss  accuracy
+2.2922294 0.4026549
+
+    loss  accuracy
+2.2893882 0.4048673
+
+    loss  accuracy
+2.3105097 0.4225664
+
+# 500 epochs
+     loss  accuracy
+2.2932701 0.3960177
+
+    loss  accuracy
+2.2980106 0.4115044
+
+# Windows doesn't kill Firefox started by WSL
+shell("echo Taskkill /IM Firefox.exe /F > run.bat")
+shell("start run.bat")
+shell("del run.bat")
+
+start cmd Taskkill /IM Firefox.exe /F
+
+# In Ubuntu find firefox process
+ps aux | grep firefox
+ 
+# Claims to kill firefox - but does not under WSL
+sudo killall -v firefox
 
 
 
+history$params$epochs
+   
+
+probability_model <- keras_model_sequential() %>%
+model() %>%  layer_activation_softmax()
+
+dev.new()
+plot(history)
+
+evaluate(model, x.test, y.test, verbose = 2)
+
+y.test.pred <- predict(model, x.test)
+# y.test.pred <- apply(predict(model, x.test), 1, mean)
+dev.new(width = 20, height = 8)
+plot(y.test.raw, y.test.pred)
+abline(0, 1, col = 'green', lty = 2)
+
+dev.new(width = 20, height = 8)
+plot(y.test.pred, y.test.raw)
+abline(0, 1, col = 'green', lty = 2)
+
+# y.test.pred <- y.test.pred - min(y.test.pred)
+# y.test.pred <- 71 * y.test.pred/max(y.test.pred)
+# dev.new(width = 20, height = 8)
+# plot(y.test.raw, y.test.pred)
+
+cor(y.test, y.test.pred) # cor(y.test, y.test.pred)     # ]0.9292393
+sum(abs(y.test - round(y.test.pred))) # 1,088
+
+options(width = 300)
+Table(round(y.test.pred), y.test)
+
+e1071::classAgreement(Table(round(y.test.pred), y.test)) # $diag[1]  0.3053097
+e1071::classAgreement(Table(round(y.test.pred), y.test), match.names = TRUE) #  $diag [1] 0.300885
 
 
+# Save the NN models
+save_model_weights_tf(model, './checkpoints/Model_Save_Reg_1')
+
+load_model_weights_tf(model, './checkpoints/Model_Save_Reg_1')
+evaluate(model, as.matrix(x.test),  y.test, verbose = 2)
 
 
+Model_Save_Reg_1 <- serialize_model(model, include_optimizer = TRUE)
+save(Model_Save_Reg_1, file = 'Model_Save_Reg_1.RData')
 
+load('Model_Save_Reg_1.RData')
+unserialize_model(Model_Save_Reg_1, custom_objects = NULL, compile = TRUE)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  y.test
+      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 27 28 29 31 35 36 37 38 39 41 45 49 50 51 53 54 55 58 59 62 63 71
+  0  14  8                                                                                                                                          
+  1     56        1                                                                                                                                 
+  2     11  4  4        3                                                                                                                           
+  3         6 25  4     4                                                                                                                           
+  4         3 39 14  2 10  4  3  4  1  2  1  1                                                                                                      
+  5         1 12 13  8 14  4  4  2  4  2        1                                                                                                   
+  6            1  6  2  8  2  3  3     2     1                                                                                                      
+  7            1  3  1  4  2  3  1  1  1  1        1                                                                                                
+  8               4  1     2  2  3  2     2                                   1                                                                     
+  9                  1  1  2  2                             2  1              1     1                                                               
+  10                    1     2              2  1     1                                                                                             
+  11                          1                    3     1  1     1                                                                                 
+  12              1                                   1  1     1                                                                                    
+  13                    1  1              1        1                                                                                                
+  14                    1                       1     2  3  1                                1                                                      
+  15                    1                                                                                                                           
+  16                    1                    1  1        1     1        1  1                                                                        
+  17                                2                                                                                                               
+  18                                                  1     1        1                                                                              
+  19                                   1        1                                   1                                                               
+  21                                                           1  1  1     1                                                                        
+  22                                                     1  1                    1                                                                  
+  23                                                     1                                                                                          
+  24                                                        1                                                                                       
+  26                                                                                   1                                                            
+  27                                                                                                           1                                    
+  28                                                                                            1     1                                             
+  29                                                              1                                         1                                       
+  30                                                  1     1                                                                                       
+  31                                                                                   1                                                            
+  32                                                                                   1                                                            
+  33                                                                                      1                                                         
+  35                                                                                                                 1                              
+  37                                                                                               1                                                
+  38                                                                                   1        1              1                                    
+  39                                                                             1                       1                                          
+  40                                                              1                                                              1                  
+  44                                                                                                              1                          1      
+  53                                                                                                                                   1        1  
+  54                                                                                                                       1                       
+  55                                                                                                                       1                       
+  58                                                                                                                                               1
+  61                                                                                                                                1               
+  62                                                                                                                                      1         
+  63                                                                                                                 1                              
+  66                                                                                                                    1                           
+  75                                                                                                                          1                     
 
 
  
+ 
+ 
+ 
+ 
+ 
 # Could not load dynamic library ‘libnvinfer.so.7’
 https://forums.developer.nvidia.com/t/could-not-load-dynamic-library-libnvinfer-so-7/231606
-
-
-
-
 
 
 # Install NVIDIA CUDA on Ubuntu
@@ -428,27 +738,5 @@ https://www.tensorflow.org/install/source#gpu
 
 # Making a flawless ML env. with Tensorflow 2 and CUDA 10.1 on Ubuntu 20.04 with dual boot 2021
 https://towardsdatascience.com/making-a-flawless-ml-env-with-tensorflow-2-and-cuda-10-1-on-ubuntu-20-04-with-dual-boot-2021-3731c92692fb
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
