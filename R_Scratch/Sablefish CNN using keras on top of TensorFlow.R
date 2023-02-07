@@ -21,6 +21,7 @@ lib(rsample)
 lib(GGally)
 lib(skimr)
 lib(e1071)
+lib(openxlsx)
 
 
 # Setup TensorFlow in R
@@ -78,68 +79,119 @@ model %>% compile(
    metrics = metric_mean_absolute_error()
  )
 
-# Run the model on the training set 
+# ------ Run the model on the training set -----
+
 # Stop this run by removing the 'Run_NN_Model_Flag' file in the Windows working directory. The latest run of epochs will finish smoothly.
 # Likewise in Ubuntu, stop this run by putting R in the background (<ctl - z>), remove the flag in the Linux shell (rm Run_NN_Model_Flag) , and put R back in the foreground with 'fg'.  The latest run of epochs will finish smoothly.
-# The number of old tabs created in the browser reflects the number of loops completed. (The axis in the different tabs may change as the model improves.)
+# The number of old tabs created in the browser reflects the number of iterations completed. (The axis in the different tabs may change as the model improves.)
 # Excessive tabs may crash the browser, delete the old tabs as needed
+
 file.create('Run_NN_Model_Flag', showWarnings = TRUE)
-Loop <- 1
+Iter <- 1
 Cor <- CA_diag <- NULL
+gof()  # *** Removing all graphics windows ***
 dev.set(2)
+dev.new() # 3
+dev.new(width = 20, height = 8) # 4
 
 while(file.exists('Run_NN_Model_Flag')) {
    history <- fit(model, as.matrix(x.train), y.train, epochs = 3000, batch_size=32, validation_split = 0.2, view_metrics = TRUE)
-   cat("\n\nLoop =", Loop, "\n")
+   cat("\n\nIter =", Iter, "\n")
    evaluate(model, as.matrix(x.test),  y.test, verbose = 2)
    cat("\n")
-   Loop <- Loop + 1   
+   Iter <- Iter + 1   
 
    print(summary(history))
-   dev.new()
+   
+   dev.set(3)
    print(plot(history))
        
    # Predict using the test set, plot, create statistics, and create an agreement table
    y.test.pred <- predict(model, as.matrix(x.test))
-   dev.new(width = 20, height = 8)
+   dev.set(4)
    plot(y.test, y.test.pred)
    abline(0, 1, col = 'green', lty = 2)
    
+   # Correlation collector for the iterations plot
    Cor <- c(Cor, cor(y.test, y.test.pred))
-   cat("\nCorrelation =", rev(Cor)[1], "\n") # 0.9292393 (2 loops of 1000 with 777 seed),  0.9602671 (3 loops of 1000 with 747 seed)
-   cat("\nSum of absolute difference =",     sum(abs(y.test - round(y.test.pred))), "\n") # 1,088
-   
-   CA_diag <- c(CA_diag, e1071::classAgreement(Table(round(y.test.pred), y.test), match.names = FALSE)$diag)
-   cat("classAgreement diag", rev(CA_diag)[1], "\n") #  0.3053097, 0.283
+  
+   # Correlation, R_squared, RMSE, MAE
    cat("\n\n")
-   print(e1071::classAgreement(Table(round(y.test.pred), y.test), match.names = TRUE)$diag) # 0.300885, 0.283
+   print(Correlation_R_squared_RMSE_MAE(y.test, y.test.pred))
    
-   options(width = 300)
-   print(Table(round(y.test.pred), y.test))
+   # Sum of absolute differences
+   cat("\nSum of absolute differences =",     sum(abs(y.test - round(y.test.pred))), "\n") 
+     
+   # e1071::classAgreement  
+   CA_diag <- c(CA_diag, e1071::classAgreement(Table(round(y.test.pred), y.test), match.names = FALSE)$diag)
+   cat("\nclassAgreement Diagonal =", rev(CA_diag)[1], "\n")
+   cat("\n\n")
+   # print(e1071::classAgreement(Table(round(y.test.pred), y.test), match.names = TRUE)$diag)  #  match.names = TRUE option
+   
+   # Look at and write out an agreement table with missing  ages included
+   Agreement_Agg <-aggregate(list(N = rep(1, length(y.test))), list(y.test = y.test, y.test.pred = round(y.test.pred)), length)
+   maxAge <- max(c(y.test, y.test.pred))
+   Agreement_Table <- expand.grid( y.test.pred = 0:maxAge, y.test = 0:maxAge)
+   Agreement_Table <- renum(match.f(Agreement_Table, Agreement_Agg, c('y.test', 'y.test.pred'), c('y.test', 'y.test.pred'), 'N'))
+   Agreement_Table$N[is.na(Agreement_Table$N)] <- 0
+   options(width = 250)
+   agg.table(Agreement_Table)
    
    dev.set(2)
-   plot(Cor, col = 'green', type = 'b', ylim = c(-0.03, 1.03), ylab = "Correlation (green) & Diagonal of Class Agreement (red)", xlab = "Loop Number")
+   plot(Cor, col = 'green', type = 'b', ylim = c(-0.03, 1.03), ylab = "Correlation (green) & Diagonal of Class Agreement (red)", xlab = "Iteration Number")
    lines(CA_diag, col = 'red', type = 'b')
 }
 
 
-# Save the NN models
-save_model_weights_tf(model, './checkpoints/Sable_KR_2nd_Level_Seed_747')
+# Outside the while() interation the same analysis of the model can be run, optionally after the model is restored with unserialize() (see below)
 
-load_model_weights_tf(model, './checkpoints/Sable_KR_2nd_Level_Seed_747')
-evaluate(model, as.matrix(x.test),  y.test, verbose = 2)
+# Predict using the test set, plot, create statistics, and create an agreement table
+y.test.pred <- predict(model, as.matrix(x.test))
+dev.new(width = 20, height = 8)
+plot(y.test, y.test.pred)
+abline(0, 1, col = 'green', lty = 2)
+
+# Correlation, R_squared, RMSE, MAE
+Correlation_R_squared_RMSE_MAE(y.test, y.test.pred) # Correlation  0.9292393 (2 loops of 1000 with 777 seed),  0.9602671 (3 loops of 1000 with 747 seed)
+
+# Sum of absolute difference
+sum(abs(y.test - round(y.test.pred))), "\n") # 1,088
+
+# classAgreement
+e1071::classAgreement(Table(round(y.test.pred), y.test), match.names = FALSE) #  $diag 0.3053097, 0.283, 0.3384956
+e1071::classAgreement(Table(round(y.test.pred), y.test), match.names = TRUE) # $diag 0.300885, 0.283, 0.3362832
+
+# Missing not included
+# options(width = 300)
+# Table(round(y.test.pred), y.test)
+
+# Look at and write out an agreement table with missing  ages included
+Agreement_Agg <-aggregate(list(N = rep(1, length(y.test))), list(y.test = y.test, y.test.pred = round(y.test.pred)), length)
+maxAge <- max(c(y.test, y.test.pred))
+Agreement_Table <- expand.grid( y.test.pred = 0:maxAge, y.test = 0:maxAge)
+Agreement_Table <- renum(match.f(Agreement_Table, Agreement_Agg, c('y.test', 'y.test.pred'), c('y.test', 'y.test.pred'), 'N'))
+Agreement_Table$N[is.na(Agreement_Table$N)] <- 0
+options(width = 300)
+# agg.table(Agreement_Table)
+write.csv(agg.table(Agreement_Table), file = 'Agreement_Table.csv')  # See the table below
+
+dev.new(); predicted_observed_plot(y.test, y.test.pred)
+
+dev.new(); residuals_plot(y.test, y.test.pred)
 
 
+# Save the entire NN models with serialize()/unserialize()
+# https://cran.r-project.org/web/packages/keras/vignettes/guide_keras.html
 Sable_KR_2nd_Level_Seed_747 <- serialize_model(model, include_optimizer = TRUE)
 save(Sable_KR_2nd_Level_Seed_747, file = 'Sable_KR_2nd_Level_Seed_747.RData')
 
 load('Sable_KR_2nd_Level_Seed_747.RData')
-unserialize_model(Sable_KR_2nd_Level_Seed_747, custom_objects = NULL, compile = TRUE)
+model <- unserialize_model(Sable_KR_2nd_Level_Seed_747, custom_objects = NULL, compile = TRUE)
+evaluate(model, as.matrix(x.test),  y.test, verbose = 2)
 
 
-# kernel_regularizer only on input
 
-  
+# Results for kernel_regularizer only on input
 Correlation = 0.9591366
 
 Sum of absolute difference = 970
@@ -199,24 +251,6 @@ classAgreement diag 0.3384956
   61                                                                                                                                                     1         
   62                                                                                                                                      1  1                     
   63                                                                                                                                   1                           
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
