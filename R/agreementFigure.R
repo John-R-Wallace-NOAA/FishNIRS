@@ -1,5 +1,5 @@
 
-agreementFigure <- function(Observed, Predicted, Delta, xlab = deparse(substitute(Observed)), ylab = deparse(substitute(Predicted)), full = FALSE, 
+agreementFigure <- function(Observed, Predicted, Delta, Iter. = Iter, xlab = deparse(substitute(Observed)), ylab = deparse(substitute(Predicted)), full = FALSE,
                       axes_zoomed_limits = 0:15, cex = ifelse(full, 0.75, 1.25), col_equal = 'red', col_off_1_or_2 = 'gold', col_off_3_or_4 = 'green', col_off_5_or_greater = 'navyblue') {
 
    Predicted.rd <- round(Predicted + Delta) 
@@ -25,7 +25,7 @@ agreementFigure <- function(Observed, Predicted, Delta, xlab = deparse(substitut
    } else { 
        
      plot(axes_zoomed_limits, axes_zoomed_limits, xlab = paste0(xlab,': Sum of Absolute Differences = ', signif(sum(abs(Predicted.rd - Observed)), 6)), ylab = ylab, type = 'n', 
-           main = paste0('Iter = ', Iter, '; Delta = ', Delta))
+           main = paste0('Iter = ', Iter., '; Delta = ', Delta))
      text(Agreement_Table$Observed, Agreement_Table$Predicted, Agreement_Table$N_char, cex = cex,
             col = ifelse(Agreement_Table$Observed == Agreement_Table$Predicted, col_equal, 
                     ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 1 | Agreement_Table$Observed == Agreement_Table$Predicted - 1 |
@@ -34,3 +34,4 @@ agreementFigure <- function(Observed, Predicted, Delta, xlab = deparse(substitut
                               Agreement_Table$Observed == Agreement_Table$Predicted + 4 | Agreement_Table$Observed == Agreement_Table$Predicted - 4, col_off_3_or_4, col_off_5_or_greater))))
    }
 }
+
