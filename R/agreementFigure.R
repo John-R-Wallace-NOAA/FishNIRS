@@ -16,7 +16,7 @@ agreementFigure <- function(Observed, Predicted, Delta, main = paste0("Iter = ",
    
       plot(0:max(Agreement_Table$Observed), 0:max(Agreement_Table$Predicted), main = ifelse(is.null(main), paste0('Delta = ', Delta), paste0(main, ': Delta = ', Delta)),
          xlab = paste0(xlab,': RMSE = ', signif(sqrt(mean((Predicted.rd - Observed)^2, na.rm = TRUE)), 6), '; SAD = ', 
-                       signif(sum(abs(Predicted.rd - Observed)), 6), " (Pred. rounded)"), ylab = ylab, type = 'n')
+                       signif(sum(abs(Predicted.rd - Observed)), 6), " (Prediction rounded)"), ylab = ylab, type = 'n')
       text(Agreement_Table$Observed, Agreement_Table$Predicted, Agreement_Table$N_char, cex = cex, 
                 col = ifelse(Agreement_Table$Observed == Agreement_Table$Predicted, 'red', 
                    ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 1 | Agreement_Table$Observed == Agreement_Table$Predicted - 1 |
@@ -27,7 +27,7 @@ agreementFigure <- function(Observed, Predicted, Delta, main = paste0("Iter = ",
        
      plot(axes_zoomed_limits, axes_zoomed_limits, main = ifelse(is.null(main), paste0('Delta = ', Delta), paste0(main, ': Delta = ', Delta)),
         xlab = paste0(xlab,': RMSE = ', signif(sqrt(mean((Predicted.rd - Observed)^2, na.rm = TRUE)), 6), '; SAD = ', 
-                       signif(sum(abs(Predicted.rd - Observed)), 6), " (Pred. rounded)"), ylab = ylab, type = 'n')
+                       signif(sum(abs(Predicted.rd - Observed)), 6), " (Prediction rounded)"), ylab = ylab, type = 'n')
      text(Agreement_Table$Observed, Agreement_Table$Predicted, Agreement_Table$N_char, cex = cex,
             col = ifelse(Agreement_Table$Observed == Agreement_Table$Predicted, col_equal, 
                     ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 1 | Agreement_Table$Observed == Agreement_Table$Predicted - 1 |
