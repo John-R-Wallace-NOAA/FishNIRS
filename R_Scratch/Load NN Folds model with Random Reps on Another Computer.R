@@ -1,4 +1,5 @@
 
+
 # Change path as needed
 Sys.setenv("RETICULATE_PYTHON" = "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf")
 Sys.getenv("RETICULATE_PYTHON")
@@ -180,7 +181,7 @@ for (Delta. in c(0.00, -0.10, -0.20, -0.25, -0.30, -0.35, -0.40)) {
   print(Correlation_R_squared_RMSE_MAE_SAD(Sable_TMA_2017_2019, round(y.fold.test.pred_RDM_mean + Delta.)))
 }
 
-Delta <- -0.30 # Best from above
+Delta <- -0.30 # Best Delta from above
 dev.new()
 predicted_observed_plot(Sable_TMA_2017_2019, round(y.fold.test.pred_RDM_mean + Delta), xlab = 'Sable_TMA_2017_2019', ylab = 'y.fold.test.pred_RDM_mean')
 
