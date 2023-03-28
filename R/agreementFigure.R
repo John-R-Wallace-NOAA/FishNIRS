@@ -31,7 +31,7 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    plot(X, Y, main = main,
       xlab = paste0(xlab,': RMSE = ', signif(sqrt(mean((Predicted.rd - Observed)^2, na.rm = TRUE)), 6), '; SAD = ', 
                     signif(sum(abs(Predicted.rd - Observed)), 6), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
-   title(
+   
    text(Agreement_Table$Observed, Agreement_Table$Predicted, Agreement_Table$N_char, cex = cex, 
              col = ifelse(Agreement_Table$Observed == Agreement_Table$Predicted, 'red', 
                    ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 1 | Agreement_Table$Observed == Agreement_Table$Predicted - 1 |
