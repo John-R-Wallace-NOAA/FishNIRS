@@ -1,5 +1,7 @@
 FCNN_model <- function(layer_dropout_rate = NULL, numCol = ncol(x.train)) {
-   # Fully connected model from grape paper
+
+   '  # Fully connected model from the grape texture paper:  '
+   '  # Use of Artificial Neural Networks and NIR Spectroscopy for Non-Destructive Grape Texture Prediction. Basile et al. Foods 2022, 11, 281  '
    
    model <- keras_model_sequential() 
    
