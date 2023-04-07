@@ -1,8 +1,10 @@
 
 CNN_model_ver_5 <- function(x.nrow = nrow(x.train),  x.ncol = ncol(x.train)) {
- # Follows 1D-FCN Soil Phosphorus Prediction in Madagascar paper
- # No activation = 'relu' for layer_conv_1d() nor padding="causal"
- # Drop layers are now up slighty to 0.3 & 0.15
+ 
+ '  # Follows 1D-FCN Soil Phosphorus Prediction in Madagascar paper:  '
+ '  # Using a One-Dimensional Convolutional Neural Network on Visible and Near-Infrared Spectroscopy to Improve  '
+ '  #    Soil Phosphorus Prediction in Madagascar. Kawamura et al. Remote Sens. 2021, 13, 1519  '
+ '  # No activation = "relu" for layer_conv_1d() nor padding = "causal"  '
  
    model <- keras_model_sequential() 
    model %>% 
