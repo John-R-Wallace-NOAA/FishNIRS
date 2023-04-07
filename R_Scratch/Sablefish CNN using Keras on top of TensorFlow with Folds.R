@@ -27,8 +27,8 @@
 
 
 #  ---- Native Windows -----
-remotes::install_github("John-R-Wallace-NOAA/JRWToolBox")
-library(JRWToolBox)
+# remotes::install_github("John-R-Wallace-NOAA/JRWToolBox")
+# library(JRWToolBox)
 
 # install.packages('tensorflow')
 # install.packages('reticulate')
@@ -114,6 +114,9 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Mode.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/FCNN_Model.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_ver_5.R")
+
 
 
 # https://stackoverflow.com/questions/58982467/how-can-i-maximize-the-gpu-usage-of-tensorflow-2-0-from-r-with-keras-library
@@ -163,6 +166,12 @@ nvidia-smi
 # https://stackoverflow.com/questions/71023977/tensorboard-profiler-failed-to-load-libcupti-is-it-installed-and-accessible
  #Tutorial
     https://tensorflow.rstudio.com/tutorials/quickstart/beginner
+    
+# Check TensorFlow supporting software versions
+https://pulsebit.wordpress.com/2021/07/22/checking-versions-on-host-ubuntu-18-04-driver-cuda-cudnn-tensorrt/
+
+
+    
 
 # setwd('/mnt/w/ALL_USR/JRW/SIDT/Sablefish')   
 # base::load('RData')
@@ -198,7 +207,7 @@ base::load('Sable_Spectra_2017_2019.sg.iPLS.RData')
 base::load('Sable_TMA_2017_2019.RData')
 
 
-# Removing the crystallized otie
+# Removing the crystallized otie, but leave the broken ones
 Sable_Spectra_2017_2019.sg.iPLS <- Sable_Spectra_2017_2019.sg.iPLS[-78, ]
 Sable_TMA_2017_2019 <- Sable_TMA_2017_2019[-78]
 
@@ -241,17 +250,22 @@ dev.new(width = 10, height = 10) # 7
 # tensorflow::set_random_seed(Seed_Model, disable_gpu = c(TRUE, FALSE)[1]) 
 
 
-Rdm_reps <- 10
+Rdm_reps <- 20
 Seed_Main <- 707   # Third main seed for the random reps of 10X folds
 set.seed(Seed_Main) 
 Seed_reps <- sample(1e7, Rdm_reps)
 
-Rdm_models <- list() 
-Rdm_folds_index <- list()
+# Rdm_models <- list() 
+# Rdm_folds_index <- list()
+
+# Load the file below to continue adding to Rdm_models & Rdm_folds_index 
+load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish\\Keras_CNN_Models\\Sablefish_2017_2019_Rdm_models_14_Mar_2023_01_38_30.RData") 
+
 y.fold.test.pred_RDM <- NULL
 
+
 file.create('Run_NN_Model_Flag', showWarnings = TRUE)
-for(j in 7:Rdm_reps) {
+for(j in 11:Rdm_reps) {
  
    cat(paste0("\n\nStart of Random Rep = ", j , "\n\n"))
 
@@ -293,9 +307,6 @@ for(j in 7:Rdm_reps) {
        y.train <- Sable_TMA_2017_2019.F[-testindex]
        
        cat(paste0("\n\nDimension of x.train = ", paste(dim(x.train), collapse = ' '), '\n\n')) #  906 380; 905 380 with crystallized otie removed
-       
-       # Source the models
-       source("C:\\ALL_USR\\JRW\\SIDT\\Sablefish\\Keras_CNN_Models\\FCNN_Model.R")
        
        # Same learning rate for all models
        learningRate <- c(0.00088, 0.0009)[2]
@@ -524,7 +535,26 @@ for(j in 7:Rdm_reps) {
 
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+
+
+Firstly, A neural net epoch means training the neural network with all the training data for one cycle. In an epoch, we use all of the data exactly once. 
+A forward pass and a backward pass together are counted as one pass. An epoch is made up of one or more batches. Batch size is the number of samples to
+work through before updating the internal model parameters. At the end of the batch, the predictions are compared to the expected output variables 
+and an error is calculated. From this error, the update algorithm is used to improve the model, e.g. move down along the error gradient.
+
  
+1) A ten fold model format was used.
+2) One tenth of the data was left untouched for testing a model from the reamining 90% of the data.
+3) Of that 90%, 2/3 was used for training and 1/3 for testing that particular model.
+4) To train the sub-model, 500 neural net epochs were run on the training set and then tested against the test set. 
+    Eight such iterations, of 500 epochs each, were performed with (hopefully) model improvements at each step.
+    The validation set used was 20% of the data for each epoch, with batch size set to 32.
+    However, eventutally the model performs worse (almost always by the 8th iteration or 4,000 epochs for this FCNN model on the Sablefish data), 
+    and hence the best fitting iteration is used for the current fold.
+5) After all 10% folds are set aside in turn, a complete fold set is finished, and each predicted point was never inside a model that predicted it.
+5) For testing purposes, twenty complete fold models were run.
+
+
 
 # Load saved model and metadata ### Add two model saved lists together and save ###
 # loadName <- 'Rdm_folds_index_11_Mar_2023_16_51_00' # Use the name from the saved model 
@@ -548,7 +578,7 @@ for(j in 7:Rdm_reps) {
 
 
 loadName <- 'Sablefish_2017_2019_Rdm_models_14_Mar_2023_01_38_30' # Use the name from the saved model 
-load(paste0(loadName, '.RData'))
+base::load(paste0(loadName, '.RData'))
 
 
  
@@ -892,6 +922,15 @@ load(paste0(loadName, '_MD.RData'))
 model <- unserialize_model(eval(parse(text = loadName,)), custom_objects = NULL, compile = TRUE)
 summary(model)
 evaluate(model, as.matrix(x.test),  y.test, verbose = 2)
+
+
+
+
+
+
+
+
+
 
 
 # -----------------------------------------------------------------------------------------------------------------------
