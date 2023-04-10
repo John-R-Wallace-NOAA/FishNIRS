@@ -12,12 +12,13 @@ a <- tf$Variable(5.56)
 b <- tf$Variable(2.7)
 a + b
 
-Seed_Data <- c(777, 747, 727, 787, 797)[3]
-set.seed(Seed_Data)
+Seed_Fold <- c(777, 747, 727, 787, 797)[3]
+set.seed(Seed_Fold)
 
 Seed_Model <- c(777, 747, 727, 787, 797)[3]
 
-tensorflow::set_random_seed(Seed_Model, disable_gpu = c(TRUE, FALSE)[1])
+Disable_GPU <- c(TRUE, FALSE)[1] # Only using the CPU is faster for the current FCNN model on Sablefish, but slower for CNN_model_ver_5
+tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU) 
 
 library(JRWToolBox)
 lib(reticulate)
@@ -256,7 +257,7 @@ base::load('Hake_TMA_2019.RData')
 # = = = = = = = = = = = = = = = = = Intially run the code between the '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
 # Split the data into folds, spitting the remainder of an un-even division into the first folds, one otie per fold until finished
-set.seed(Seed_Data)
+set.seed(Seed_Fold)
 num_folds <- 10
 index_org <- 1:nrow(Hake_spectra_2019.sg.iPLS)
 (fold_size_min <- floor(length(index_org)/num_folds))
@@ -360,7 +361,7 @@ for(j in 11:Rdm_reps) {
        if(model_Name == 'CNN_model_2D')  model <- CNN_model_2D()
              
        # -- Don't reset Iter, Cor, CA_diag, SAD, or .Random.seed when re-starting the same run ---
-       tensorflow::set_random_seed(Seed_Model,  disable_gpu = c(TRUE, FALSE)[1]); Seed_Model  # Trying to this here and above (see the help)
+       tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU); Seed_Model  # Trying to this here and above (see the help for: tensorflow::set_random_seed)
        set.seed(Seed_Data); Seed_Data # Re-setting the 'data' seed here to know where the model starts, also the Keras backend needs to cleared and the model reloaded - see above.
        Iter_Num <- 8
        Iter <- 0
@@ -530,7 +531,7 @@ for(j in 11:Rdm_reps) {
    Rdm_models[[j]] <- Fold_models # List of lists being assigned to an element of a list - the best model for each fold (10 or other used) within the jth random rep
    Rdm_folds_index[[j]] <- folds_index # List of vectors being assigned to an element of a list - the index for each fold (10 or other used) within the jth random rep
    
-   save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Data, Seed_Model, Seed_Main, Rdm_models, 
+   save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
          Rdm_folds_index, file = paste0('Hake_2019_Rdm_models_', timeStamp(), '.RData'))
    
    x.fold.test.ALL <- NULL
