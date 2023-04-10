@@ -78,6 +78,10 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Mode.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/FCNN_Model.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_ver_5.R")
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_2D.R")  # Not working yet
+
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -344,10 +348,7 @@ for(j in 11:Rdm_reps) {
        y.train <- Hake_TMA_2019.F[-testindex]
        
        cat(paste0("\n\nDimension of x.train = ", paste(dim(x.train), collapse = ' '), '\n\n')) #  906 380; 905 380 with crystallized otie removed
-       
-       # Source the models
-       source("C:\\ALL_USR\\JRW\\SIDT\\Sablefish\\Keras_CNN_Models\\FCNN_Model.R")
-       
+         
        # Same learning rate for all models
        learningRate <- c(0.00088, 0.0009)[2]
        
