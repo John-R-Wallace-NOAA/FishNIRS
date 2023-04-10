@@ -3,9 +3,14 @@
 Sys.setenv("RETICULATE_PYTHON" = "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf")
 Sys.getenv("RETICULATE_PYTHON")
 
+# Get the remotes package, if it is not already installed.
+if (!any(installed.packages()[, 1] %in% "remotes"))  install.packages('remotes')  
 
-library(tensorflow)
-library(keras)
+remotes::install_github("John-R-Wallace-NOAA/JRWToolBox", INSTALL_opts = "--no-staged-install")
+library(JRWToolBox)
+
+lib(tensorflow)
+lib(keras)
 k_clear_session()
 
 # Test TensorFlow environment
