@@ -1,5 +1,5 @@
 
-setwd("W:/ALL_USR/JRW/SIDT/Hake Data 2019")
+setwd("C:/ALL_USR/JRW/SIDT/Hake 2019")
 
 Sys.setenv("RETICULATE_PYTHON" = "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf")
 Sys.getenv("RETICULATE_PYTHON")
@@ -16,7 +16,8 @@ Seed_Data <- c(777, 747, 727, 787, 797)[3]
 set.seed(Seed_Data)
 
 Seed_Model <- c(777, 747, 727, 787, 797)[3]
-tensorflow::set_random_seed(Seed_Model,  disable_gpu = c(TRUE, FALSE)[1])
+
+tensorflow::set_random_seed(Seed_Model, disable_gpu = c(TRUE, FALSE)[1])
 
 library(JRWToolBox)
 lib(reticulate)
@@ -27,9 +28,7 @@ lib(GGally)
 lib(skimr)
 lib(e1071)
 lib(plotly)
-
 # lib(openxlsx)
-
 
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -81,7 +80,9 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-base::load("W:\\ALL_USR\\JRW\\SIDT\\Hake Data 2019\\Original\\hake_all_2019.8.10 ORG.RData")
+# Load and look at the raw spectra and metadata
+{
+load("W:\\ALL_USR\\JRW\\SIDT\\Hake Data 2019\\Original\\hake_all_2019.8.10 ORG.RData")
 
 # Look at the data and metadata
 hake_all_2019.8.10[1:4, c(1:3, 1110:1158)]
@@ -94,23 +95,16 @@ hake_all_2019.8.10$shortName <- apply(hake_all_2019.8.10[, 'filenames', drop = F
 
 hake_all_2019.8.10[1:4, c(1:3, 1110:1159)]
 
-dim(hake_all_2019.8.10) # 2338 1159
+dim(hake_all_2019.8.10)
 hake_all_2019.8.10 <- hake_all_2019.8.10[!(hake_all_2019.8.10$crystallized | hake_all_2019.8.10$unscannable), ]
-dim(hake_all_2019.8.10) # 2337 1159
+dim(hake_all_2019.8.10)
 
 # Look at the data with plotly and remove rogue otie
 plotly.Spec(hake_all_2019.8.10, 'all')
 hake_all_2019.8.10 <- hake_all_2019.8.10[!hake_all_2019.8.10$shortName %in% 'HAKE_48', ]
 plotly.Spec(hake_all_2019.8.10, 'all')
 
-# For serving on Web. Needs to be 25k or less for GitHub
-d <- plotly.Spec(hake_all_2019.8.10, 500, plot = FALSE)
 
-# 3D plot for the Web
-d <- plotly.Spec(hake_all_2019.8.10, 1500, plot = FALSE)
-d %>% plot_ly(x = ~Band, y = ~Value, z = ~Scan) %>% group_by(Scan) %>% add_lines(color = ~TMA, colors = rainbow(length(unique(d$Scan)))) 
-
-C:/Users/John.Wallace/AppData/Local/Temp/RtmpkFSJt1/viewhtml1f34338221a5/
 
 # Spectra only 
 Hake_spectra_2019 <- hake_all_2019.8.10[, 2:1113]
@@ -118,6 +112,7 @@ Hake_spectra_2019 <- hake_all_2019.8.10[, 2:1113]
 # TMA only
 Hake_TMA_2019 <- hake_all_2019.8.10$TMA
 
+}
 
 # Savitzky-Golay smoothing    
 {
@@ -258,10 +253,40 @@ names(Hake_spectra_2019.sg.META[, Hake_spectra_2019.iPLS.F$var.selected])
 base::load('Hake_spectra_2019.sg.iPLS.RData')
 base::load('Hake_TMA_2019.RData')
 
+# = = = = = = = = = = = = = = = = = Intially run the code between the '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+   
+# Split the data into folds, spitting the remainder of an un-even division into the first folds, one otie per fold until finished
+set.seed(Seed_Data)
+num_folds <- 10
+index_org <- 1:nrow(Hake_spectra_2019.sg.iPLS)
+(fold_size_min <- floor(length(index_org)/num_folds))
+(num_extra <- num_folds * dec(length(index_org)/num_folds))
+index <- index_org
+folds_index <- list()
+for(i in 1:(num_folds - 1)) {
+print(c(fold_size_min, i, num_extra, i <= num_extra, fold_size_min + ifelse(i <= num_extra, 1, 0), i - num_extra))
+   folds_index[[i]] <- sample(index, fold_size_min + ifelse(i < (num_extra + 0.1), 1, 0))  # Finite math - grr!
+   index <- index[!index %in% folds_index[[i]]]
+}
+folds_index[[num_folds]] <- index
+
+lapply(folds_index, length)
+c(sum(unlist(lapply(folds_index, length))), length(index_org))  # Check that the number of oties is the same
+
+
+gof()  # *** Removing all graphics windows ***
+dev.new(width = 14, height = 6) #2
+dev.new() # 3
+dev.new(width = 11, height = 8) # 4
+dev.new(width = 11, height = 8) # 5
+dev.new(width = 10, height = 10) # 6
+dev.new(width = 10, height = 10) # 7
+
+
 
 # = = = = = = = = = = = = = = = = = Run the code between the '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
     
-Rdm_reps <- 1
+Rdm_reps <- 20
 Seed_Main <- 707   # Third main seed for the random reps of 10X folds
 set.seed(Seed_Main) 
 Seed_reps <- sample(1e7, Rdm_reps)
@@ -270,13 +295,13 @@ Rdm_models <- list()
 Rdm_folds_index <- list()
 
 # Load the file below to continue adding to Rdm_models & Rdm_folds_index 
-# load("C:\\ALL_USR\\JRW\\SIDT\\Hakefish\\Keras_CNN_Models\\Hakefish_2019_Rdm_models_14_Mar_2023_01_38_30.RData") 
+# load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish\\Keras_CNN_Models\\Sablefish_2019_Rdm_models_14_Mar_2023_01_38_30.RData") 
 
 y.fold.test.pred_RDM <- NULL
 
 
 file.create('Run_NN_Model_Flag', showWarnings = TRUE)
-for(j in 1:Rdm_reps) {
+for(j in 11:Rdm_reps) {
  
    cat(paste0("\n\nStart of Random Rep = ", j , "\n\n"))
 
@@ -320,7 +345,7 @@ for(j in 1:Rdm_reps) {
        cat(paste0("\n\nDimension of x.train = ", paste(dim(x.train), collapse = ' '), '\n\n')) #  906 380; 905 380 with crystallized otie removed
        
        # Source the models
-       source("C:\\ALL_USR\\JRW\\SIDT\\Hakefish\\Keras_CNN_Models\\FCNN_Model.R")
+       source("C:\\ALL_USR\\JRW\\SIDT\\Sablefish\\Keras_CNN_Models\\FCNN_Model.R")
        
        # Same learning rate for all models
        learningRate <- c(0.00088, 0.0009)[2]
@@ -335,14 +360,20 @@ for(j in 1:Rdm_reps) {
        if(model_Name == 'CNN_model_2D')  model <- CNN_model_2D()
              
        # -- Don't reset Iter, Cor, CA_diag, SAD, or .Random.seed when re-starting the same run ---
-       tensorflow::set_random_seed(Seed_Model,  disable_gpu = TRUE); Seed_Model  # Trying to this here and and above (see the help)
+       tensorflow::set_random_seed(Seed_Model,  disable_gpu = c(TRUE, FALSE)[1]); Seed_Model  # Trying to this here and above (see the help)
        set.seed(Seed_Data); Seed_Data # Re-setting the 'data' seed here to know where the model starts, also the Keras backend needs to cleared and the model reloaded - see above.
        Iter_Num <- 8
        Iter <- 0
        Cor <- RMSE <- CA_diag <- SAD <- saveModels <- NULL
        saveModels_List <- list()
        
-       while(file.exists('Run_NN_Model_Flag')) {    # The fold version breaks the stop by removing the file flag, but it remains for now
+       while(file.exists('Run_NN_Model_Flag')) {    # The multiple full fold version breaks the stop by removing the file flag, but it remains for now
+       
+          # R memory garbage collection
+          gc()
+          
+          # Clear TensorFlow's session
+          k_clear_session()
        
           (Iter <- Iter + 1)
           cat(paste0("\n\nRandom Replicates = ", j, ": Fold number = ", i, ": Iter = ", Iter,"\n"))
@@ -500,7 +531,7 @@ for(j in 1:Rdm_reps) {
    Rdm_folds_index[[j]] <- folds_index # List of vectors being assigned to an element of a list - the index for each fold (10 or other used) within the jth random rep
    
    save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Data, Seed_Model, Seed_Main, Rdm_models, 
-         Rdm_folds_index, file = paste0('Hakefish_2019_Rdm_models_', timeStamp(), '.RData'))
+         Rdm_folds_index, file = paste0('Hake_2019_Rdm_models_', timeStamp(), '.RData'))
    
    x.fold.test.ALL <- NULL
    y.fold.test.ALL <- NULL
