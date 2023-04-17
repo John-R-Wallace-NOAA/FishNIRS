@@ -1,5 +1,5 @@
      
-     # To start you first need to see the Nvidia graphics card as a GPU on your Windows Server 2019 client:
+     # To start, you first need to see the Nvidia graphics card as a GPU on your Windows Server 2019 client:
      #     https://community.esri.com/t5/implementing-arcgis-questions/enabling-gpu-rendering-on-windows-server-2016/td-p/658522
      
      # See here:
