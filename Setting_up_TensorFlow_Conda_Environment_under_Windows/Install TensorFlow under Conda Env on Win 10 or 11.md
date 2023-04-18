@@ -77,10 +77,8 @@
      # Use ctrl-c to end
      mkdir jupyter_folder
      jupyter-notebook --notebook-dir jupyter_folder
-     
-     jupyter notebook
-     
-     # Create a new notebook and run this 4-line snippet:
+   
+     # Create a new notebook and Run (from the tab above) this 4-line snippet:
      import tensorflow as tf
      from tensorflow.python.client import device_lib
      
