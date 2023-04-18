@@ -31,6 +31,9 @@
      # If versions and builds are not listed below, something went wrong
      conda list cudatoolkit
      conda list cudnn
+          
+     # Check CUDA installation 
+     nvcc --version
      
      # TensorFlow CPU works in R under Windows Server 2019
      # https://conda-forge.org/blog/posts/2021-11-03-tensorflow-gpu/
