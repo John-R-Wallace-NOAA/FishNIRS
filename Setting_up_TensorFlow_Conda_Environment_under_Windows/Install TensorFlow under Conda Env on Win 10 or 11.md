@@ -19,12 +19,13 @@
       
      
      
-     # ------------------------------- Install TensorFlow and CUDA in Conda under Windows 10 & 11; GPU works in Python and in R. Using a mix of conda-forge and pip. ------------------------------------
+     # -- Install TensorFlow and CUDA in Conda under Win 10 & 11; GPU works in Python and in R, using a mix of conda-forge and pip. --
      
      # Bex T. in the the link below does not install the CUDA and cuDNN under Conda, but I get the Jupyter test from him
      # https://towardsdatascience.com/how-to-finally-install-tensorflow-gpu-on-windows-10-63527910f255   
      
-     # Think of cuDNN (NVIDIA CUDA® Deep Neural Network library) as a library for Deep Learning using CUDA and CUDA as a way to talk to the GPU.
+     # Think of cuDNN (NVIDIA CUDA® Deep Neural Network library) as a library for Deep Learning 
+     #     using CUDA and CUDA as a way to talk to the GPU.
      
          
      # In the Anaconda Powershell Prompt window
@@ -47,8 +48,8 @@
      
      
      # Verfiy TensorFlow - single line approach
-     python -c "import tensorflow as tf;print('\n\n\n====================== \n GPU Devices: ',tf.config.list_physical_devices('GPU'), '\n======================')"
-     python -c "import tensorflow as tf;print('\n\n\n====================== \n', tf.reduce_sum(tf.random.normal([1000, 1000])), '\n======================' )"
+     python -c "import tensorflow as tf;print('\n\n\n===== \n GPU Devices: ',tf.config.list_physical_devices('GPU'), '\n=====')"
+     python -c "import tensorflow as tf;print('\n\n\n=====\n', tf.reduce_sum(tf.random.normal([1000, 1000])), '\n======' )"
      
      
      # Verfiy TensorFlow - interactive approach
