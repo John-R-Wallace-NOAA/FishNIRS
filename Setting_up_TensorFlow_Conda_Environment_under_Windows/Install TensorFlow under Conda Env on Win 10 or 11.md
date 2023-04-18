@@ -47,7 +47,7 @@
      python -c "import tensorflow as tf;print(tf.__version__)"
      
      
-     # Verfiy TensorFlow - single line approach
+     # Verfiy TensorFlow - single-line approach
      python -c "import tensorflow as tf; print('\n===== \n GPU Devices: ',tf.config.list_physical_devices('GPU'), '\n=====\n')"
      python -c "import tensorflow as tf; print('\n\n=====\n', tf.reduce_sum(tf.random.normal([1000, 1000])), '\n======\n' )"
      
