@@ -38,7 +38,7 @@ lib(plotly)
 
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
-       require(httr)
+       if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
        File.ASCII <- tempfile()
        if(type == "function")
          on.exit(file.remove(File.ASCII))
