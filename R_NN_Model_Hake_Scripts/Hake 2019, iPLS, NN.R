@@ -1,7 +1,7 @@
 
 # --- Initial setup  (The curly brakets without  indented lines directly below are there to enable the  hiding of code sections using Notepad++.) ---
 {
-setwd("C:/ALL_USR/JRW/SIDT/Hake 2019") # Change this path as needed.
+setwd("C:/ALL_USR/JRW/SIDT/Hake Data 2019") # Change this path as needed.
 
 Sys.setenv(GITHUB_PAT = '<Your GITHUB_PAT >') # Add your GitHub Personal Authentication Token, if not already setup.
 
