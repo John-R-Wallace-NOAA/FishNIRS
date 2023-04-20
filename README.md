@@ -7,9 +7,7 @@ See the code in 'Setting_up_TensorFlow_Conda_Environment_under_Windows' to setup
 The Hake scripts in 'R_NN_Model_Hake_Scripts' are cleaned up.  All other species to be looked at, including Sablefish, will start will this code with the species changed. A function taking a species name would be possible down the road.
 
 
-<h4> Near-Infrared Spectroscopy (NIRS) on fish structures </h4>
-
-
+<h4> Notes for the readSpectraData() Function </h4>
 
 The directory structure used by readSpectraData() is for the R working directory to be directly below the current directory:
 
