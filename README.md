@@ -1,7 +1,7 @@
 <h3> Neural Net Models using the keras R Package with a Custom TensorFlow Conda Environment in Windows</h3>
 
 <h4> Neural Net Model Code in R </h4>
-The Hake scripts in 'R_NN_Model_Hake_Scripts' are cleaned up.  All other species to be looked at, including Sablefish, will start will this code with the species changed. A function taking a species name would be possible down the road.
+The Hake scripts under 'R_NN_Model_Hake_Scripts' are cleaned up.  All other species to be looked at, including Sablefish, will start will this code with the species changed. A function taking a species name would be possible down the road.
 
 <h4> Setting Up the TensorFlow Conda Environment under Windows </h4>
 See the code in 'Setting_up_TensorFlow_Conda_Environment_under_Windows' to setup the custom TensorFlow Conda environment.  Note that as of March 2023, the keras R package's ability to create its own TensorFlow Conda environment is currently broken due to incompatible versions of supporting software in the environment setup.
