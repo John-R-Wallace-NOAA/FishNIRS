@@ -3,8 +3,6 @@
 {
 setwd("C:/ALL_USR/JRW/SIDT/Hake Data 2019") # Change this path as needed.
 
-Sys.setenv(GITHUB_PAT = '<Your GITHUB_PAT >') # Add your GitHub Personal Authentication Token, if not already setup.
-
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
@@ -44,7 +42,6 @@ if (!any(installed.packages()[, 1] %in% "JRWToolBox"))  {
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/dec.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/loess.line.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/plot.loess.R")
-    # ... this list needs to be updated
 }    
 
 # FishNIRS funtion
@@ -542,7 +539,7 @@ for(j in 1:Rdm_reps) {
    Rdm_folds_index[[j]] <- folds_index # List of vectors being assigned to an element of a list - the index for each fold (10 or other used) within the jth random rep
    
    save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
-         Rdm_folds_index, file = paste0('Hake_2019_Rdm_models_', timeStamp(), '.RData'))
+         Rdm_folds_index, file = paste0('Hake_2019_Rdm_model_', Rdm_reps, '_', timeStamp(), '.RData'))
    
    x.fold.test.ALL <- NULL
    y.fold.test.ALL <- NULL
@@ -591,7 +588,7 @@ for (j in 1:Rdm_reps) {
    y.fold.test.pred_RDM <- rbind(y.fold.test.pred_RDM, y.test.pred)
    
    dev.new(width = 11, height = 8)
-   agreementFigure(Hake_TMA_2019, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j)) 
+   agreementFigure(Hake_TMA_2019, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j)) # Delta is a previous estimate or guess for now
    
    # Full figure only needed for a long-lived species like Sablefish
    # dev.new(width = 11, height = 8)
