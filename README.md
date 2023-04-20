@@ -1,3 +1,7 @@
+<h3> Neural Net Models </h3>
+
+The Hake scripts in 'R_NN_Model_Hake_Scripts' are cleaned up.  All other species to be looked at, including Sablefish, will start will this code with the species changed. A function taking a species name would be possible in the future.
+
 
 <h3> Near-Infrared Spectroscopy (NIRS) on fish structures </h3>
 
