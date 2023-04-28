@@ -2,21 +2,27 @@
      # To start, you first need to see the Nvidia graphics card as a GPU on your Windows Server 2019 client:
      #     https://community.esri.com/t5/implementing-arcgis-questions/enabling-gpu-rendering-on-windows-server-2016/td-p/658522
      
-     # See here:
+     # For a picture, see here:
      #     https://towardsdatascience.com/setting-up-tensorflow-gpu-with-cuda-and-anaconda-onwindows-2ee9c39b5c44 
         
-     # for a picture, but don't follow that site past installing Anaconda:
+     # but don't follow that site past installing Anaconda:
      #     https://www.anaconda.com/products/distribution
      
      # After the Anaconda installation follow the steps below.
      
-     # TensorRT?????
-     # https://david-littlefield.medium.com/how-to-install-the-nvidia-cuda-driver-toolkit-cudnn-and-tensorrt-on-windows-10-3fcf97e54522
+     # Here is a reference:
+     #     https://conda-forge.org/blog/posts/2021-11-03-tensorflow-gpu/
+     # but again, following the steps below works for me.
+     
+     # In the code below, the only real difference is that "tensorflow" is the CPU version and "tensorflow-gpu" is the gpu version:
+     conda install tensorflow -c conda-forge
+     conda install tensorflow-gpu -c conda-forge
      
      
-     # ------------------------------- Tensorflow CPU only, no GPU. Using conda-forge. -----------------------------------------------------------
+     # ---------- Tensorflow CPU only, no GPU nor TensorRT. (Using the conda-forge package manager.) --------------
      
-     # *** The no GPU version works in R under Windows Server 2019.  ***  (Note that there is a GPU version that works in R for Windows 10 & 11.)
+     # *** The CPU only version does work in R under Windows Server 2019.  *** 
+     # See the other markdown doc in this folder for a GPU version that works in R for Windows 10 & 11.
      
      conda create -y -p tf_cpu_only python=3.8
      
@@ -34,18 +40,15 @@
           
      # Check CUDA installation 
      nvcc --version
-     
-     # TensorFlow CPU works in R under Windows Server 2019
-     # https://conda-forge.org/blog/posts/2021-11-03-tensorflow-gpu/
+         
      conda install tensorflow -c conda-forge
-     
-     
-     # Verfiy TensorFlow - single line approach
+          
+     # Verfiy TensorFlow using a single line submission to python approach
      python -c "import tensorflow as tf;print('\n\n\n====================== \n GPU Devices: ',tf.config.list_physical_devices('GPU'), '\n======================')"
      python -c "import tensorflow as tf;print('\n\n\n====================== \n', tf.reduce_sum(tf.random.normal([1000, 1000])), '\n======================' )"
      
      
-     # Verfiy TensorFlow - interactive approach
+     # Verfiy TensorFlow using an interactive approach
      python
      >>> 
      import tensorflow as tf
@@ -65,9 +68,8 @@
      
      conda deactivate
      
-     
-     
-     # ------------------------------- tf_gpu_py; GPU works in Python, but not in R. Using conda-forge. -----------------------------------------------------------
+ 
+     # ----------- Tensorflow GPU works in Python, but not in R. (Using the conda-forge package manager.) ---------------------
      
      conda create -y -p tf_gpu_py python=3.8
      
@@ -81,14 +83,6 @@
      
      conda list cudatoolkit
      conda list cudnn
-     
-     
-     # TensorFlow GPU does work in Python under Windows Server 2019, but not R.
-     # So here
-     #     https://github.com/conda-forge/tensorflow-feedstock/pull/111
-     # from here:
-     #     https://conda-forge.org/blog/posts/2021-11-03-tensorflow-gpu/
-     # is not updated, or they are nost using: cudatoolkit=11.2 cudnn=8.1.0?
      
      conda install tensorflow-gpu -c conda-forge
      
@@ -120,20 +114,25 @@
      
      
      
-     # ------------- Mamba install - CPU only -------------------------
+     # ------------- Mamba Package Manager install - only CPU worked for me ------------------
      
-     # See Comment 3 for Linux here: https://stackoverflow.com/questions/54271094/conda-install-c-conda-forge-tensorflow-just-stuck-in-solving-environment
+     # Main reference for Mamba:
+          https://github.com/mamba-org/mamba
      
-     conda create -y --name tf_gpu_3 python=3.8
+     # For code see the second Comment 3 by prerakmody here (I'm not sure why there are two Comment 3's.): 
+          https://stackoverflow.com/questions/54271094/conda-install-c-conda-forge-tensorflow-just-stuck-in-solving-environment
+     
+     conda create -y --name tf_mamba python=3.8
      
      conda env list
      
-     conda activate tf_gpu_3
+     conda activate tf_mamba
      
      
-     # tensorflow (mamba tensorflow-gpu failed under Windows Server 2019 and Windows 10)
-     # Mamba install should include cudatoolkit and cudnn (so less steps)
+     # Mamba install includes cudatoolkit and cudnn, so there are less steps and a nice interface, but 'tensorflow-gpu' failed for me 
+     #       under Windows Server 2019 and Windows 10.
      conda install -y -c conda-forge mamba
+     #  mamba install -y -c conda-forge tensorflow-gpu   
      mamba install -y -c conda-forge tensorflow 
      
      
