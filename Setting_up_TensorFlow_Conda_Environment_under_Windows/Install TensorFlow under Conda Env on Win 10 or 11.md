@@ -3,22 +3,17 @@
      # That should not be a problem in Windows 10 or 11, see the link below for some general info, but use the install code below.
      #      https://hackmd.io/@husohome/Byb6kP6WP 
       
-     # See here:
+     # For a picture see here:
      #     https://towardsdatascience.com/setting-up-tensorflow-gpu-with-cuda-and-anaconda-onwindows-2ee9c39b5c44 
         
-     # for a picture, but don't follow that site past installing Anaconda:
+     # but don't follow that site past installing Anaconda:
      #     https://www.anaconda.com/products/distribution
      
      # After the Anaconda installation follow the steps below.
      
           
-     # -- Install TensorFlow and CUDA in Conda under Win 10 & 11; GPU works in Python and in R, using a mix of conda-forge and pip. --
-     
-     # Bex T. in the the link below does not install the CUDA and cuDNN under Conda, but I get the Jupyter test from him
-     # https://towardsdatascience.com/how-to-finally-install-tensorflow-gpu-on-windows-10-63527910f255   
-     
-     # Think of cuDNN (NVIDIA CUDA® Deep Neural Network library) as a library for Deep Learning 
-     #     using CUDA and CUDA as a way to talk to the GPU.
+     # -- Install TensorFlow and CUDA in Conda under Win 10 & 11; GPU works in Python and in R --
+     #        This install uses a mix of conda-forge and pip package managers.
      
          
      # In the Anaconda Powershell Prompt window
@@ -62,7 +57,14 @@
      >>> 
      
      
-     # Extra testing using Jupyter 
+     # ------ Extra testing using Jupyter Notebook -----
+     
+     # Bex T. in the the link below does not install the CUDA and cuDNN under Conda, but below is a Jupyter Notebook test from him and also the quote below:
+     #      https://towardsdatascience.com/how-to-finally-install-tensorflow-gpu-on-windows-10-63527910f255   
+     
+     # "Think of cuDNN (NVIDIA CUDA® Deep Neural Network library) as a library for Deep Learning 
+     #     using CUDA and CUDA as a way to talk to the GPU."
+     
      pip install jupyterlab ipykernel
      
      ipython kernel install --user --name=tf
