@@ -11,14 +11,7 @@
      
      # After the Anaconda installation follow the steps below.
      
-     
-     
-     # TensorRT?????
-     # https://david-littlefield.medium.com/how-to-install-the-nvidia-cuda-driver-toolkit-cudnn-and-tensorrt-on-windows-10-3fcf97e54522
-     
-      
-     
-     
+          
      # -- Install TensorFlow and CUDA in Conda under Win 10 & 11; GPU works in Python and in R, using a mix of conda-forge and pip. --
      
      # Bex T. in the the link below does not install the CUDA and cuDNN under Conda, but I get the Jupyter test from him
@@ -69,7 +62,7 @@
      >>> 
      
      
-     # Extra test in Jupyter 
+     # Extra testing using Jupyter 
      pip install jupyterlab ipykernel
      
      ipython kernel install --user --name=tf
@@ -90,5 +83,17 @@
      ctrl-c
      
      conda deactivate
+     
+     
+     # ----- The installs above do not include the optional TensorRT (not for lack of trying). -----
+     
+     # What is TensorRT?
+     #      https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt
+     
+     # Here is a reference:
+     #    https://david-littlefield.medium.com/how-to-install-the-nvidia-cuda-driver-toolkit-cudnn-and-tensorrt-on-windows-10-3fcf97e54522
+     
+      
+     
      
 
