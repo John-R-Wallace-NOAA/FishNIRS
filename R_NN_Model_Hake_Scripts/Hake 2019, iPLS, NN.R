@@ -305,16 +305,15 @@ Seed_Main <- 707   # Reducing the number of seeds will be considered later
 set.seed(Seed_Main) 
 Seed_reps <- sample(1e7, Rdm_reps)
 
+# Start fresh or continue by loading a file with model iterations already finished (see the commented line with an example model file). 
 Rdm_models <- list() 
 Rdm_folds_index <- list()
-
-# Load the file below to continue adding to Rdm_models & Rdm_folds_index 
-# load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish\\Keras_CNN_Models\\Sablefish_2019_Rdm_models_14_Mar_2023_01_38_30.RData") 
+# load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish\\Keras_CNN_Models\\Hake_2019_FCNN_10_Rdm_model_1_May_2023_13_34_20.RData") 
 
 file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now.
 
 # Note that errors from plot.loess() are trapped by try() and are normal early in the iteration loop since there are not enough data to smooth.
-for(j in 1:Rdm_reps) {
+for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
  
    cat(paste0("\n\nStart of Random Rep = ", j , "\n\n"))
 
@@ -539,7 +538,7 @@ for(j in 1:Rdm_reps) {
    Rdm_folds_index[[j]] <- folds_index # List of vectors being assigned to an element of a list - the index for each fold (10 or other used) within the jth random rep
    
    save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
-         Rdm_folds_index, file = paste0('Hake_2019_Rdm_model_', Rdm_reps, '_', timeStamp(), '.RData'))
+         Rdm_folds_index, file = paste0('Hake_2019_', model_Name, '_', k, '_Rdm_model_', timeStamp(), '.RData'))
    
    x.fold.test.ALL <- NULL
    y.fold.test.ALL <- NULL
