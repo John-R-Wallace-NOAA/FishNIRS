@@ -1,4 +1,7 @@
      
+     # -- Install TensorFlow and CUDA in Conda under Win 10 & 11; GPU works in Python and in R --
+     #        This install uses a mix of conda-forge and pip package managers.
+          
      # To start, you first need to see your system's NVIDIA graphics card as a GPU under Task Manager on Windows 10 or 11:
      # That should not be a problem in Windows 10 or 11, see the link below for some general info, but use the install code below.
      #      https://hackmd.io/@husohome/Byb6kP6WP 
@@ -10,12 +13,7 @@
      #     https://www.anaconda.com/products/distribution
      
      # After the Anaconda installation follow the steps below.
-     
-          
-     # -- Install TensorFlow and CUDA in Conda under Win 10 & 11; GPU works in Python and in R --
-     #        This install uses a mix of conda-forge and pip package managers.
-     
-         
+              
      # In the Anaconda Powershell Prompt window
      conda create -n tf python==3.8 conda=4.8
      
