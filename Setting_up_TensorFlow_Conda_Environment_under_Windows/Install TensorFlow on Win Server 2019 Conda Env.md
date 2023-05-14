@@ -129,8 +129,8 @@
      conda activate tf_mamba
      
      
-     # Mamba install includes cudatoolkit and cudnn, so there are less steps and a nice interface, but 'tensorflow-gpu' failed for me 
-     #       under Windows Server 2019 and Windows 10.
+     # Mamba install includes cudatoolkit and cudnn, so there are less steps and a nice interface, but 'tensorflow-gpu' failed  
+     #       for me under Windows Server 2019 and Windows 10.
      conda install -y -c conda-forge mamba
      #  mamba install -y -c conda-forge tensorflow-gpu   
      mamba install -y -c conda-forge tensorflow 
