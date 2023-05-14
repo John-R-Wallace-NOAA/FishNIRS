@@ -17,7 +17,7 @@
      # In the Anaconda Powershell Prompt window
      conda create -n tf python==3.8 conda=4.8
      
-     conda info --envs
+     conda env list
      
      conda activate tf
      
