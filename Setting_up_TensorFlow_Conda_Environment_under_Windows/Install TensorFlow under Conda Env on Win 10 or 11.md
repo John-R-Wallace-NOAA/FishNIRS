@@ -88,7 +88,7 @@
     conda deactivate
     
     
-    # ----- The installs above do not include the optional TensorRT (not for lack of trying). -----
+    # ----- The installs above do not include the optional TensorRT (not for lack of trying under conda on native Windows). -----
     
     # What is TensorRT?
     #      https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorrt
