@@ -40,9 +40,13 @@
           
      # Check CUDA installation 
      nvcc --version
+     conda list cuda
          
      conda install tensorflow -c conda-forge
-          
+     
+     # Find version number of tensorflow (2.10.1)
+     conda list tensorflow
+               
      # Verfiy TensorFlow using a single line submission to python approach
      python -c "import tensorflow as tf;print('\n\n\n====================== \n GPU Devices: ',tf.config.list_physical_devices('GPU'), '\n======================')"
      python -c "import tensorflow as tf;print('\n\n\n====================== \n', tf.reduce_sum(tf.random.normal([1000, 1000])), '\n======================' )"
