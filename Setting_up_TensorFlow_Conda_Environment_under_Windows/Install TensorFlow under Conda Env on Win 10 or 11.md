@@ -25,12 +25,15 @@
      
      # Check CUDA installation 
      nvcc --version
+     conda list cuda
+     
      
      # Anything above 2.10.* is not supported on the GPU on Windows Native
      pip install "tensorflow<2.11"
      
      # Find version number of tensorflow (2.10.1)
-     python -c "import tensorflow as tf;print(tf.__version__)"
+     conda list tensorflow
+     python -c "import tensorflow as tf; print(tf.__version__)"
           
      # Verfiy TensorFlow - single-line approach
      python -c "import tensorflow as tf; print('\n===== \n GPU Devices: ',tf.config.list_physical_devices('GPU'), '\n=====\n')"
