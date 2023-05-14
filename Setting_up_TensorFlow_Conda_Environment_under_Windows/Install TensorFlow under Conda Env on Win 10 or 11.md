@@ -57,7 +57,8 @@
      
      # ------ Extra testing using Jupyter Notebook -----
      
-     # Bex T. in the the link below does not install the CUDA and cuDNN under Conda, but below is a quote and a Jupyter Notebook test:
+     # Bex T. in the the link below does not install the CUDA and cuDNN under Conda, but below is a quote and 
+     #   a Jupyter Notebook test:
      #      https://towardsdatascience.com/how-to-finally-install-tensorflow-gpu-on-windows-10-63527910f255   
      
      # "Think of cuDNN (NVIDIA CUDA® Deep Neural Network library) as a library for Deep Learning 
