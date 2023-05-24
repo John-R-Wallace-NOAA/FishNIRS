@@ -98,7 +98,8 @@ tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 
 # --- Load and look at the raw spectra and metadata  ---
 {
-load("hake_all_2019.8.10 ORG.RData") # To read in raw OPUS spectra and save() in R see XXXXXXX.XXX
+# To read in raw OPUS spectra and save() in R follow lines 1-257 in R.Scratch/Update Sable 2017, 2019 R Methods Prediction of Age.R (this repo)
+load("hake_all_2019.8.10 ORG.RData") 
 
 # Look at the data and metadata
 hake_all_2019.8.10[1:4, c(1:3, 1110:1158)]
