@@ -1,7 +1,9 @@
 
 # --- Initial setup  (The curly brakets without  indented lines directly below are there to enable the  hiding of code sections using Notepad++.) ---
+#            (For those who dislike Rstudio,  Notepad++ is here: https://notepad-plus-plus.org/   and NppToR that passes R code from Notepad++ to R is here: https://sourceforge.net/projects/npptor/)
+
 {
-setwd("C:/ALL_USR/JRW/SIDT/Hake Data 2019") # Change this path as needed.
+setwd("C:/SIDT/Hake Data 2019") # Change this path as needed.
 
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -52,7 +54,7 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Mode.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/FCNN_Model.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/FCNN_model_ver_1.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_ver_5.R")
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_2D.R")  # Not working yet
 
@@ -68,12 +70,14 @@ lib(plotly)
 lib(reticulate)
 lib(tensorflow)
 lib(keras)
+lib(prospectr)
 # lib(openxlsx)
 
 
 # --- Setup for TensorFlow and Keras ---
 
-Sys.setenv("RETICULATE_PYTHON" = "C:/m/envs/tf_cpu_only") # Change this path to where your Conda TensorFlow environment is located.
+# Sys.setenv("RETICULATE_PYTHON" = "C:/m/envs/tf_cpu_only") # Change this path to where your Conda TensorFlow environment is located.
+Sys.setenv("RETICULATE_PYTHON" = "C:/m/envs/tf") 
 Sys.getenv("RETICULATE_PYTHON")
 
 # Test to see if  TensorFlow is working in R
@@ -90,9 +94,9 @@ Seed_Model <- c(777, 747, 727, 787, 797)[3]
 
 
 # Pick the NN model to use (CNN_model_2D currently not working.)
-model_Name <- c('FCNN_model', 'CNN_model_ver_5', 'CNN_model_2D')[1]
+model_Name <- c('FCNN_model_ver_1', 'CNN_model_ver_5', 'CNN_model_2D')[1]
  
-Disable_GPU <- model_Name == 'FCNN_model' # Only using the CPU is faster for the FCNN model but slower for CNN_model_ver_5, at least on Sablefish with data from 2017 and 2019.
+Disable_GPU <- model_Name == 'FCNN_model_ver_1' # Only using the CPU is faster for the FCNN model but slower for CNN_model_ver_5, at least on Sablefish with data from 2017 and 2019.
 tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 }   
 
@@ -302,7 +306,7 @@ dev.new(width = 10, height = 10) # 7
 
 # = = = = = = = = = = = = = = = = = Run the NN code between the '= = =' lines and expect long run times = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
     
-(Rdm_reps <- ifelse(model_Name == 'FCNN_model', 20, 10))
+(Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
 Seed_Main <- 707   # Reducing the number of seeds will be considered later
 set.seed(Seed_Main) 
 Seed_reps <- sample(1e7, Rdm_reps)
@@ -364,7 +368,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
        layer_dropout_rate <- NULL
        # layer_dropout_rate <- 0.2
        
-       if(model_Name == 'FCNN_model')  model <- FCNN_model(layer_dropout_rate = layer_dropout_rate)
+       if(model_Name == 'FCNN_model_ver_1')  model <- FCNN_model_ver_1(layer_dropout_rate = layer_dropout_rate)
        if(model_Name == 'CNN_model_ver_5')  model <- CNN_model_ver_5()
        if(model_Name == 'CNN_model_2D')  model <- CNN_model_2D()
              
@@ -390,7 +394,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           viewMetrics <- c(TRUE, FALSE)[2]
           
           # FCNN model
-          if(model_Name == 'FCNN_model') {
+          if(model_Name == 'FCNN_model_ver_1') {
              x.train.array <- as.matrix(x.train)
              history <- fit(model, x.train.array, y.train, epochs = 1, batch_size = 32, validation_split = 0.2, verbose = 2, 
                              #  callbacks = list(callback_tensorboard(histogram_freq = 1, profile_batch = 2)),
@@ -437,12 +441,12 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           # Predict using the test set; plot, create statistics, and create an agreement table
           y.test.pred <- predict(model, x.test.array)
          
-          if(model_Name == 'FCNN_model' & is.null(layer_dropout_rate))  Delta <- -0.2
-          if(model_Name == 'FCNN_model' & !is.null(layer_dropout_rate))  Delta <- -0.3
+          if(model_Name == 'FCNN_model_ver_1' & is.null(layer_dropout_rate))  Delta <- -0.05 # Delta is a previous estimate or guess for now, which varies by species.
+          if(model_Name == 'FCNN_model_ver_1' & !is.null(layer_dropout_rate))  Delta <- -0.3
           if(model_Name == 'CNN_model_ver_5')  Delta <- -0.2
           if(model_Name == 'CNN_model_2D')  Delta <- 0
             
-          y.test.pred.rd <- round(y.test.pred + Delta)  # Rounding with a subtracted delta (tested 1 (one) time which delta worked best)
+          y.test.pred.rd <- round(y.test.pred + Delta)  # Rounding with a added delta  (which is a negative number)
           
           dev.set(4)
           # plot(y.test, y.test.pred)
@@ -527,10 +531,10 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
        y.fold.test.pred <- predict(unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test)
        
        dev.set(6)
-       agreementFigure(y.fold.test, y.fold.test.pred, Delta = -0.2, full = TRUE, main = paste0("Random Rep = ", j, ": Fold Num = ", i)) 
+       agreementFigure(y.fold.test, y.fold.test.pred, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j, ": Fold Num = ", i)) 
        
        dev.set(7)
-       agreementFigure(y.fold.test, y.fold.test.pred, Delta = -0.2, full = FALSE, main = paste0("Random Rep = ", j, ": Fold Num = ", i)) 
+       agreementFigure(y.fold.test, y.fold.test.pred, Delta = Delta, full = FALSE, main = paste0("Random Rep = ", j, ": Fold Num = ", i)) 
    } # j Fold loop
    
    if(!file.exists('Run_NN_Model_Flag'))
@@ -554,10 +558,10 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
    }
 
    dev.new()
-   agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = -0.2, full = TRUE, main = paste0("Random Rep = ", j)) 
+   agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j)) 
    
    dev.new()
-   agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = -0.2, full = FALSE, main = paste0("Random Rep = ", j))
+   agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = FALSE, main = paste0("Random Rep = ", j))
    
 }  # k Random Replicate loop
 
@@ -615,8 +619,9 @@ for (Delta. in seq(0, -0.45, by  = -0.05)) {
   
       Delta Correlation   R_squared        RMSE         MAE         SAD 
    0.000000    0.959358    0.920368    0.772494    0.369007  862.000000 
+   ...
 
- 
+# Hand entered best Delta from above 
 dev.new(width = 11, height = 8)
 agreementFigure(Hake_TMA_2019, y.fold.test.pred_RDM_median, Delta = 0.0, full = TRUE, main = paste0("Median over ", Rdm_reps, ' Full k-Fold Models'), cex = 1.25)   
   
@@ -637,7 +642,7 @@ Stats_RDM_median_by_model
 # An additional full k-fold added to the total number of models at each step   
 dev.new(width = 11, height = 8)
 par(mfrow = c(3,2))  
-Delta <- 0.0
+Delta <- 0.0 # Redundant, but the previous setting of Delta may have been skipped to recreate this figure only, and an old Delta may linger.
 Stats_RDM_median_by_model_added <- NULL
 for(numRdmModels in 1:Rdm_reps) {
 
@@ -680,19 +685,3 @@ for (i in 1:5) {
  
 } 
    
-   
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
