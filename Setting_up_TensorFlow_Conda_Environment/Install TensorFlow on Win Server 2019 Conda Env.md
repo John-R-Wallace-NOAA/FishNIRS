@@ -14,9 +14,8 @@
     #     https://conda-forge.org/blog/posts/2021-11-03-tensorflow-gpu/
     # but again, following the steps below works for me.
     
-    # In the code below, the only real difference is that "tensorflow" is the CPU version and "tensorflow-gpu" is the gpu version:
-    conda install tensorflow -c conda-forge
-    conda install tensorflow-gpu -c conda-forge
+    # In the first two sections of code below, the only real difference is that for the CPU version "tensorflow" is installed, 
+    #    and for the gpu version "tensorflow-gpu" is installed.
     
     
     # ---------- Tensorflow CPU only, no GPU nor TensorRT. (Using the conda-forge package manager.) --------------
