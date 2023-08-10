@@ -6,7 +6,7 @@
     bash Miniconda3-latest-Linux-x86_64.sh
     
     # In the first two sections of code below, the only real difference is that for the CPU version "tensorflow" is installed, 
-    #    and for the gpu version "tensorflow-gpu" is installed:
+    #    and for the gpu version "tensorflow-gpu" is installed.
        
     
     # ---------- Tensorflow CPU only, no GPU nor TensorRT. (Using the conda-forge package manager.) --------------
