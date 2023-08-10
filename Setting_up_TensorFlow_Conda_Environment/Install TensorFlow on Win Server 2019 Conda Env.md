@@ -1,22 +1,20 @@
      
-    # To start, you first need to see the Nvidia graphics card as a GPU on your Windows Server 2019 client:
+    # To start, you first need to see the Nvidia graphics card as a GPU on your Windows Server 2019 client, 
+    #   here are instructions for Windows Server 2016:
     #     https://community.esri.com/t5/implementing-arcgis-questions/enabling-gpu-rendering-on-windows-server-2016/td-p/658522
     
-    # For a picture, see here:
+    # For a picture, see the Task Manager screenshot here, but don't follow this site past the screenshot:
     #     https://towardsdatascience.com/setting-up-tensorflow-gpu-with-cuda-and-anaconda-onwindows-2ee9c39b5c44 
        
-    # but don't follow that site past installing Anaconda:
+    # Install Anaconda from here:
     #     https://www.anaconda.com/products/distribution
     
-    # After the Anaconda installation follow the steps below.
-    
-    # Here is a reference:
+    # After the Anaconda installation follow the steps below, but first here is an informational reference:
     #     https://conda-forge.org/blog/posts/2021-11-03-tensorflow-gpu/
-    # but again, following the steps below works for me.
     
+       
     # In the first two sections of code below, the only real difference is that for the CPU version "tensorflow" is installed, 
     #    and for the gpu version "tensorflow-gpu" is installed.
-    
     
     # ---------- Tensorflow CPU only, no GPU nor TensorRT. (Using the conda-forge package manager.) --------------
     
@@ -66,6 +64,8 @@
     b = tf.constant(10)
     print(tf.add(a,b))
     
+    tf.reduce_sum(tf.random.normal([1000, 1000]))
+    
     quit()
     >>> 
     
@@ -109,6 +109,8 @@
     a = tf.constant(7)
     b = tf.constant(10)
     print(tf.add(a,b))
+    
+    tf.reduce_sum(tf.random.normal([1000, 1000]))
     
     quit()
     >>> 
