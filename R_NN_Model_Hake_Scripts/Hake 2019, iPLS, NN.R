@@ -102,7 +102,7 @@ tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 
 # --- Load and look at the raw spectra and metadata  ---
 {
-# See 'Read OPUS Hake 2019 Spectra into R.R' in this repo for how to read OPUS files in to R using Philipp Baumann's 'simplerspec' R package.
+# See 'Read OPUS Hake 2019 Spectra into R.R' in this repo for how to read OPUS files into R using Pierre Roudier's 'opusreader' R package.
 load("hake_all_2019.8.10 ORG.RData") 
 
 # Look at the data and metadata
