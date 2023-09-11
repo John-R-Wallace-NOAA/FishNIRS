@@ -1,8 +1,7 @@
-##########################################################################################################
-# This script uses Pierre Roudier's 'opusreader' R package (https://github.com/pierreroudier/opusreader)
-##########################################################################################################
 
-# Install some utility functions,  the plotly.Spec() plotting function, and the simplerspec package - all from GitHub
+
+# Install some utility functions and the plotly.Spec() plotting function from GitHub
+
 sourceFunctionURL <- function (URL) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        require(httr)
@@ -17,20 +16,20 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/strSplit.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 
-# lib("philipp-baumann/simplerspec") # https://github.com/philipp-baumann/simplerspec
-lib(simplerspec)
 
-# Upload all spectral files
+# Create a list of all spectral files
 PATH <- "W:/ALL_USR/JRW/SIDT/Hake Data 2019/Original"
 setwd(PATH) # set working directory to folder containing spectral files
 getwd()
-
 
 (listspc <- dir(pattern = '*HAKE*'))[1:20] # creates the list of all the .001 file names in the directory
 length(listspc) #  2340
 
 
 ## ================ Old way to read in spectra =================================
+
+# # lib("philipp-baumann/simplerspec") # https://github.com/philipp-baumann/simplerspec
+# lib(simplerspec)
 
 #  ldf <- list() # creates an empty list
 #  for (k in 1:length(listspc[1:5])) { # loops through and uploads each file using read_opus_bin_univ()  from the simplerspec package
@@ -265,4 +264,3 @@ plotly.Spec(hake_all_2019.6.20, 500)
 plotly.Spec(hake_all_2019.6.20, 40, 'Sex')
 
 plotly.Spec(hake_all_2019.6.20, 200, 'fork_length')
-
