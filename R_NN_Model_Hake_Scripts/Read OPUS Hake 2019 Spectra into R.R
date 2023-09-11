@@ -1,3 +1,6 @@
+##########################################################################################################
+# This script uses Pierre Roudier's 'opusreader' R package (https://github.com/pierreroudier/opusreader)
+##########################################################################################################
 
 # Install some utility functions,  the plotly.Spec() plotting function, and the simplerspec package - all from GitHub
 sourceFunctionURL <- function (URL) {
