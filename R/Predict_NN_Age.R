@@ -17,10 +17,10 @@
 # k_clear_session() 
  
  
-# PATH <- "Original"
+# PATH <- "New_Scans"
 # SG_Variables_Selected <- 'FCNN Model/Hake_2019_SG_Variables_Selected.RData' # iPLS variable selection on Savitzky-Golay smoothed raw data
 # NN_Model <- 'FCNN Model/Hake_2019_CNN_15_Rdm_models_21_Apr_2023_08_18_29.RData'  # 10 Random Models
-# (Pred_ages_21_Apr <- Predict_NN_Age(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model))
+# (Hake_2019_Pred_ages <- Predict_NN_Age(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model))
 
 
 Predict_NN_Age <- function(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model) {
