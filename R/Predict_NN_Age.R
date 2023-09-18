@@ -17,7 +17,7 @@
 # k_clear_session() 
  
  
-# PATH <- "New_Scans"
+# PATH <- "New_Scans" # Put new spectra scans in a separate folder and put the name of the folder here
 # SG_Variables_Selected <- 'FCNN Model/Hake_2019_SG_Variables_Selected.RData' # iPLS variable selection on Savitzky-Golay smoothed raw data
 # NN_Model <- 'FCNN Model/Hake_2019_CNN_15_Rdm_models_21_Apr_2023_08_18_29.RData'  # 10 Random Models
 # (Hake_2019_Pred_ages <- Predict_NN_Age(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model))
