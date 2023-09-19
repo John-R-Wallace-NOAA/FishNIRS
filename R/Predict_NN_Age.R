@@ -1,6 +1,6 @@
 
 #   SG_Variables_Selected <- names(Hake_spectra_2019.sg.iPLS) # Get the variables selected from the column names of the data used in the NN model building
-#   save(SG_Variables_Selected, file = 'FCNN Model/Hake_2019_SG_Variables_Selected.RData')
+#   Add 'SG_Variables_Selected' to the NN_Model '.RData' file
 
 # --- Conda TensorFlow environment ---
 # Conda_TF_Eniv <- "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf" # Work desktop and laptop  
@@ -17,13 +17,12 @@
 # k_clear_session() 
  
  
-# PATH <- "New_Scans" # Put new spectra scans in a separate folder and put the name of the folder here
-# SG_Variables_Selected <- 'FCNN Model/Hake_2019_SG_Variables_Selected.RData' # iPLS variable selection on Savitzky-Golay smoothed raw data
-# NN_Model <- 'FCNN Model/Hake_2019_CNN_15_Rdm_models_21_Apr_2023_08_18_29.RData'  # 10 Random Models
-# (Hake_2019_Pred_ages <- Predict_NN_Age(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model))
+# Spectra_Path <- "New_Scans" # Put new spectra scans in a separate folder and put the name of the folder here
+# NN_Model <- 'FCNN Model/Hake_2019_CNN_15_Rdm_models_21_Apr_2023.RData'  # 10 Random Models
 
+# Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model)
 
-Predict_NN_Age <- function(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model) {
+Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model) {
    
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -47,12 +46,24 @@ Predict_NN_Age <- function(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model)
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
    
-   base::load(SG_Variables_Selected)
    base::load(NN_Model)
+   
+   if (!any(installed.packages()[, 1] %in% "opusreader")) 
+     remotes("pierreroudier/opusreader")   # https://github.com/pierreroudier/opusreader
+     
+   if (!any(installed.packages()[, 1] %in% "tensorflow")) 
+     install.packages("tensorflow")
+     
+   if (!any(installed.packages()[, 1] %in% "keras")) 
+     install.packages("keras") 
+
+   if (!any(installed.packages()[, 1] %in% "prospectr")) 
+     install.packages("prospectr") 
    
    # --- Setup for TensorFlow and Keras ---
    require(tensorflow)
-   require(keras)   
+   require(keras) 
+   require(prospectr)   
    
    # --- Change this path to where your Conda TensorFlow environment is located. ---
    Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) 
@@ -65,21 +76,12 @@ Predict_NN_Age <- function(Conda_TF_Eniv, PATH, SG_Variables_Selected, NN_Model)
    # cat("\n\n")
    # k_clear_session()
    
-   if (!any(installed.packages()[, 1] %in% "opusreader")) 
-     remotes("pierreroudier/opusreader")   # https://github.com/pierreroudier/opusreader
-     
-   if (!any(installed.packages()[, 1] %in% "tensorflow")) 
-     install.packages("tensorflow")
-     
-   if (!any(installed.packages()[, 1] %in% "keras")) 
-     install.packages("keras")  
-     
-   # --- Create a list of all spectral files within 'PATH'---   
-   listspc <- dir(path = PATH)
+   # --- Create a list of all spectral files within 'Spectra_Path'---   
+   listspc <- dir(path = Spectra_Path)
    cat(paste0("\nNumber of Spectral Files Read In: ", length(listspc), "\n\n"))
    
-   newScans.RAW <- opusreader::opus_read(paste(PATH, listspc, sep = "/"), simplify = TRUE)[[2]] 
-   cat("\nDimension of Spectral File Matrix Read In:", dim(newScans), "\n\n")
+   newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, listspc, sep = "/"), simplify = TRUE)[[2]] 
+   cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
    newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]
    Fold_models <- Rdm_models[[1]]
     
