@@ -2,8 +2,15 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), ran
                   scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, alpha = 1, 
                   bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, ...) {
    
+   if (!any(installed.packages()[, 1] %in% "ggplot2")) 
+     install.packages("ggplot2")
+     
+   if (!any(installed.packages()[, 1] %in% "plotly")) 
+     install.packages("plotly")  
+   
    require(ggplot2)   
    require(plotly)
+   
    renum <- function(x, no.num = F) {
       "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R"
       if (nrow(x) == 0) 
@@ -12,7 +19,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), ran
           dimnames(x)[[1]] <- rep("", nrow(x))
       else dimnames(x)[[1]] <- 1:nrow(x)
       x
-    }
+   }
 
    a <- list(
      ticks = "outside",
