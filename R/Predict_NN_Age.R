@@ -1,6 +1,13 @@
 
-#   SG_Variables_Selected <- names(Hake_spectra_2019.sg.iPLS) # Get the variables selected from the column names of the data used in the NN model building
-#   Add 'SG_Variables_Selected' to the NN_Model '.RData' file
+# # Get the variables selected from the column names of the data used in the NN model building
+#   SG_Variables_Selected <- names(Hake_spectra_2019.sg.iPLS) 
+
+# # Add 'SG_Variables_Selected' to the NN_Model '.RData' file
+# if (!any(installed.packages()[, 1] %in% "cgwtools")) 
+#     install.packages("cgwtools") 
+# cgwtools::resave(SG_Variables_Selected, file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')
+
+
 
 # --- Conda TensorFlow environment ---
 # Conda_TF_Eniv <- "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf" # Work desktop and laptop  
@@ -22,7 +29,7 @@
 
 # Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model)
 
-Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model) {
+Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE) {
    
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -43,13 +50,20 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model) {
           }  
    }
    
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/r.R")   
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")     
+   
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
    
+   
    base::load(NN_Model)
    
+   if (!any(installed.packages()[, 1] %in% "remotes")) 
+     install.packages("remotes") 
+   
    if (!any(installed.packages()[, 1] %in% "opusreader")) 
-     remotes("pierreroudier/opusreader")   # https://github.com/pierreroudier/opusreader
+     remotes::install_github("pierreroudier/opusreader")   # https://github.com/pierreroudier/opusreader
      
    if (!any(installed.packages()[, 1] %in% "tensorflow")) 
      install.packages("tensorflow")
@@ -81,6 +95,12 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model) {
    cat(paste0("\nNumber of Spectral Files Read In: ", length(listspc), "\n\n"))
    
    newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, listspc, sep = "/"), simplify = TRUE)[[2]] 
+   
+   if(plot) {
+     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+     plotly.Spec(data.frame(filenames = 1, newScans.RAW, Otie = factor(1:nrow(newScans.RAW)), shortName = 1), N_Samp = 'all', colorGroup = 'Otie')
+   }
+
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
    newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]
    Fold_models <- Rdm_models[[1]]
