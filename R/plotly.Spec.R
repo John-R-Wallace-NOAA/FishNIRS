@@ -1,4 +1,4 @@
-plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, colorGroup = 'TMA', contColorVar = FALSE, facetGroup = NULL, WaveRange = c(0, 8000), 
+plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), randomAfterSampNum = NULL, colorGroup = 'TMA', contColorVar = FALSE, facetGroup = NULL, WaveRange = c(0, 8000), 
                   scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, alpha = 1, 
                   bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, ...) {
    
@@ -57,7 +57,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = 50, randomAfterSampNum = NULL, col
    if(is.null(facetGroup)) {
    
       spectraMeta <- spectraMeta[, c(scanUniqueName, WaveSubset, colorGroup)] 
-      
+ 
       if(casefold(N_Samp) == "all"  ) {
           N_Samp <- nrow(spectraMeta)
           sampRows <- 1:N_Samp
