@@ -56,6 +56,11 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE) {
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
    
+   '%r1%' <- function (e1, e2) 
+   {
+      ifelse(e1%%e2 == 0, e2, e1%%e2)
+   }
+
    
    base::load(NN_Model)
    
@@ -98,24 +103,29 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE) {
    
    if(plot) {
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-     plotly.Spec(data.frame(filenames = 1, newScans.RAW, Otie = factor(1:nrow(newScans.RAW)), shortName = 1), N_Samp = 'all', colorGroup = 'Otie')
+     rowNums <- 1:nrow(newScans.RAW)
+     if(length(rowNums <= 26^2))
+       plotly.Spec(data.frame(filenames = NA, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = NA), colorGroup = 'Otie')
+     else
+      plotly.Spec(data.frame(filenames = NA, newScans.RAW, Otie = factor(rowNums), shortName = NA), colorGroup = 'Otie') 
    }
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
    newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]
-   Fold_models <- Rdm_models[[1]]
-    
+   
    newScans.pred.ALL <- NULL
-   for (i in 1:length(Fold_models)) {      
-         newScans.pred <- as.vector(predict(keras::unserialize_model( Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
-         newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
-   }
-     
+   for(j in 1:length(Rdm_models)) {
+      Fold_models <- Rdm_models[[j]]
+      for (i in 1:length(Fold_models)) {      
+            newScans.pred <- as.vector(predict(keras::unserialize_model( Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
+            newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
+     }
+   }  
    Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median)[,2], 
       Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025)[,2],
       Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975)[,2]), 1)
     
-   cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", length(Fold_models), " randomized models, not the accuracy to a TMA Age ---\n\n"))    
+   cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", length(Rdm_models), " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))    
    data.frame(filenames = listspc, Pred_median)
 }
 
