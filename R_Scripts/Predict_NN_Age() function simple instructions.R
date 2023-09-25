@@ -9,15 +9,25 @@ setwd("C:/ALL_USR/JRW/SIDT/Hake 2019") # Change this path as needed
 #  --- Conda TensorFlow environment ---
 Conda_TF_Eniv <- "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf"  # Change this path as needed
 
+if (!any(installed.packages()[, 1] %in% "ggplot2")) 
+     install.packages("ggplot2") 
+
+if (!any(installed.packages()[, 1] %in% "plotly")) 
+     install.packages("plotly")      
+     
 if (!any(installed.packages()[, 1] %in% "tensorflow")) 
      install.packages("tensorflow")
      
 if (!any(installed.packages()[, 1] %in% "keras")) 
      install.packages("keras") 
-     
+  
+library(ggplot2)
+library(plotly)        
 library(tensorflow)
-library(keras)   
-Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) 
+library(keras)  
+
+Sys.setenv(RETICULATE_PYTHON = Conda_TF_Eniv) 
+Sys.getenv("RETICULATE_PYTHON") 
 
 # --- TensorFlow Math Check  ---
 a <- tf$Variable(5.56)
@@ -27,8 +37,6 @@ a + b
 # --- Pause here when submitting code to R ---
 
 k_clear_session() 
-
-
 
 
 # --- Download functions from GitHub ---
@@ -51,10 +59,9 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           }  
    }
 
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/plotCI.jrw2.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R") 
-  
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+
 
 # --- Put new spectra scans in a separate folder and put the name of the folder below ---
 Spectra_Path <- "New_Scans" 
@@ -62,34 +69,38 @@ Spectra_Path <- "New_Scans"
 #  ---- Note if you get this error: < Error in `[.data.frame`(data.frame(prospectr::savitzkyGolay(newScans.RAW, : undefined columns selected > or you know that 
 #         the new spectra scan(s) do not have the same freq. as the model expects, then add the file 'FCNN\PACIFIC_HAKE_AAA_Correct_Scan_Freq' to your scans and an interpolation will be done. ---
 
-# --- Load the NN model - 20 Random Models each with 10 full k-fold models - using the 2019 Hake NN model as an example ---
+# --- Load the NN model - 20 Random Models each with 10 full k-fold models. Below the 2019 Hake NN model is being used as an example ---
 NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---
 New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE)
-(New_Ages <- cbind(Index = 1:nrow(New_Ages), sort.f(New_Ages, 'NN_Pred_Median')))
 
 
-dev.new(width = 11, height = 8)
-plotCI.jrw2(1:nrow(New_Ages), New_Ages$NN_Pred_Median, New_Ages$Upper_Quantile_0.975, New_Ages$Lower_Quantile_0.025, 
-    ylim = c(-0.5, max(New_Ages$Upper_Quantile_0.975) + 0.5),
-    xlim = c(-0.5, nrow(New_Ages) + 0.5), ylab = "Neural Net Estimated Age", xlab = "Index",
-    main = "Quantiles are a reflection of the NN models Precision, not the Accuracy to a TMA Age")
-    
-abline(h = 1:(floor(max(New_Ages$NN_Pred_Median)) + 1), col ='grey80')
-    
-plotCI.jrw2(1:nrow(New_Ages), New_Ages$NN_Pred_Median, New_Ages$Upper_Quantile_0.975, New_Ages$Lower_Quantile_0.025, 
-    ylim = c(-0.5, max(New_Ages$Upper_Quantile_0.975) + 0.5),
-    xlim = c(-0.5, nrow(New_Ages) + 0.5), ylab = "Neural Net Estimated Age", xlab = "Index",
-    main = "Quantiles are a reflection of the NN models Precision, not the Accuracy to a TMA Age", add = TRUE)
+# --- Create a plot with age estimates and quantile error bars ---
+(New_Ages$Index <- data.frame(Index = 1:nrow(New_Ages), New_Ages))[1:5,]  # Add 'Index' as the first column in the data frame
   
-# Show the new ages rounded in green - the rounding Delta for 2019 Hake is zero    
+# The rounding Delta for 2019 Hake is zero    
 Delta <- 0
-points( 1:nrow(New_Ages), round(New_Ages$NN_Pred_Median + Delta), col = 'green', pch = 19)
+New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
+New_Ages$Rounded_Age <- factor(" ")
+
+ggplotly(ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
+geom_point() +
+geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
 
 
-    
+# --- Sorted Ages ---
+New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see below)
+New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+New_Ages_Sorted[1:5, ]
+
+ggplotly(ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+geom_point() +
+geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
+
+
+  
 # --- Write out to a CSV file ---   
-write.csv(New_Ages, file = 'New Ages for 2019 Hake.csv', row.names = FALSE)
-
-
+write.csv(New_Ages, file = 'New Ages for 2019 Hake Sept 25 2023.csv', row.names = FALSE)
