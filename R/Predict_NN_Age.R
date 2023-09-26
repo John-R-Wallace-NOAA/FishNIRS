@@ -29,7 +29,7 @@
 
 # Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model)
 
-Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE) {
+Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = NULL) {
    
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -51,7 +51,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE) {
    }
    
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/r.R")   
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")     
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")   
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")     
    
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
@@ -95,29 +96,36 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE) {
    # cat("\n\n")
    # k_clear_session()
    
-   # --- Create a list of all spectral files within 'Spectra_Path'---   
-   listspc <- dir(path = Spectra_Path)
-   cat(paste0("\nNumber of Spectral Files Read In: ", length(listspc), "\n\n"))
+   # --- Create a character vector of all spectral files within 'Spectra_Path'---   
+   fileNames <- dir(path = Spectra_Path)
+   cat(paste0("\nNumber of Spectral Files Read In: ", length(fileNames), "\n\n"))
+   shortName <- apply(matrix(fileNames, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[c(2,4)], collapse = "_"))
    
-   newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, listspc, sep = "/"), simplify = TRUE)[[2]] 
+   
+   newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, fileNames, sep = "/"), simplify = TRUE)[[2]] 
    
    if(plot) {
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      rowNums <- 1:nrow(newScans.RAW)
      if(length(rowNums <= 26^2))
-       plotly.Spec(data.frame(filenames = NA, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = NA), colorGroup = 'Otie')
+       plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), colorGroup = 'Otie')
      else
-      plotly.Spec(data.frame(filenames = NA, newScans.RAW, Otie = factor(rowNums), shortName = NA), colorGroup = 'Otie') 
+      plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = factor(rowNums), shortName = shortName), colorGroup = 'Otie') 
    }
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
    newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]
    
+  if(is.null(NumRdmModels))
+      N <- length(Rdm_models)
+  else
+      N <- NumRdmModels
+   
    newScans.pred.ALL <- NULL
-   for(j in 1:length(Rdm_models)) {
+   for(j in 1:N) {
       Fold_models <- Rdm_models[[j]]
       for (i in 1:length(Fold_models)) {      
-            newScans.pred <- as.vector(predict(keras::unserialize_model( Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
+            newScans.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
             newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
      }
    }  
@@ -125,11 +133,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE) {
       Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025)[,2],
       Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975)[,2]), 4)
     
-   cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", length(Rdm_models), " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))    
-   data.frame(filenames = listspc, Pred_median)
+   cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", N, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))    
+   data.frame(filenames = fileNames, Pred_median)
 }
-
-
-
-
 
