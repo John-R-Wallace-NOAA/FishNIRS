@@ -79,6 +79,7 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R") 
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
  
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 
@@ -93,7 +94,7 @@ Spectra_Path <- "New_Scans"
 NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1)
+New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = 'Spectra Figure for New Ages')
   
 # --- Write out to a CSV file - Example of file name using Date() function: 'New Ages for 2019 Hake, 26 Sep 2023.csv' 
 write.csv(New_Ages, file = paste0('New Ages for 2019 Hake, ', Date(" "), '.csv'), row.names = FALSE)
@@ -101,7 +102,6 @@ write.csv(New_Ages, file = paste0('New Ages for 2019 Hake, ', Date(" "), '.csv')
 
 
 # --- Create a plot with age estimates and quantile error bars ---
-
 New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
 print(New_Ages[1:5, ])
 
@@ -110,35 +110,15 @@ Delta <- 0  # The rounding Delta for 2019 Hake is zero
 New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
 New_Ages$Rounded_Age <- factor(" ")
 
-print('Plot 2')
-copyDirectory(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), 'Predicted_Ages_with_Order_by_File_Names')
-browseURL(paste0(getwd(), "/Predicted_Ages_with_Order_by_File_Names/index.html"))
-
-print('Plot 2')
-
-print(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')))
-unlink(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), recursive = TRUE)  # Remove all 'viewhtml' files from the temp directory
-print(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')))
-
-
 g <- ggplotly(ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
 geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
 geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
 print(g)
-copyDirectory(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), 'Predicted_Ages_with_Order_by_File_Names')
-browseURL(paste0(getwd(), "/Predicted_Ages_with_Order_by_File_Names/index.html"))
-          
-          
+saveHtmlFolder('Predicted_Ages_Order_by_File_Names')
+
+     
 # - Plot by sorted NN predicted ages -
-
-print('Plot 3')
-
-print(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')))
-unlink(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), recursive = TRUE) 
-print(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')))
-
-
 New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see below)
 New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
 
@@ -149,20 +129,6 @@ geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
 geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
 print(g)
-copyDirectory(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), 'Predicted_Ages_Sorted')
-browseURL(paste0(getwd(), "/Predicted_Ages_Sorted/index.html"))
-
-
-
-
-p <- paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml'))
-file.info(p)
-order(strptime(file.info(p)$ctime,  "%Y-%m-%d %H:%M:%S"), decreasing = TRUE)
-latestHtmlPlotFolder <- p[order(strptime(file.info(p)$ctime, "%Y-%m-%d %H:%M:%S"), decreasing = TRUE)[1]]
-unlink('Latest Html plot', recursive = TRUE)
-copyDirectory(latestHtmlPlotFolder, 'Latest Html plot')
-browseURL(paste0(getwd(), "/Latest Html plot/index.html"))
-
-
+saveHtmlFolder('Predicted_Ages_Sorted')
 
 
