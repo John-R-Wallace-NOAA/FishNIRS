@@ -43,7 +43,7 @@ library(keras)
 Sys.setenv(RETICULATE_PYTHON = Conda_TF_Eniv) 
 Sys.getenv("RETICULATE_PYTHON") 
 
-# --- TensorFlow Math Check  ---
+# --- TensorFlow Load and Math Check  ---
 a <- tf$Variable(5.56)
 cat("\n\nTensorFlow Math Check\n\na = "); print(a)
 b <- tf$Variable(2.7)
@@ -101,7 +101,7 @@ write.csv(New_Ages, file = paste0('New Ages for 2019 Hake, ', Date(" "), '.csv')
 
 
 # --- Create a plot with age estimates and quantile error bars ---
-# cat("\n\n\n\n")
+
 New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
 print(New_Ages[1:5, ])
 
@@ -110,8 +110,11 @@ Delta <- 0  # The rounding Delta for 2019 Hake is zero
 New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
 New_Ages$Rounded_Age <- factor(" ")
 
-# cat('\n\nPlot 1\n\n')
-print('Plot 1')
+print('Plot 2')
+copyDirectory(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), 'Predicted_Ages_with_Order_by_File_Names')
+browseURL(paste0(getwd(), "/Predicted_Ages_with_Order_by_File_Names/index.html"))
+
+print('Plot 2')
 
 print(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')))
 unlink(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), recursive = TRUE)  # Remove all 'viewhtml' files from the temp directory
@@ -128,8 +131,8 @@ browseURL(paste0(getwd(), "/Predicted_Ages_with_Order_by_File_Names/index.html")
           
           
 # - Plot by sorted NN predicted ages -
-# cat('\n\nPlot 2\n\n')
-print('Plot 2')
+
+print('Plot 3')
 
 print(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')))
 unlink(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), recursive = TRUE) 
@@ -138,7 +141,7 @@ print(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')))
 
 New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see below)
 New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-# cat("\n\n\n\n")
+
 print(New_Ages_Sorted[1:5, ])
 
 g <- ggplotly(ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
@@ -148,3 +151,18 @@ geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(va
 print(g)
 copyDirectory(paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml')), 'Predicted_Ages_Sorted')
 browseURL(paste0(getwd(), "/Predicted_Ages_Sorted/index.html"))
+
+
+
+
+p <- paste0(tempdir(), "\\", list.files(tempdir(), 'viewhtml'))
+file.info(p)
+order(strptime(file.info(p)$ctime,  "%Y-%m-%d %H:%M:%S"), decreasing = TRUE)
+latestHtmlPlotFolder <- p[order(strptime(file.info(p)$ctime, "%Y-%m-%d %H:%M:%S"), decreasing = TRUE)[1]]
+unlink('Latest Html plot', recursive = TRUE)
+copyDirectory(latestHtmlPlotFolder, 'Latest Html plot')
+browseURL(paste0(getwd(), "/Latest Html plot/index.html"))
+
+
+
+
