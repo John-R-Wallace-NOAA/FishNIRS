@@ -93,7 +93,7 @@ NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'
 New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = paste0(Spectra_Path, '/Spectra Figure for New Ages'))
   
 # --- Write out to a CSV file - Example of file name using Date() function: 'New Ages for 2019 Hake, 26 Sep 2023.csv' 
-write.csv(New_Ages, file = paste0(Spectra_Path, '/New Ages for 2019 Hake, ', Date(" "), '.csv'), row.names = FALSE)
+write.csv(New_Ages, file = paste0(Spectra_Path, '/NN Predicted Ages, ', Date(" "), '.csv'), row.names = FALSE)
 
 
 
