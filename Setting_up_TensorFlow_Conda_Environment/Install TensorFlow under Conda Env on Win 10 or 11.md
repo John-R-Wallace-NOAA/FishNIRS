@@ -9,9 +9,12 @@
     # For a picture see here:
     #     https://towardsdatascience.com/setting-up-tensorflow-gpu-with-cuda-and-anaconda-onwindows-2ee9c39b5c44 
        
-    # but don't follow that site past installing Anaconda:
-    #     https://www.anaconda.com/products/distribution
-    
+    # but don't follow that site past installing the Community Verson of MS Visual Studio, if needed:
+    #     https://visualstudio.microsoft.com/vs/community/
+
+    # The Anaconda software is here:
+    #    https://www.anaconda.com/products/distribution
+        
     # After the Anaconda installation follow the steps below.
              
     # In the Anaconda Powershell Prompt window
