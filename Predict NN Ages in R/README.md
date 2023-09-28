@@ -1,8 +1,8 @@
 <h3 >Predicting Neural Net Ages in R under Windows </h3>
 
-<h4> What's Missing </h4>
+<h4> What's Missing (Contact the author for either or both, John.Wallace@noaa.gov)</h4>
   
-- A TensorFlow Anaconda environment necessary for the R package 'tensorflow' to work. See the folder, 'Setting_up_TensorFlow_Conda_Environment' in this repo. 
+- A TensorFlow Anaconda environment necessary for the R package 'tensorflow' to work. See the folder 'Setting_up_TensorFlow_Conda_Environment' in this repo. The MiniConda environment is ~4.5GB in total and ~1.28Gb compressed with 7-Zip.
 - A NN model (saved as a '.RData' binary file) is missing from the folder 'FCNN Model' since it is too large to be loaded into GitHub.
   
 <h4> Making it Work </h4>
