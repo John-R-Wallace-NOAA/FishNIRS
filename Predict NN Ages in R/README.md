@@ -8,7 +8,8 @@
 <h4> Making it Work </h4>
 
 - Copy this repo's files and folder structure to a Windows 10 or 11 machine with R ver 3.0 or greater.
-- Put the Anaconda environment obtained from the author into the 'FCNN Model' directory.
+- Put the Anaconda environment into an appropriate folder on the Window's machine (i.e. "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf") and change the 'Conda_TF_Eniv' path in 'Predict_NN_Age_Script.R' (around line 15) to reflect where it is put.
+- Put R NN model into the 'FCNN Model' directory.
 - Put Bruker spectra files obtained from OPUS into the 'New_Scans' folder. (e.g. PACIFIC_HAKE_BMS201906206C_1191_OD1.0)
 - Double click 'Predict New Ages.bat' to run the batch file in Windows. The batch file uses 'Rscript.exe' to run the code in 'Predict_NN_Age_Script.R'. Likewise you can source() 'Predict_NN_Age_Script.R' into R or copy paste the code into R's Command Window.
 - After running 'Predict_NN_Age_Script.R', the 'New_Scans' folder will contain four new items:
