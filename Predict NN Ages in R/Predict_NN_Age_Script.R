@@ -4,7 +4,7 @@
 ########################################################
 
 if(interactive()) {
-    setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
+#     setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
 } else { 
     options(width = 140)
 } 
@@ -12,7 +12,7 @@ if(interactive()) {
 # Sys.setenv(GITHUB_PAT = '**********')  # You will need a 'GITHUB_PAT' from GitHub set somewhere in R (Search the Web how to get one from GitHub, if needed).
 
 #  --- Conda TensorFlow environment ---
-Conda_TF_Eniv <- "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf"  # Change this path as needed
+Conda_TF_Eniv <- "C:/m3/envs/tf"  # Change this path as needed
 
 if (!any(installed.packages()[, 1] %in% "R.utils")) 
      install.packages("R.utils") 
@@ -80,8 +80,12 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 
 
-# --- Put new spectra scans in a separate folder and put the name of the folder below ---
+# --- Put new spectra scans in a separate folder and enter the name of the folder below ---
 Spectra_Path <- "New_Scans" 
+
+# --- The NN predicted ages will go in the path defined below ---
+Predicted_Ages_Path <- "Predicted_Ages"
+dir.create(Predicted_Ages_Path, showWarnings = FALSE)
 
 #  ---- Note if you get this error: < Error in `[.data.frame`(data.frame(prospectr::savitzkyGolay(newScans.RAW, : undefined columns selected > or you know that 
 #         the new spectra scan(s) do not have the same freq. as the model expects, then add the file 'FCNN\PACIFIC_HAKE_AAA_Correct_Scan_Freq' to your scans and an interpolation will be done. ---
@@ -90,11 +94,12 @@ Spectra_Path <- "New_Scans"
 NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = paste0(Spectra_Path, '/Spectra Figure for New Ages'))
+New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'))
+
+
   
 # --- Write out to a CSV file - Example of file name using Date() function: 'New Ages for 2019 Hake, 26 Sep 2023.csv' 
-write.csv(New_Ages, file = paste0(Spectra_Path, '/NN Predicted Ages, ', Date(" "), '.csv'), row.names = FALSE)
-
+write.csv(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.csv'), row.names = FALSE)
 
 
 # --- Create a plot with age estimates and quantile error bars ---
@@ -111,7 +116,7 @@ geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
 geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
 print(g)
-saveHtmlFolder(paste0(Spectra_Path, '/Predicted_Ages_Order_by_File_Names'))
+saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'))
 Sys.sleep(3)
 
      
@@ -126,6 +131,6 @@ geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
 geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
 print(g)
-saveHtmlFolder(paste0(Spectra_Path, '/Predicted_Ages_Sorted'))
+saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted'))
 
 
