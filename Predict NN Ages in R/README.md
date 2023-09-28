@@ -1,11 +1,11 @@
-<h3 >Predicting Neural Net Ages in R under Windows
+<h3 >Predicting Neural Net Ages in R under Windows </h3>
 
 <h4> What's Missing
   
 - A TensorFlow Anaconda environment necessary for the R package 'tensorflow' to work. 
 - A NN model (saved as a '.RData' binary file) is missing from the folder 'FCNN Model' since it is too large to be loaded into GitHub.
 - 
-<h4> Making it Work
+<h4> Making it Work </h4>
 
 - Copy this repo's files and folder structure to a Windows 10 or 11 machine with R ver 3.0 or greater.
 - Put the Anaconda environment obtained from the author into the 'FCNN Model' directory.
