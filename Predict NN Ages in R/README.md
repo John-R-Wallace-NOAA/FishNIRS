@@ -17,3 +17,4 @@
   - The plotly (R package) HTML folder for the spectra figure ('Spectra Figure for New Ages') seen while running the script.
   - A similar HTML folder for a figure of the new ages with quantile precision bars where the order is derived from the OPUS file names.
   - A HTML folder for a figure of the predicted ages, with quantile precision bars, where ages have been sorted.
+- Note that if the file and folders are overwritten in the 'Predicted_Ages' folder, the files within the folders will have the updated time of modification, but the folders will retain the time they were first created.
