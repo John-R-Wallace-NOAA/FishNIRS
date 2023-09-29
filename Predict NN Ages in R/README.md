@@ -7,7 +7,7 @@
   
 <h4> Making it Work </h4>
 
-- Copy this repo's files and folder structure to a Windows 10 or 11 machine with R ver 3.0 or greater.
+- Copy this repo's files and folder structure to a Windows 10 or 11 machine running R ver 3.0 or greater.
   - Either always start R from where the files and folder structure was created or change the working directory on line 7 in 'Predict_NN_Age_Script.R' (and uncomment).
   - Running the batch file (see below) forces one to be in the correct place.
 - Put the Anaconda environment (uncompressed) into an appropriate folder on the Window's machine (i.e. "C:/m3/envs/tf") and change the 'Conda_TF_Eniv' path in 'Predict_NN_Age_Script.R' (around line 15) to reflect where it is put.
