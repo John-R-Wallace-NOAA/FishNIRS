@@ -90,11 +90,11 @@ dir.create(Predicted_Ages_Path, showWarnings = FALSE)
 #  ---- Note if you get this error: < Error in `[.data.frame`(data.frame(prospectr::savitzkyGolay(newScans.RAW, : undefined columns selected > or you know that 
 #         the new spectra scan(s) do not have the same freq. as the model expects, then add the file 'FCNN\PACIFIC_HAKE_AAA_Correct_Scan_Freq' to your scans and an interpolation will be done. ---
 
-# --- Load the NN model - 20 Random Models each with 10 full k-fold models. Below the 2019 Hake NN model is being used as an example ---
+# --- Load the NN model - 10-20 random models each with 10-fold complete 'k-fold' models. ---
 NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'))
+New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 20, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'))
 
 
   
@@ -102,15 +102,16 @@ New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, N
 write.csv(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.csv'), row.names = FALSE)
 
 
-# --- Create a plot with age estimates and quantile error bars ---
+# --- Create plots with age estimates and quantile error bars ---
 New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
 print(New_Ages[1:5, ])
 
-# - Plot by order implied by the spectra file names -
 Delta <- 0  # The rounding Delta for 2019 Hake is zero  
 New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
 New_Ages$Rounded_Age <- factor(" ")
 
+
+# - Plot by order implied by the spectra file names -
 g <- ggplotly(ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
 geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -121,7 +122,7 @@ Sys.sleep(3)
 
      
 # - Plot by sorted NN predicted ages -
-New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see below)
+New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
 New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
 
 print(New_Ages_Sorted[1:5, ])
