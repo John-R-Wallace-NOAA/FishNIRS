@@ -14,7 +14,7 @@
   - Running the batch file (see below) forces one to be in the correct place.
 - Put the Anaconda environment (uncompressed) into an appropriate folder on the Window's machine (i.e. "C:/m3/envs/tf") and change the 'Conda_TF_Eniv' path in 'Predict_NN_Age_Script.R' (around line 15) to reflect where it is put.
 - Put an R Keras NN model (as a '.Rdata' file) into the 'FCNN Model' directory and change the name in 'NN_Model' relative path (around line 94) to reflect the model's name. ('m3' is short for miniconda3.)
-- Set the rounding delta ('Delta'; around line 110) for the current NN model and species (e.g. the rounding delta for 2019 Hake is zero).
+- Set the rounding delta ('Delta'; around line 109) for the current NN model and species (e.g. the rounding delta for 2019 Hake is zero).
 - After scanning new material comparable to what the NN model was trained on (i.e. otloliths, or gonad material, from the same fish species), put Bruker spectra files from OPUS into the 'New_Scans' folder. (e.g. PACIFIC_HAKE_BMS201906206C_1191_OD1.0). For testing, there are 'old' spectra files used to train the NN model currently in 'New_scans'.  (Do put anything else in the 'New_Scans' folder except spectra files.)
 - Double click 'Predict New Ages.bat' to run the batch file in Windows. The batch file uses 'Rscript.exe' to run the code in 'Predict_NN_Age_Script.R'. Likewise you can source() 'Predict_NN_Age_Script.R' into R or copy paste the code into R's Command Window. 'Predict_NN_Age_Script.R' is a wrapper for 'Predict_NN_Age.R' which is in the 'R' folder of this repo.
 - After running 'Predict_NN_Age_Script.R', the 'Predicted_Ages' folder will contain four new items:
