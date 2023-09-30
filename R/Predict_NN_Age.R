@@ -64,7 +64,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    }
 
    
-   base::load(NN_Model)
+   base::load(NN_Model)  # Also contains SG_Variables_Selected
    
    if (!any(installed.packages()[, 1] %in% "remotes")) 
      install.packages("remotes") 
@@ -118,8 +118,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    }    
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
-   newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]
-   
+   newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]   # SG_Variables_Selected is part of the NN_Model .RData file.
+    
   if(is.null(NumRdmModels))
       N <- length(Rdm_models)
   else
