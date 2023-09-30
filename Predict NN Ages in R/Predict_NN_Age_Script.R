@@ -4,7 +4,7 @@
 ########################################################
 
 if(interactive()) {
-#     setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
+     setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
 } else { 
     options(width = 140)
 } 
@@ -94,8 +94,8 @@ dir.create(Predicted_Ages_Path, showWarnings = FALSE)
 NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 20, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'))
-
+# New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages')) # One random model is faster for testing
+New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'))
 
   
 # --- Write out to a CSV file - Example of file name using Date() function: 'New Ages for 2019 Hake, 26 Sep 2023.csv' 
