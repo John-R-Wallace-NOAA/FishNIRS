@@ -1,15 +1,20 @@
 
+# --- Use 2019 Hake for an example of the steps needed to use the Predict_NN_Age() function ---
+
 # # Get the variables selected from the column names of the data used in the NN model building
 #   SG_Variables_Selected <- names(Hake_spectra_2019.sg.iPLS) 
 
-# # Add 'SG_Variables_Selected' to the NN_Model '.RData' file
-# if (!any(installed.packages()[, 1] %in% "cgwtools")) 
-#     install.packages("cgwtools") 
-# cgwtools::resave(SG_Variables_Selected, file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')
+# Save the rounding Delta for the current NN model 
+# roundingDelta <- 0
+
+# # Add 'SG_Variables_Selected' and 'roundingDelta' to the NN Model '.RData' file
+# JRWToolBox::resave(SG_Variables_Selected, roundingDelta, file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')
 
 
 
-# --- Conda TensorFlow environment ---
+# --- Test Predict_NN_Age() function ---
+
+# - Conda TensorFlow environment -
 # Conda_TF_Eniv <- "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf" # Work desktop and laptop  
 # # Conda_TF_Eniv <- "C:/m/envs/tf_cpu_only") # NWFSC GPU machine - CPU only   
 # # Conda_TF_Eniv <- "C:/m/envs/tf") # NWFSC GPU machine - GPU version breaks in R, but works in Python  
@@ -18,16 +23,18 @@
 # library(keras)   
 # Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) 
 
-# --- TensorFlow Math Check  ---
+
+# - TensorFlow Math Check  -
 # a <- tf$Variable(5.56)
 # b <- tf$Variable(2.7)
 # k_clear_session() 
  
- 
 # Spectra_Path <- "New_Scans" # Put new spectra scans in a separate folder and put the name of the folder here
-# NN_Model <- 'FCNN Model/Hake_2019_CNN_15_Rdm_models_21_Apr_2023.RData'  # 10 Random Models
+# NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'  # 20 Random Models
 
 # Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model)
+
+
 
 Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL) {
    
@@ -64,7 +71,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    }
 
    
-   base::load(NN_Model)  # Also contains SG_Variables_Selected
+   base::load(NN_Model)  # Need SG_Variables_Selected and Rdm_models from NN_Model
    
    if (!any(installed.packages()[, 1] %in% "remotes")) 
      install.packages("remotes") 
