@@ -4,7 +4,7 @@
 ########################################################
 
 if(interactive()) {
-    #  setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
+   # setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
 } else { 
     options(width = 140)
 } 
@@ -95,7 +95,7 @@ dir.create(Predicted_Ages_Path, showWarnings = FALSE)
 NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---
-# New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages')) # One random model is faster for testing
+# New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages')) # One random model for faster testing
 New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'))
 
   
@@ -107,7 +107,7 @@ write.csv(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', D
 New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
 print(New_Ages[1:5, ])
 
-Delta <- extractRData(roundingDelta, file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')  # e.g. the rounding Delta for 2019 Hake is zero.  
+Delta <- extractRData('roundingDelta', file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')  # e.g. the rounding Delta for 2019 Hake is zero.  
 New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
 New_Ages$Rounded_Age <- factor(" ")
 
@@ -118,7 +118,7 @@ geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
 geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
 print(g)
-saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'))
+saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), view = !interactive())
 Sys.sleep(3)
 
      
@@ -133,6 +133,6 @@ geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
 geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
 print(g)
-saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted'))
+saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted'), view = !interactive())
 
 
