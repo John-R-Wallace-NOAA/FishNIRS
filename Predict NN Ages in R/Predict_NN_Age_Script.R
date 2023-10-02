@@ -4,7 +4,7 @@
 ########################################################
 
 if(interactive()) {
-     setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
+    #  setwd("C:/ALL_USR/JRW/SIDT/Hake 2019 NN Model/Predict NN Ages")  # Change path as needed
 } else { 
     options(width = 140)
 } 
@@ -76,7 +76,8 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
- 
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
+
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 
 
@@ -106,7 +107,7 @@ write.csv(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', D
 New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
 print(New_Ages[1:5, ])
 
-Delta <- 0  # The rounding Delta for 2019 Hake is zero  
+Delta <- extractRData(roundingDelta, file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')  # e.g. the rounding Delta for 2019 Hake is zero.  
 New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
 New_Ages$Rounded_Age <- factor(" ")
 
