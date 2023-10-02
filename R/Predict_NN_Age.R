@@ -121,7 +121,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
        plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = factor(rowNums), shortName = shortName), colorGroup = 'Otie') 
   
      if(!is.null(htmlPlotFolder))
-       saveHtmlFolder(htmlPlotFolder)
+       saveHtmlFolder(htmlPlotFolder, view = !interactive())
    }    
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
