@@ -11,7 +11,7 @@
 
 - Copy this repo's files and folder structure to a Windows 10 or 11 machine running R ver 3.0 or greater.
   - Either always start R from where the files and folder structure was created or change the working directory on line 7 in 'Predict_NN_Age_Script.R' (and uncomment).
-  - Running the batch file (see below) forces one to be in the correct place.
+  - Running the batch file (see below) in the normal way within the folder structure, forces one to be in the correct place.
 - Put the Anaconda environment (uncompressed) into an appropriate folder on the Window's machine (i.e. "C:/m3/envs/tf") and change the 'Conda_TF_Eniv' path in 'Predict_NN_Age_Script.R' (around line 15) to reflect where it is put.
 - Put an R Keras NN model (as a '.Rdata' file) into the 'FCNN Model' directory and change the name in 'NN_Model' relative path (around line 94) to reflect the model's name. ('m3' is short for miniconda3.)
 - After scanning new material comparable to what the NN model was trained on (i.e. otloliths, or gonad material, from the same fish species), put Bruker spectra files from OPUS into the 'New_Scans' folder. (e.g. PACIFIC_HAKE_BMS201906206C_1191_OD1.0). For testing, there are 'old' spectra files used to train the NN model currently in 'New_scans'.  (Do put anything else in the 'New_Scans' folder except spectra files.)
