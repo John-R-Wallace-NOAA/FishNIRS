@@ -11,7 +11,7 @@
   
         Sys.setenv(GITHUB_PAT = '**********')
 
-  Search the Web for how to get a GitHub PAT, if there are questions.
+  Search the Web for how to get a GitHub PAT, if help is needed.
 
 - Copy this repo's files and folder structure to a Windows 10 or 11 machine running R ver 3.0 or greater.
   - Either always start R from where the files and folder structure was created or change the working directory on line 7 in 'Predict_NN_Age_Script.R' (and uncomment).
