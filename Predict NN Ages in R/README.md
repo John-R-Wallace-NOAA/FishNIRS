@@ -23,8 +23,8 @@
 - After running 'Predict_NN_Age_Script.R', the 'Predicted_Ages' folder will contain four new items:
   - 'NN Predicted Ages <date & time>.csv' will contain the NN predicted ages with corresponging lower (0.025) and upper (0.975) quantiles based on the random replicates (10-20, say) of 10 full 'k-fold' models. The quantiles are a reflection of the NN models precision based on the random replicates of the full 10-fold models, not the accuracy to a Traditional Method of Aging (TMA) age.
   - The plotly (R package) HTML folder for the spectra figure ('Spectra Figure for New Ages') seen while running the script.
-  - A similar HTML folder for a figure of the new ages with quantile precision bars where the order is derived from the OPUS file names.
-  - A HTML folder for a figure of the predicted ages, with quantile precision bars, where ages have been sorted.
+  - A similar HTML folder for a figure of the new ages with quantile precision bars where the order on the x-axis is derived from the OPUS file names.
+  - A HTML folder for a figure of the predicted ages, with quantile precision bars, where ages have been sorted on the x-axis.
 - Note that if the file and folders are overwritten in the 'Predicted_Ages' folder, the files within the folders will have an updated time of modification, but the folders will retain the time they were first created.
 
 - If you get this error: < Error in `[.data.frame`(data.frame(prospectr::savitzkyGolay(newScans.RAW, : undefined columns selected >, or you know that the spectra scan(s) you are currently working with do not have the same frequencies as the NN model expects, add the file 'FCNN\\*****_AAA_Correct_Scan_Freq' matching the current NN model to your scans in the 'New_Scans' folder. An interpolation will be done on those scans that do not match those used in the NN model. For example, if the NN model is for Pacific hake then use 'FCNN\PACIFIC_HAKE_AAA_Correct_Scan_Freq' to match the model being used.
