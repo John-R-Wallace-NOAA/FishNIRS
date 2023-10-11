@@ -3,14 +3,16 @@
 
 # # Get the variables selected from the column names of the data used in the NN model building
 #   SG_Variables_Selected <- names(Hake_spectra_2019.sg.iPLS) 
+#   SG_Variables_Selected <- as.numeric(substring(names(Sable_Spectra_2017_2019.sg.iPLS), 2))  # Sablefish
+#   SG_Variables_Selected <- names(Sable_Spectra_2017_2019.sg.iPLS)  # Sablefish
 
 # Save the rounding Delta for the current NN model 
 # roundingDelta <- 0
+# roundingDelta <- -0.2 # Sablefish
 
 # # Add 'SG_Variables_Selected' and 'roundingDelta' to the NN Model '.RData' file
 # JRWToolBox::resave(SG_Variables_Selected, roundingDelta, file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')
-
-
+# JRWToolBox::resave(SG_Variables_Selected, roundingDelta, file = 'FCNN Model/Sablefish_2017_2019_Rdm_models_22_Mar_2023_14_57_26.RData') # Sablefish 
 
 # --- Test Predict_NN_Age() function ---
 
@@ -27,8 +29,7 @@
 # - TensorFlow Math Check  -
 # a <- tf$Variable(5.56)
 # b <- tf$Variable(2.7)
-# k_clear_session() 
- 
+# k
 # Spectra_Path <- "New_Scans" # Put new spectra scans in a separate folder and put the name of the folder here
 # NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'  # 20 Random Models
 
@@ -110,7 +111,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    shortName <- apply(matrix(fileNames, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[c(2,4)], collapse = "_"))
    
    
-   newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, fileNames, sep = "/"), simplify = TRUE)[[2]] 
+   newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, fileNames, sep = "/"), simplify = TRUE, wns_digits = 0)[[2]] 
+   # names(newScans.RAW) <- paste("X", round(as.numeric(substring(names(newScans), 2))))
    
    if(plot) {
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
@@ -126,6 +128,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
    newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]   # SG_Variables_Selected is part of the NN_Model .RData file.
+    
     
   if(is.null(NumRdmModels))
       N <- length(Rdm_models)
