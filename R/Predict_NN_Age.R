@@ -107,7 +107,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    
    # --- Create a character vector of all spectral files within 'Spectra_Path'---   
    fileNames <- dir(path = Spectra_Path)
-   cat(paste0("\nNumber of Spectral Files Read In: ", length(fileNames), "\n\n"))
+   cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n"))
    
    shortName <- apply(matrix(fileNames, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
    if(!is.null(shortNameSuffix))
