@@ -26,14 +26,12 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
    
-   noNA <- na.omit(cbind(Observed, Predicted))
-   Observed <- noNA[, 1]
-   Predicted <- noNA[, 2]
-   
-   Predicted.rd <- round(Predicted + Delta) 
+   noNA <- na.omit(data.frame(Observed, Predicted))
+   Obs <- noNA$Observed
+   Predicted.rd <- round(noNA$Predicted + Delta) 
     
-   Agreement_Agg <- aggregate(list(N = rep(1, length(Observed))), list(Observed = Observed, Predicted = Predicted.rd), length)
-   maxAge <- max(c(Observed, Predicted.rd))
+   Agreement_Agg <- aggregate(list(N = rep(1, length(Obs))), list(Observed = Obs, Predicted = Predicted.rd), length)
+   maxAge <- max(c(Obs, Predicted.rd))
    Agreement_Table <- expand.grid( Predicted = 0:maxAge, Observed = 0:maxAge)
    Agreement_Table <- renum(match.f(Agreement_Table, Agreement_Agg, c('Observed', 'Predicted'), c('Observed', 'Predicted'), 'N'))
    Agreement_Table$N[is.na(Agreement_Table$N)] <- 0
@@ -52,11 +50,11 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
       X <- Y <- axes_zoomed_limits   
    }   
    
-   print(Correlation_R_squared_RMSE_MAE_SAD(Observed, Predicted.rd))
+   print(Correlation_R_squared_RMSE_MAE_SAD(Obs, Predicted.rd))
    
    plot(X, Y, main = main,
-      xlab = paste0(xlab,': RMSE = ', signif(sqrt(mean((Predicted.rd - Observed)^2, na.rm = TRUE)), 6), '; SAD = ', 
-                    signif(sum(abs(Predicted.rd - Observed)), 6), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
+      xlab = paste0(xlab,': RMSE = ', signif(sqrt(mean((Predicted.rd - Obs)^2, na.rm = TRUE)), 6), '; SAD = ', 
+                    signif(sum(abs(Predicted.rd - Obs)), 6), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
    
    text(Agreement_Table$Observed, Agreement_Table$Predicted, Agreement_Table$N_char, cex = cex, 
              col = ifelse(Agreement_Table$Observed == Agreement_Table$Predicted, 'red', 
