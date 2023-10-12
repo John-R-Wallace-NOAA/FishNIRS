@@ -1,9 +1,32 @@
 
-
 agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "", xlab = deparse(substitute(Observed)), 
                       ylab = paste0(deparse(substitute(Predicted)), " (rounded after adding Delta)"), full = FALSE, axes_zoomed_limits = 0:15, 
                       cex = ifelse(full, 0.75, 1.25), col_equal = 'red', col_off_1_or_2 = 'gold', col_off_3_or_4 = 'green', col_off_5_or_greater = 'navyblue', ...) {
-
+  
+   # --- Download functions from GitHub ---
+   sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
+             " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+             if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
+             File.ASCII <- tempfile()
+             if(type == "function")
+               on.exit(file.remove(File.ASCII))
+             getTMP <- httr::GET(gsub(' ', '%20', URL))
+             
+             if(type == "function") {
+               write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+               source(File.ASCII)
+             } 
+             if(type == "script") {
+               fileName <- strsplit(URL, "/")[[1]]
+               fileName <- rev(fileName)[1]
+               write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
+             }  
+      }
+   
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
+   
+   
    Predicted.rd <- round(Predicted + Delta) 
     
    Agreement_Agg <- aggregate(list(N = rep(1, length(Observed))), list(Observed = Observed, Predicted = Predicted.rd), length)
