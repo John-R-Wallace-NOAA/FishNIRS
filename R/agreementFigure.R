@@ -27,8 +27,8 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
    
    noNA <- na.omit(cbind(Observed, Predicted))
-   Observed <- noNA$Observed
-   Predicted <- noNA$Predicted
+   Observed <- noNA[, 1]
+   Predicted <- noNA[, 2]
    
    Predicted.rd <- round(Predicted + Delta) 
     
