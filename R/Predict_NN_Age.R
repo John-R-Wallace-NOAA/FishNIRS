@@ -71,14 +71,6 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    {
       ifelse(e1%%e2 == 0, e2, e1%%e2)
    }
-
-   # JRWToolBox::ls.RData(NN_Model, longList = TRUE) # Look at the R objects inside the save()'d  NN_Model '.RData' file.
-   base::load(NN_Model)  # Need SG_Variables_Selected and Rdm_models from NN_Model
-   if(verbose) {
-      print(ll())
-      if(!interactive())
-        Sys.sleep(3)
-   }
    
    if (!any(installed.packages()[, 1] %in% "remotes")) 
      install.packages("remotes") 
@@ -110,6 +102,14 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    # print(a + b)
    # cat("\n\n")
    # k_clear_session()
+   
+   # --- Load the NN model for SG_Variables_Selected and Rdm_models objects ---
+   base::load(NN_Model)  
+   if(verbose) {
+      print(ll()); cat("\n\n")
+      if(!interactive())
+        Sys.sleep(3)
+   }
    
    # --- Create a character vector of all spectral files within 'Spectra_Path'---   
    fileNames <- dir(path = Spectra_Path)
