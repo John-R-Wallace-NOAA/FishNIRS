@@ -123,8 +123,6 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    if(!is.null(shortNameSuffix))
        shortName <- paste0(shortName, "_", shortNameSuffix)
    
-   if(verbose) 
-       cat("\nStarting the estimation of NN ages:\n\n")
    newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, fileNames, sep = "/"), simplify = TRUE, wns_digits = 0)[[2]] 
       
    if(plot) {
@@ -140,6 +138,9 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    }    
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
+   
+   if(verbose) 
+       cat("\nStarting the estimation of NN ages based the spectra scans provided:\n\n")
    newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]   # SG_Variables_Selected is part of the NN_Model .RData file.
   
   
