@@ -108,7 +108,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       base::load(NN_Model)
       
    if(verbose) {
-      '  ###  Just using 'envir = parent.frame()' (the default) adds an environment it seems. Listing an 'envir' arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
+      '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
       base::load(NN_Model, envir = parent.frame()) # Save to [[.GlobalEnv]] 
       print(ll()); cat("\n\n")
       if(!interactive())
