@@ -68,7 +68,6 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), ran
       if(casefold(N_Samp) == "all"  ) {
           N_Samp <- nrow(spectraMeta)
           sampRows <- 1:N_Samp
-          Spectra <- spectraMeta[, -c(1, ncol(spectraMeta))]
       } else {
          if(is.null(randomAfterSampNum)) {
             sampRows <- sample(1:nrow(spectraMeta), N_Samp)
@@ -76,17 +75,17 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), ran
             sampRows <- c(1:randomAfterSampNum, sample((randomAfterSampNum + 1):nrow(spectraMeta), N_Samp))
             N_Samp <- length(1:randomAfterSampNum) + N_Samp
          }   
-         Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta))]      
       }
+      Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta))]  
       
-      Spec <- renum(data.frame(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum.Subset),  # Double use of  data.frame() is needed
+      Spec <- renum(data.frame(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum.Subset),  # Double use of data.frame() is needed
                     Band = rep(as.numeric(names(Spectra)), N_Samp), Value = c(as.matrix(t(Spectra))), 
                     Color = rep(spectraMeta[sampRows, grep(colorGroup, names(spectraMeta))[1]], each = freqNum.Subset)
                     )))) 
       Spec$Band <- as.numeric(Spec$Band)
       Spec$Value <- as.numeric(Spec$Value)
       
-       if(contColorVar)
+      if(contColorVar)
           Spec$Color <- as.numeric(Spec$Color)    
          
       if(verbose) {
@@ -128,16 +127,15 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), ran
       if(casefold(N_Samp) == "all"  ) {
           N_Samp <- nrow(spectraMeta)
           sampRows <- 1:N_Samp
-          Spectra <- spectraMeta[, -c(1, ncol(spectraMeta) - 1, ncol(spectraMeta))]
       } else {
          if(is.null(randomAfterSampNum)) {
             sampRows <- sample(1:nrow(spectraMeta), N_Samp)
          } else {
             sampRows <- c(1:randomAfterSampNum, sample((randomAfterSampNum + 1):nrow(spectraMeta), N_Samp))
             N_Samp <- length(1:randomAfterSampNum) + N_Samp
-         }   
-         Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta) - 1, ncol(spectraMeta))]      
+         }    
       }
+      Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta) - 1, ncol(spectraMeta))] 
       
       Spec <- renum(data.frame(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum.Subset),  # Double use of  data.frame() is needed
                     Band = rep(as.numeric(names(Spectra)), N_Samp), Value = c(as.matrix(t(Spectra))), 
