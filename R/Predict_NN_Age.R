@@ -37,7 +37,8 @@
 
 
 
-Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, shortNameSegments = c(2,4), shortNameSuffix = NULL, verbose = FALSE,  ...) {
+Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, shortNameSegments = c(2,4), shortNameSuffix = NULL, 
+           spectraInterp = c('roudier_opusreader', 'stats_splinefun_lowess', 'prospectr_resample')[2], fineFreqAdj = 150, Predicted_Ages_Path = NULL, verbose = FALSE,  ...) {
    
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -59,9 +60,11 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    }
    
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/r.R") 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ll.R")    
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ll.R")  
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")    
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")   
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
    
    
@@ -111,8 +114,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
       base::load(NN_Model, envir = parent.frame()) # Save to [[.GlobalEnv]] 
       print(ll()); cat("\n\n")
-      if(!interactive())
-        Sys.sleep(3)
+      if(!interactive())  Sys.sleep(3)
    }
    
    # --- Create a character vector of all spectral files within 'Spectra_Path'---   
@@ -123,26 +125,84 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    if(!is.null(shortNameSuffix))
        shortName <- paste0(shortName, "_", shortNameSuffix)
    
-   newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, fileNames, sep = "/"), simplify = TRUE, wns_digits = 0)[[2]] 
+   # Reading in spectra and doing interpolation if needed. For all 3 methods, the wavebands used are based on very first OPUS spectra read-in. See the help for opusreader::opus_read(). 
+   if(spectraInterp == 'roudier_opusreader')   # Roudier's opusreader::opus_read() does interpolation when simplify = TRUE
+      newScans.RAW <- opusreader::opus_read(paste(Spectra_Path, fileNames, sep = "/"), simplify = TRUE, wns_digits = 0)[[2]] 
+     
+   if(spectraInterp %in% c('stats_splinefun_lowess', 'prospectr_resample')) {     # Below simplify = FALSE, so interpolation is not done by Roudier's opusreader::opus_read(). 
+   
+      # ----------- Re-sampling wavebands using stats::splinefun() with lowess() (inside of the JRWToolBox::predict.lowess() function) or prospectr::resample() --------------
+      newScans.ADJ <- list()
+      for (i in fileNames)  {
+         print(i)
+         try(newScans.ADJ[[i]] <- opusreader::opus_read(paste(Spectra_Path, i , sep = "/"), simplify = FALSE, wns_digits = 0)[[2]] )
+      }
       
-   if(plot) {
+      wavebandsToUse <- as.numeric(colnames(newScans.ADJ[[1]]))
+     
+      if(verbose & plot) {          # Extra adjustments added here - THIS IS EXPERIMENTAL
+         png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Spline_Function_Raw.png'))
+         plot(wavebandsToUse - 270, newScans.ADJ[[1]] + 0.10, type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000))
+         for(j in 2:length(fileNames)) {
+           wavebandsOld <- as.numeric(colnames(newScans.ADJ[[j]]))
+           # adjFreq <- c(0, min(wavebandsToUse) - min(wavebandsOld) + fineFreqAdj)[2]
+           adjFreq <- ifelse(j > 89, 0, -270)
+           # adjAsorb <- c(0, mean(newScans.ADJ[[1]]) - mean(newScans.ADJ[[j]]))[1]
+           adjAsorb <- ifelse(j > 89, 0, 0.10)
+           lines(wavebandsOld + adjFreq, newScans.ADJ[[j]] + adjAsorb, col = j)
+         }
+         abline(v = as.numeric(substring(SG_Variables_Selected, 2)), col = 'grey')
+         dev.off()
+         browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Spline_Function_Raw.png'), browser = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe")
+      } 
+      
+      newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse)) #make empty matrix for loop
+      newScans.ADJ_int[1, ] <- newScans.ADJ[[1]]
+      
+      for (j in 2:length(newScans.ADJ)){ 
+        bar(j, length(newScans.ADJ))
+        wavebandsOld <- as.numeric(colnames(newScans.ADJ[[j]]))
+        if(all(wavebandsOld == wavebandsToUse))
+           newScans.ADJ_int[j,] <- newScans.ADJ[[j]]
+        else {    
+           adjFreq <- c(0, min(wavebandsToUse) - min(wavebandsOld) + fineFreqAdj)[1]
+           # print(c(j, adjFreq,  min(wavebandsToUse), min(wavebandsOld), min(wavebandsOld) + adjFreq))
+           adjAsorb <- c(0, mean(newScans.ADJ[[1]]) - mean(newScans.ADJ[[j]]))[1]
+           if(spectraInterp == 'stats_splinefun_lowess') 
+              newScans.ADJ_int[j,] <- predict.lowess(lowess(wavebandsOld + adjFreq, newScans.ADJ[[j]] + adjAsorb, f = 0.001), newdata = wavebandsToUse)
+           if(spectraInterp == 'prospectr_resample')
+              newScans.ADJ_int[j,] <- prospectr::resample(X = newScans.ADJ[[j]] + adjAsorb, wav = wavebandsOld + adjFreq, new.wav = wavebandsToUse)   
+        }
+      }
+      
+      colnames(newScans.ADJ_int) <- colnames(newScans.ADJ[[1]])
+      newScans.RAW <- as.data.frame(newScans.ADJ_int)
+      # dim(newScans.RAW)
+      print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
+  }
+      
+      
+# run <- function(...) {     # Use when debugging interactively
+  if(plot) {
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      rowNums <- 1:nrow(newScans.RAW)
      if(length(rowNums <= 26^2))
-       { plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), colorGroup = 'Otie', ...) }
+        plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), colorGroup = 'Otie', ...)
      else
        plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = factor(rowNums), shortName = shortName), colorGroup = 'Otie', ...) 
   
      if(!is.null(htmlPlotFolder))
        saveHtmlFolder(htmlPlotFolder, view = !interactive())
    }    
+# }; run() # Use when debugging interactively
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
    
    if(verbose) 
        cat("\nStarting the estimation of NN ages based the spectra scans provided:\n\n")
-   newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected]   # SG_Variables_Selected is part of the NN_Model .RData file.
-  
+   trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
+   if(inherits(trySgVarSel, "try-error"))
+        stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
   
   if(is.null(NumRdmModels))
       N <- length(Rdm_models)
@@ -158,9 +218,9 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
      }
    }  
       
-   Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median)[,2], 
-      Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025)[,2],
-      Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975)[,2]), 4)
+   Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median, na.rm = TRUE)[,2], 
+      Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025, na.rm = TRUE)[,2],
+      Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975, na.rm = TRUE)[,2]), 4)
     
    cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", N, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))    
    data.frame(filenames = fileNames, Pred_median)
