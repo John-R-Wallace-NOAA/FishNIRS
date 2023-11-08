@@ -201,9 +201,14 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    if(verbose) 
        cat("\nStarting the estimation of NN ages based the spectra scans provided:\n\n")
    trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
-   if(inherits(trySgVarSel, "try-error"))
+   if(inherits(trySgVarSel, "try-error")) {
+        shell(paste0("echo.  > ", Predicted_Ages_Path, "\\ERROR_READ_ME.txt"))
+        shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "\\ERROR_READ_ME.txt"))
         stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
-  
+   }
+   
+   paste0(Predicted_Ages_Path, '/Spline_Function_Raw.png')
+   
   if(is.null(NumRdmModels))
       N <- length(Rdm_models)
   else
