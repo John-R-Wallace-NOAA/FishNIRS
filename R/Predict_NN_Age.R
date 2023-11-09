@@ -38,7 +38,7 @@
 
 
 Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, shortNameSegments = c(2,4), shortNameSuffix = NULL, 
-           spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[2], fineFreqAdj = 150, Predicted_Ages_Path = NULL, verbose = FALSE,  ...) {
+     opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[2], fineFreqAdj = 150, Predicted_Ages_Path = NULL, verbose = FALSE,  ...) {
    
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -67,7 +67,6 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
    
-   
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
    
    '%r1%' <- function (e1, e2) 
@@ -78,12 +77,16 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    if (!any(installed.packages()[, 1] %in% "remotes")) 
      install.packages("remotes") 
    
-   # if (!any(installed.packages()[, 1] %in% "opusreader")) 
-   #  remotes::install_github("pierreroudier/opusreader")   # https://github.com/pierreroudier/opusreader
-     
-   if (!any(installed.packages()[, 1] %in% "opusreader2")) 
-     remotes::install_github("spectral-cockpit/opusreader2")   #  https://github.com/spectral-cockpit/opusreader2
-          
+   if(opusReader == 'pierreroudier_opusreader') {
+      if (!any(installed.packages()[, 1] %in% "opusreader")) 
+         remotes::install_github("pierreroudier/opusreader")   # https://github.com/pierreroudier/opusreader
+   }   
+  
+   if(opusReader == 'philippbaumann_opusreader2') {  
+      if (!any(installed.packages()[, 1] %in% "opusreader2")) 
+        remotes::install_github("spectral-cockpit/opusreader2")   #  https://github.com/spectral-cockpit/opusreader2
+   }
+   
    if (!any(installed.packages()[, 1] %in% "tensorflow")) 
      install.packages("tensorflow")
      
@@ -135,11 +138,16 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       newScans.ADJ <- list()
       for (i in fileNames)  {
          print(i)
-         # try(newScans.ADJ[[i]] <- opusreader::opus_read(paste(Spectra_Path, i , sep = "/"), simplify = FALSE, wns_digits = 0)[[2]] )
-         try(newScans.ADJ[[i]] <- opusreader2::read_opus_single(paste(Spectra_Path, i , sep = "/"))[[3]]$data )  # https://github.com/spectral-cockpit/opusreader2
+         if(opusReader == 'pierreroudier_opusreader')
+            try(newScans.ADJ[[i]] <- opusreader::opus_read(paste(Spectra_Path, i , sep = "/"), simplify = FALSE, wns_digits = 0)[[2]] )
+            
+         if(opusReader == 'philippbaumann_opusreader2')
+            try(newScans.ADJ[[i]] <- opusreader2::read_opus_single(paste(Spectra_Path, i , sep = "/"))[[3]]$data ) 
       }
       
       wavebandsToUse <- round(as.numeric(colnames(newScans.ADJ[[1]])))
+      sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse)
+
       colnames(newScans.ADJ[[1]]) <- wavebandsToUse
       
       if(verbose & plot) {          # Extra adjustments added here - THIS IS EXPERIMENTAL
@@ -162,7 +170,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse)) #make empty matrix for loop
       newScans.ADJ_int[1, ] <- newScans.ADJ[[1]]
       
-      for (j in 2:length(newScans.ADJ)){ 
+      for (j in 2:length(newScans.ADJ)) { 
         bar(j, length(newScans.ADJ))
         wavebandsOld <- round(as.numeric(colnames(newScans.ADJ[[j]])))
         if(all(wavebandsOld == wavebandsToUse))
@@ -185,7 +193,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
   }
       
       
-run <- function(...) {     # Use when debugging interactively
+# run <- function(...) {     # Use when debugging interactively
   if(plot) {
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      rowNums <- 1:nrow(newScans.RAW)
@@ -197,7 +205,7 @@ run <- function(...) {     # Use when debugging interactively
      if(!is.null(htmlPlotFolder))
        saveHtmlFolder(htmlPlotFolder, view = !interactive())
    }    
-}; run() # Use when debugging interactively
+# }; run() # Use when debugging interactively
 
    cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
    
@@ -210,6 +218,9 @@ run <- function(...) {     # Use when debugging interactively
         shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "\\ERROR.txt"))
         stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
    }
+   
+   sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
+
    
    paste0(Predicted_Ages_Path, '/Spline_Function_Raw.png')
    
