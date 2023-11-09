@@ -10,21 +10,23 @@
    TMA_Ages <- c(TRUE, FALSE)[2] # Are TMA ages available?
    verbose <- c(TRUE, FALSE)[1]
    Max_N_Spectra <- list(50, 200, 'All')[[1]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the 'New_Scans' folder will be assigned an age regardless of the number plotted in the figure.)
-   spectraInterp = c('roudier_opusreader', 'stats_splinefun_lowess', 'prospectr_resample')[1]
+   spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1]
+   opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
    
    
-   # Hake 2019, BMS
+   # (1) Hake 2019, BMS
    if(Spectra_Set == "Hake_2019") {
       if(interactive())
          setwd("C:/ALL_USR/JRW/SIDT/Predict_NN_Ages")  # Change path to the Spectra Set's .GlobalEnv as needed
       NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   # Change path to the Spectra Set's NN model as needed - 10-20 random models each with 10-fold complete 'k-fold' models.
       shortNameSegments <- c(2, 4) # Segments 2 and 4 of the spectra file name, e.g.: (PACIFIC, HAKE, BMS201906206C, 1191, OD1) => (HAKE, 1191)
       shortNameSuffix <- 'BMS'
-      spectraInterp = c('roudier_opusreader', 'stats_splinefun_lowess', 'prospectr_resample')[2]
+      # spectraInterp = 'prospectr_resample' # *** For testing ***
+      opusReader <- 'pierreroudier_opusreader'
       fineFreqAdj <- 150
    }
     
-   # Sablefish 2017 & 2019, Combo survey
+   # (2) Sablefish 2017 & 2019, Combo survey
    if(Spectra_Set == "Sable_2017_2019") { 
       if(interactive()) 
          setwd("C:/ALL_USR/JRW/SIDT/Predict_NN_Ages")  
@@ -33,11 +35,12 @@
       shortNameSuffix <- 'Year'
       yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
       fineFreqAdj <- 0
+      opusReader <- 'pierreroudier_opusreader'
       if(TMA_Ages)
         TMA_Meta <- "C:/ALL_USR/JRW/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
    }  
    
-   # Sablefish 2022, Combo survey
+   # (3) Sablefish 2022, Combo survey
    if(Spectra_Set == "Sable_2022") { 
       if(interactive()) 
          setwd("C:/ALL_USR/JRW/SIDT/Predict_NN_Ages")  
@@ -159,8 +162,8 @@ if(!exists('shortNameSuffix'))
 # New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
 #      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = min(c(length(fileNames), Max_N_Spectra)), verbose = verbose) # One random model for faster testing
 
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
-      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = min(c(length(fileNames), Max_N_Spectra)), verbose = verbose) # Use the max number of random model replicates available
+New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj, opusReader = opusReader, 
+   Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = min(c(length(fileNames), Max_N_Spectra)), verbose = verbose) # Use the max number of random model replicates available
 
 # For testing: plot = TRUE; NumRdmModels = 1;  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = min(c(length(fileNames), Max_N_Spectra))                                      
       
