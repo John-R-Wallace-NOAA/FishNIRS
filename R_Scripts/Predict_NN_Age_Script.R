@@ -9,6 +9,7 @@
    Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_2022")[3]
    TMA_Ages <- c(TRUE, FALSE)[2] # Are TMA ages available?
    verbose <- c(TRUE, FALSE)[1]
+   plot <- c(TRUE, FALSE)[1]
    Max_N_Spectra <- list(50, 200, 'All')[[1]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the 'New_Scans' folder will be assigned an age regardless of the number plotted in the figure.)
    spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1]
    opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
@@ -159,10 +160,10 @@ if(!exists('shortNameSuffix'))
     shortNameSuffix. <- NULL
 
 ##### This is the main call to Predict_NN_Age() #####
-# New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
+# New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
 #      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = min(c(length(fileNames), Max_N_Spectra)), verbose = verbose) # One random model for faster testing
 
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj, opusReader = opusReader, 
+New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj, opusReader = opusReader, 
    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = min(c(length(fileNames), Max_N_Spectra)), verbose = verbose) # Use the max number of random model replicates available
 
 # For testing: plot = TRUE; NumRdmModels = 1;  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = min(c(length(fileNames), Max_N_Spectra))                                      
