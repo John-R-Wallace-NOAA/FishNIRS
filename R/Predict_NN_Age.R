@@ -146,7 +146,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       }
       
       wavebandsToUse <- round(as.numeric(colnames(newScans.ADJ[[1]])))
-      sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse)
+      # sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse)
 
       colnames(newScans.ADJ[[1]]) <- wavebandsToUse
       
@@ -167,26 +167,36 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
          browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Spline_Function_Raw.png'), browser = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe")
       } 
       
-      newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse)) #make empty matrix for loop
-      newScans.ADJ_int[1, ] <- newScans.ADJ[[1]]
+      wavebandsToUse.8k <- wavebandsToUse[wavebandsToUse <= 8000]
+      newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse.8k)) #make empty matrix for loop
+      newScans.ADJ_int[1, ] <- newScans.ADJ[[1]][wavebandsToUse <= 8000]
       
       for (j in 2:length(newScans.ADJ)) { 
         bar(j, length(newScans.ADJ))
         wavebandsOld <- round(as.numeric(colnames(newScans.ADJ[[j]])))
-        if(all(wavebandsOld == wavebandsToUse))
+        if(all(wavebandsOld %in% wavebandsToUse))
            newScans.ADJ_int[j,] <- newScans.ADJ[[j]]
         else {    
            adjFreq <- c(0, min(wavebandsToUse) - min(wavebandsOld) + fineFreqAdj)[1]
            # print(c(j, adjFreq,  min(wavebandsToUse), min(wavebandsOld), min(wavebandsOld) + adjFreq))
            adjAsorb <- c(0, mean(newScans.ADJ[[1]]) - mean(newScans.ADJ[[j]]))[1]
            if(spectraInterp == 'stats_splinefun_lowess') 
-              newScans.ADJ_int[j,] <- predict.lowess(lowess(wavebandsOld + adjFreq, newScans.ADJ[[j]] + adjAsorb, f = 0.001), newdata = wavebandsToUse)
-           if(spectraInterp == 'prospectr_resample')
-              newScans.ADJ_int[j,] <- prospectr::resample(X = newScans.ADJ[[j]] + adjAsorb, wav = wavebandsOld + adjFreq, new.wav = wavebandsToUse)   
+              newScans.ADJ_int[j,] <- predict.lowess(lowess(wavebandsOld + adjFreq, newScans.ADJ[[j]] + adjAsorb, f = 0.001), newdata = wavebandsToUse.8k)
+           if(spectraInterp == 'prospectr_resample') 
+              newScans.ADJ_int[j,] <- prospectr::resample(X = newScans.ADJ[[j]] + adjAsorb, wav = wavebandsOld + adjFreq, new.wav = wavebandsToUse.8k)   
+            
+           if(any(wavebandsToUse.8k < min(wavebandsOld + adjFreq)))  # Hack for extrapolating beyond the end of the old wavebands.
+              newScans.ADJ_int[j,][wavebandsToUse.8k < min(wavebandsOld + adjFreq)] <- newScans.ADJ_int[j,][wavebandsToUse.8k < min(wavebandsOld + adjFreq)][1]
+           
+           # dev.new()   
+           # plot(wavebandsToUse.8k, newScans.ADJ_int[j,], col = 'green')
+           # points(wavebandsOld + adjFreq, newScans.ADJ[[j]] + adjAsorb)
+                        
         }
       }
       
-      colnames(newScans.ADJ_int) <- colnames(newScans.ADJ[[1]])
+      # colnames(newScans.ADJ_int) <- colnames(newScans.ADJ[[1]])
+      colnames(newScans.ADJ_int) <- wavebandsToUse.8k
       newScans.RAW <- as.data.frame(newScans.ADJ_int)
       # dim(newScans.RAW)
       print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
@@ -219,10 +229,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
         stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
    }
    
-   sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
-
+   # sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
    
-   paste0(Predicted_Ages_Path, '/Spline_Function_Raw.png')
    
   if(is.null(NumRdmModels))
       N <- length(Rdm_models)
