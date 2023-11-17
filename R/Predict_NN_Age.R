@@ -38,7 +38,7 @@
 
 
 Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, shortNameSegments = c(2,4), shortNameSuffix = NULL, 
-     opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[2], fineFreqAdj = 150, Predicted_Ages_Path = NULL, verbose = FALSE,  ...) {
+     opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1], fineFreqAdj = 150, Predicted_Ages_Path = NULL, verbose = FALSE,  ...) {
    
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -93,13 +93,14 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    if (!any(installed.packages()[, 1] %in% "keras")) 
      install.packages("keras") 
 
-   if (!any(installed.packages()[, 1] %in% "prospectr")) 
+   if (!any(installed.packages()[, 1] %in% "prospectr") & spectraInterp == 'prospectr_resample') 
      install.packages("prospectr") 
    
    # --- Setup for TensorFlow and Keras ---
    require(tensorflow)
    require(keras) 
-   require(prospectr)   
+   if(spectraInterp == 'prospectr_resample')
+        require(prospectr)   
    
    # --- Change this path to where your Conda TensorFlow environment is located. ---
    Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) # If this is function is called in the normal way from a species script, then this is line is redundant, otherwise it may be needed.
