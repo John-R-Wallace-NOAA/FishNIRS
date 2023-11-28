@@ -51,7 +51,7 @@
 
       
    # You will need a 'GITHUB_PAT' from GitHub set somewhere in R (If you need help, search the Web how to get one from GitHub.)
-   # Sys.setenv(GITHUB_PAT = "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")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.
+   # Sys.setenv(GITHUB_PAT = "************")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.
    # Sys.getenv("GITHUB_PAT") 
     
    #  --- Conda TensorFlow environment ---
