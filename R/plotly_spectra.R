@@ -5,7 +5,7 @@
 # plotly_spectra(Sable_2020_Scans, N_Samp = 300, htmlPlotFolder = 'Figures/Sablefish_2022_Spectra_Sample_of_300')
 
 
- plotly_spectra <- function(Spectra, N_Samp = 50, htmlPlotFolder = NULL, shortName = " ") { 
+ plotly_spectra <- function(Spectra, N_Samp = min(c(nrow(Spectra), 50)), htmlPlotFolder = NULL, shortName = " ") { 
  
     rowNums <- 1:nrow(Spectra)
     if(length(rowNums <= 26^2))
