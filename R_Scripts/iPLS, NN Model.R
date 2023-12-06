@@ -1,7 +1,7 @@
 
 # --- Initial setup  (The curly brakets with a '###' comment and without indented lines directly below them are there to enable the hiding of code sections using Notepad++.) ---
 #            (For those who dislike Rstudio,  Notepad++ is here: https://notepad-plus-plus.org/  and NppToR that passes R code from Notepad++ to R is here: https://sourceforge.net/projects/npptor/)
-
+{ ###
 if(interactive()) 
       setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
 if(!interactive())   options(width = 120)      
@@ -46,10 +46,10 @@ if(Spectra_Set == "Sable_Combo_2022") {
      TMA_Meta <- "C:/ALL_USR/JRW/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
 }  
 
+}
 
-
-# Load functions and packages
-{
+# --- Load functions and packages ---
+{ ###
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
@@ -176,279 +176,316 @@ Disable_GPU <- model_Name == 'FCNN_model_ver_1' # Only using the CPU is faster f
 tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 }   
 
-# --- Load and look at the raw spectra and metadata  ---
+# --- Create Model_Spectra.sg.iPLS and TMA_Vector for a spectra set ---
 { ###
 
-fileNames <- dir(path = Spectra_Path)
-fileNames <- get.subs(fileNames, sep = ".")[1, ]
-fileNames[1:10]
+if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
 
-cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n"))
-
-Model_Spectra <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path)
-# plotly_spectra(Model_Spectra)
-plotly_spectra(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
- 
-
-# ADD VESSEL, CRUISE, REGION, LOCATION, AND BIO METADATA
-metadata <- openxlsx::read.xlsx(paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"), sheet = 3) #load in ancillary data
-
-
-(Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, Model_Spectra), metadata, join_by("filenames" == "NWFSC_NIR_Filename")))[1:5, c(1:3, 504:540)]
-
-                                    filenames     X8000     X7992     X3984     X3976     X3968     X3960     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id age_best length_cm weight_kg sex structure_weight_g NWFSC_NIR_Project
-1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1 0.2202285 0.2201835 0.5210375 0.5241458 0.5254004 0.5238540 0.5198408   COMBO        2022           SABL               1 102157421-SABL-O   102157421       14      51.5      1.40   2             0.0228               PRD
-2  SABL_COMBO2022_NIR0022A_PRD_10_102157430_O1 0.2037776 0.2037497 0.5053568 0.5085597 0.5098205 0.5081757 0.5039832   COMBO        2022           SABL              10 102157430-SABL-O   102157430        6      48.5      1.04   2             0.0173               PRD
-3 SABL_COMBO2022_NIR0022A_PRD_100_102157520_O1 0.1761716 0.1760852 0.4939839 0.4972751 0.4985640 0.4968473 0.4924470   COMBO        2022           SABL             100 102157520-SABL-O   102157520        6      56.0      1.96   2             0.0196               PRD
-4  SABL_COMBO2022_NIR0022A_PRD_11_102157431_O1 0.1911490 0.1911127 0.5702074 0.5739523 0.5753983 0.5733758 0.5683330   COMBO        2022           SABL              11 102157431-SABL-O   102157431       16      55.0      1.66   1             0.0265               PRD
-5  SABL_COMBO2022_NIR0022A_PRD_12_102157432_O1 0.1880359 0.1880160 0.5069040 0.5105314 0.5119459 0.5100320 0.5052297   COMBO        2022           SABL              12 102157432-SABL-O   102157432        6      50.5      1.20   1             0.0200               PRD
-  NWFSC_NIR_Scan_Session age_structure_side_scan crystallized_scan percent_crystallized_scan broken_scan tip_only_scan anterior_tip_missing posterior_tip_missing percent_missing_scan tissue_present_scan tissue_level_scan oil_clay_contamination_scan stained_scan
-1               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-2               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-3               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-4               NIR0022A                       R              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-5               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-  contamination_other_scan notes_scan unscannable_BB unscannable_Broken_MissingPieces unscannable_Crystalized unscannable_sample_mixed unscannable_no_otolith
-1                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-2                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-3                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-4                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-5                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-
-
-                                                         (L) only one otolith in the cell                                                        (L) Only one otolith in the cell .                                                         (L) only one otolith in the cell. 
-                                                                                        1                                                                                         1                                                                                         3 
-                                                        (L) Only one otolith in the cell.                                                        (L) only one otolith in the cell.                                                         (L) Only one otolith in the cell.  
-                                                                                        4                                                                                         5                                                                                         2 
-                                                     10% missing from the posterior end.                                                        5% missing from the posterior end.                                                 Anterior portion missing from the otolith  
-                                                                                        1                                                                                         1                                                                                         1 
-                                               anterior portion missing from the otolith.                                                  Anterior portion missing of the otolith                                                                       Anterior tip missing 
-                                                                                        1                                                                                         1                                                                                         1 
-Both otoliths missing >30%, so did not weigh. Did scan, otolith missing anterior portion.                                                         L: Only one otolith in the cell.                            Left ololith missing anterior portion. Right otolith BB for TMA 
-                                                                                        1                                                                                         2                                                                                         1 
-                             Left otolith was scanned, might had some clay residue on it.                                                             Otolith broken in two pieces.                                                           Otolith missing posterior end.  
-                                                                                        2                                                                                         1                                                                                         1 
-                                                                                     tiny                                                                                      <NA> 
-                                                                                        2                                                                                      1525 
-> 
-
-
-
-
-# Look at the data and metadata
-Model_Spectra_Meta[1:5, c(1:3, 504:540)]
-
-# These are not matched to the scans, since they are unscannable
-Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
-
-Model_Spectra_Meta$sex <- recode.simple(Model_Spectra_Meta$sex, cbind(c(1, 2, 3), c('M', 'F', 'U')))  # Wow, sex still in numbers!!
-# xyplot(length_cm ~ age_best, group = sex, data = Model_Spectra_Meta, auto = TRUE)
-
+   # --- Load and look at the raw spectra and metadata  ---
+   { ###
    
-Model_Spectra_Meta$crystallized_scan <- !is.na(Model_Spectra_Meta$crystallized_scan)
-Table(Model_Spectra_Meta$crystallized_scan)
-
-Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan)  # All NA percent_crystallized_scan's are zeros
-Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done (see below).
-Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan) 
-
-Table(Model_Spectra_Meta$broken_scan)  #  Do all of these broken pieces fit together well? What about entering the number of pieces the otie is broken into - zero for an unbroken ototlith.
-                                       # Are the oties ever broken during scanning or the handling of the otie for scanning?
-                                       
-Table(Model_Spectra_Meta$tip_only_scan)  # is there a difference between 'no' and an NA for this one?
-  
-Table(Model_Spectra_Meta$anterior_tip_missing)
-
-Table(Model_Spectra_Meta$posterior_tip_missing)
-
-Table(Model_Spectra_Meta$percent_missing_scan)   
-Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0 # Now a numerical test can be done (see below).
-Table(Model_Spectra_Meta$percent_missing_scan)  
-
-Table(Model_Spectra_Meta$tissue_present_scan)  
-
-Table(Model_Spectra_Meta$tissue_level_scan) # Change this to 'percent_tissue_level_scan'?
-Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0 # Now a numerical test can be done (see below).
-Table(Model_Spectra_Meta$tissue_level_scan)
-
-Table(Model_Spectra_Meta$oil_clay_contamination_scan) # No percentage for this one
-
-Table(Model_Spectra_Meta$stained_scan) # All NA's. Is this 'yes'/'no' or percentage?
-
-Table(Model_Spectra_Meta$contamination_other_scan) # All NA's. Is this 'yes'/'no' or percentage?
-  
-
-names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
-Table(is.finite(Model_Spectra_Meta$TMA))
-rev(sort(Model_Spectra_Meta$TMA))[1:20]
-
-dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows
-Model_Spectra_Meta <- Model_Spectra_Meta[is.finite(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & 
-                      Model_Spectra_Meta$percent_crystallized_scan <= 10 & Model_Spectra_Meta$tissue_level_scan <= 10, ]
-dim(Model_Spectra_Meta) # Sable Combo 2022: 1554 rows
-
-Model_Spectra_Meta$shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
-
-
-# Look at the data with plotly and remove rogue oties it needed# 
-plotly.Spec(Model_Spectra_Meta, 'all')
-# Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ]
-# plotly.Spec(Model_Spectra_Meta, 'all')
-
-
-# Also recreate Model_Spectra so that bad rows are removed 
-Model_Spectra_Raw <- Model_Spectra
-Model_Spectra <- Model_Spectra_Meta[, 2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1)]
-dim(Model_Spectra_Raw)
-dim(Model_Spectra)
-
-
-# TMA only
-TMA_Vector <- Model_Spectra_Meta$TMA
-length(TMA_Vector)
-
-save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA'))
-
-} ###
-
-# Savitzky-Golay smoothing    
-{
-
-###################################################################################################################
-### Perform Savitzky-Golay 1st derivative with 17 point window smoothing 2rd order polynomial fit and visualize ###
-### Intro: http://127.0.0.1:30354/library/prospectr/doc/prospectr.html
-###################################################################################################################
-### NOTE ### If there are multiple years of data, all subsequent transformations should be applied to the whole data set, then re-subset  
+   fileNames <- dir(path = Spectra_Path)
+   fileNames <- get.subs(fileNames, sep = ".")[1, ]
+   fileNames[1:10]
    
-Model_Spectra.sg <- data.frame(prospectr::savitzkyGolay(Model_Spectra, m = 1, p = 2, w = 15))
-
-
-####################################################
-###  iPLS algorithm in mdatools  ### 
-####################################################
-
-
-# Maximum number of components to calculate.
-nComp <- c(10, 15)[2]
-Model_Spectra.iPLS.F <- mdatools::ipls(Model_Spectra.sg, TMA_Vector, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
-                  int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
-
-summary(Model_Spectra.iPLS.F) 
-
-iPLS variable selection results
-  Method: forward
-  Validation: random with 100 segments
-  Number of intervals: 15
-  Number of selected intervals: 4
-  RMSECV for global model: 0.801053 (15 LVs)
-  RMSECV for optimized model: 0.753910 (15 LVs)
-
-Summary for selection procedure:
-   n start  end selected nComp      RMSE    R2
-1  0     1 1098    FALSE    15 0.8010530 0.914
-2 14   953 1025     TRUE    15 0.8902166 0.894
-3 11   734  806     TRUE    15 0.7908851 0.916
-4 15  1026 1098     TRUE    15 0.7627235 0.922
-5 10   661  733     TRUE    15 0.7542682 0.924
-
-
-# plot the newly selected spectra regions 
-dev.new()
-plot(Model_Spectra.iPLS.F)     
-
-Model_Spectra.iPLS.F$int.selected
-sort(Model_Spectra.iPLS.F$var.selected)
-
-# dev.new()  - With a main title
-# plot(Model_Spectra.iPLS.F, main = NULL)          
-
-# plot predictions before and after selection
-dev.new()
-par(mfrow = c(2, 1))
-mdatools::plotPredictions(Model_Spectra.iPLS.F$gm) # gm = global PLS model with all variables included
-mdatools::plotPredictions(Model_Spectra.iPLS.F$om) # om = optimized PLS model with selected variables
-
-dev.new()
-mdatools::plotRMSE(Model_Spectra.iPLS.F)
-
-
-# RMSE  before and after selection
-
-# Visually find the ylim to apply to both figures  and over all areas and WB
-dev.new()
-par(mfrow = c(2, 1))
-mdatools::plotRMSE(Model_Spectra.iPLS.F$gm)
-mdatools::plotRMSE(Model_Spectra.iPLS.F$om)
-
-# Use the ylim for both plots
-dev.new()
-par(mfrow = c(2, 1))
-mdatools::plotRMSE(Model_Spectra.iPLS.F$gm, ylim = c(2.4, 6.5))
-mdatools::plotRMSE(Model_Spectra.iPLS.F$om, ylim = c(2.4, 6.5))
-
-
-
-# Select out vars
-# (p <- length(Model_Spectra.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
-
-Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)])
-
-Model_Spectra.Age.sg.iPLS <- data.frame(Age = TMA_Vector, Model_Spectra.sg.iPLS)
-dim(Model_Spectra.Age.sg.iPLS) 
-
-# 2D plot
-# Model_Spectra.sg.iPLS.PLOT <- cbind(Model_Spectra_Meta[, 1, drop = FALSE], Model_Spectra.sg.iPLS, Model_Spectra_Meta[, ncol(Model_Spectra):ncol(Model_Spectra_Meta)])
-# plotly.Spec(Model_Spectra.sg.iPLS.PLOT, 'all') 
-
-
-# Plot the transformed spectra by age using only variables selected using iPLS
-(Model_Spectra.Age.sg.iPLS.Long <- reshape2::melt(Model_Spectra.Age.sg.iPLS, id = 'Age', variable.name = 'Freq', value.name = 'Absorbance'))[1:4, ]
-Model_Spectra.Age.sg.iPLS.Long$Freq <- as.numeric(substring(Model_Spectra.Age.sg.iPLS.Long$Freq, 2))
-Model_Spectra.Age.sg.iPLS.Long <- sort.f(Model_Spectra.Age.sg.iPLS.Long, 'Freq')
-Model_Spectra.Age.sg.iPLS.Agg <- aggregate(list(Absorbance = Model_Spectra.Age.sg.iPLS.Long$Absorbance), 
-     list(Freq = Model_Spectra.Age.sg.iPLS.Long$Freq, Age = Model_Spectra.Age.sg.iPLS.Long$Age), mean, na.rm = TRUE)
-Model_Spectra.Age.sg.iPLS.Agg$Age <- ordered(Model_Spectra.Age.sg.iPLS.Agg$Age, sort(unique(Model_Spectra.Age.sg.iPLS.Agg$Age)))
-
-plotly::ggplotly(ggplot2::ggplot(data = Model_Spectra.Age.sg.iPLS.Agg, aes(x = Freq, y = Absorbance, z = Age)) + geom_line(aes(colour = Age), size = 0.2) + 
-                    scale_color_manual(values=rainbow(length(unique(Model_Spectra.Age.sg.iPLS.Agg$Age)), alpha = 1)))
-                 
-save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
-save('TMA_Vector', file = paste0(Spectra_Set, '_TMA_Vector.RData'))                
-
-                 
-                 
-# --------------- Try ipls() with smoothed spectra data and metadata  - NO METADATA WAS SELECTED ------------------------
-
-# Remove NA's with predictors and response together - then re-split
-Model_Spectra.sg.META <- na.omit(cbind(Model_Spectra.sg, Model_Spectra_Meta[, c("latitude", "longitude", "length", "weight", "sex")], TMA = TMA_Vector))
-Ncol <- ncol(Model_Spectra.sg.META)
-Model_Spectra.sg.META[1:3, c(1:2, (Ncol - 4):Ncol)]
-
-TMA.META <- Model_Spectra.sg.META[, Ncol]
-Model_Spectra.sg.META <- Model_Spectra.sg.META[, -Ncol]
+   cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n"))
    
-Model_Spectra.iPLS.META.F <- mdatools::ipls(Model_Spectra.sg.META, TMA.META, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
-                  int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
-
-summary(Model_Spectra.iPLS.META.F)
-
-# Plot the newly selected spectra regions 
-dev.new()
-plot(Model_Spectra.iPLS.META.F)     
-
-Model_Spectra.iPLS.META.F$int.selected
-sort(Model_Spectra.iPLS.META.F$var.selected)
-
-Model_Spectra.sg.META[, Model_Spectra.iPLS.F$var.selected][1:3, c(1:3, 373:380)]
-names(Model_Spectra.sg.META[, Model_Spectra.iPLS.F$var.selected])
+   Model_Spectra <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path)
+   # plotly_spectra(Model_Spectra)
+   plotly_spectra(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
     
+   
+   # ADD VESSEL, CRUISE, REGION, LOCATION, AND BIO METADATA
+   metadata <- openxlsx::read.xlsx(paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"), sheet = 3) #load in ancillary data
+   
+   
+   (Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, Model_Spectra), metadata, join_by("filenames" == "NWFSC_NIR_Filename")))[1:5, c(1:3, 504:540)]
+   
+                                       filenames     X8000     X7992     X3984     X3976     X3968     X3960     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id age_best length_cm weight_kg sex structure_weight_g NWFSC_NIR_Project
+   1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1 0.2202285 0.2201835 0.5210375 0.5241458 0.5254004 0.5238540 0.5198408   COMBO        2022           SABL               1 102157421-SABL-O   102157421       14      51.5      1.40   2             0.0228               PRD
+   2  SABL_COMBO2022_NIR0022A_PRD_10_102157430_O1 0.2037776 0.2037497 0.5053568 0.5085597 0.5098205 0.5081757 0.5039832   COMBO        2022           SABL              10 102157430-SABL-O   102157430        6      48.5      1.04   2             0.0173               PRD
+   3 SABL_COMBO2022_NIR0022A_PRD_100_102157520_O1 0.1761716 0.1760852 0.4939839 0.4972751 0.4985640 0.4968473 0.4924470   COMBO        2022           SABL             100 102157520-SABL-O   102157520        6      56.0      1.96   2             0.0196               PRD
+   4  SABL_COMBO2022_NIR0022A_PRD_11_102157431_O1 0.1911490 0.1911127 0.5702074 0.5739523 0.5753983 0.5733758 0.5683330   COMBO        2022           SABL              11 102157431-SABL-O   102157431       16      55.0      1.66   1             0.0265               PRD
+   5  SABL_COMBO2022_NIR0022A_PRD_12_102157432_O1 0.1880359 0.1880160 0.5069040 0.5105314 0.5119459 0.5100320 0.5052297   COMBO        2022           SABL              12 102157432-SABL-O   102157432        6      50.5      1.20   1             0.0200               PRD
+     NWFSC_NIR_Scan_Session age_structure_side_scan crystallized_scan percent_crystallized_scan broken_scan tip_only_scan anterior_tip_missing posterior_tip_missing percent_missing_scan tissue_present_scan tissue_level_scan oil_clay_contamination_scan stained_scan
+   1               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
+   2               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
+   3               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
+   4               NIR0022A                       R              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
+   5               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
+     contamination_other_scan notes_scan unscannable_BB unscannable_Broken_MissingPieces unscannable_Crystalized unscannable_sample_mixed unscannable_no_otolith
+   1                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+   2                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+   3                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+   4                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+   5                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+   
+   
+                                                            (L) only one otolith in the cell                                                        (L) Only one otolith in the cell .                                                         (L) only one otolith in the cell. 
+                                                                                           1                                                                                         1                                                                                         3 
+                                                           (L) Only one otolith in the cell.                                                        (L) only one otolith in the cell.                                                         (L) Only one otolith in the cell.  
+                                                                                           4                                                                                         5                                                                                         2 
+                                                        10% missing from the posterior end.                                                        5% missing from the posterior end.                                                 Anterior portion missing from the otolith  
+                                                                                           1                                                                                         1                                                                                         1 
+                                                  anterior portion missing from the otolith.                                                  Anterior portion missing of the otolith                                                                       Anterior tip missing 
+                                                                                           1                                                                                         1                                                                                         1 
+   Both otoliths missing >30%, so did not weigh. Did scan, otolith missing anterior portion.                                                         L: Only one otolith in the cell.                            Left ololith missing anterior portion. Right otolith BB for TMA 
+                                                                                           1                                                                                         2                                                                                         1 
+                                Left otolith was scanned, might had some clay residue on it.                                                             Otolith broken in two pieces.                                                           Otolith missing posterior end.  
+                                                                                           2                                                                                         1                                                                                         1 
+                                                                                        tiny                                                                                      <NA> 
+                                                                                           2                                                                                      1525 
+   > 
+   
+   
+   
+   
+   # Look at the data and metadata
+   Model_Spectra_Meta[1:5, c(1:3, 504:540)]
+   
+   # These are not matched to the scans, since they are unscannable
+   Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
+   
+   Model_Spectra_Meta$sex <- recode.simple(Model_Spectra_Meta$sex, cbind(c(1, 2, 3), c('M', 'F', 'U')))  # Wow, sex still in numbers!!
+   # xyplot(length_cm ~ age_best, group = sex, data = Model_Spectra_Meta, auto = TRUE)
+   
+      
+   Model_Spectra_Meta$crystallized_scan <- !is.na(Model_Spectra_Meta$crystallized_scan)
+   Table(Model_Spectra_Meta$crystallized_scan)
+   
+   Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan)  # All NA percent_crystallized_scan's are zeros
+   Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done (see below).
+   Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan) 
+   
+   Table(Model_Spectra_Meta$broken_scan)  #  Do all of these broken pieces fit together well? What about entering the number of pieces the otie is broken into - zero for an unbroken ototlith.
+                                          # Are the oties ever broken during scanning or the handling of the otie for scanning?
+                                          
+   Table(Model_Spectra_Meta$tip_only_scan)  # is there a difference between 'no' and an NA for this one?
+     
+   Table(Model_Spectra_Meta$anterior_tip_missing)
+   
+   Table(Model_Spectra_Meta$posterior_tip_missing)
+   
+   Table(Model_Spectra_Meta$percent_missing_scan)   
+   Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0 # Now a numerical test can be done (see below).
+   Table(Model_Spectra_Meta$percent_missing_scan)  
+   
+   Table(Model_Spectra_Meta$tissue_present_scan)  
+   
+   Table(Model_Spectra_Meta$tissue_level_scan) # Change this to 'percent_tissue_level_scan'?
+   Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0 # Now a numerical test can be done (see below).
+   Table(Model_Spectra_Meta$tissue_level_scan)
+   
+   Table(Model_Spectra_Meta$oil_clay_contamination_scan) # No percentage for this one
+   
+   Table(Model_Spectra_Meta$stained_scan) # All NA's. Is this 'yes'/'no' or percentage?
+   
+   Table(Model_Spectra_Meta$contamination_other_scan) # All NA's. Is this 'yes'/'no' or percentage?
+     
+   
+   names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
+   Table(is.finite(Model_Spectra_Meta$TMA))
+   rev(sort(Model_Spectra_Meta$TMA))[1:20]
+   
+   dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows
+   Model_Spectra_Meta <- Model_Spectra_Meta[is.finite(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & 
+                         Model_Spectra_Meta$percent_crystallized_scan <= 10 & Model_Spectra_Meta$tissue_level_scan <= 10, ]
+   dim(Model_Spectra_Meta) # Sable Combo 2022: 1554 rows
+   
+   Model_Spectra_Meta$shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
+   
+   
+   # Look at the data with plotly and remove rogue oties it needed# 
+   plotly.Spec(Model_Spectra_Meta, 'all')
+   # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ]
+   # plotly.Spec(Model_Spectra_Meta, 'all')
+   
+   
+   # Also recreate Model_Spectra so that bad rows are removed 
+   Model_Spectra_Raw <- Model_Spectra
+   Model_Spectra <- Model_Spectra_Meta[, 2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1)]
+   dim(Model_Spectra_Raw)
+   dim(Model_Spectra)
+   
+   
+   # TMA only
+   TMA_Vector <- Model_Spectra_Meta$TMA
+   length(TMA_Vector)
+   
+   save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA'))
+   
+   } ###
+   
+   # Savitzky-Golay smoothing    
+   { ###
+   
+   ###################################################################################################################
+   ### Perform Savitzky-Golay 1st derivative with 17 point window smoothing 2rd order polynomial fit and visualize ###
+   ### Intro: http://127.0.0.1:30354/library/prospectr/doc/prospectr.html
+   ###################################################################################################################
+   ### NOTE ### If there are multiple years of data, all subsequent transformations should be applied to the whole data set, then re-subset  
+      
+   Model_Spectra.sg <- data.frame(prospectr::savitzkyGolay(Model_Spectra, m = 1, p = 2, w = 15))
+   
+   
+   ####################################################
+   ###  iPLS algorithm in mdatools  ### 
+   ####################################################
+   
+   
+   # Maximum number of components to calculate.
+   nComp <- c(10, 15)[2]
+   Model_Spectra.iPLS.F <- mdatools::ipls(Model_Spectra.sg, TMA_Vector, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
+                     int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
+   
+   summary(Model_Spectra.iPLS.F) 
+   
+   iPLS variable selection results
+     Method: forward
+     Validation: random with 100 segments
+     Number of intervals: 15
+     Number of selected intervals: 4
+     RMSECV for global model: 0.801053 (15 LVs)
+     RMSECV for optimized model: 0.753910 (15 LVs)
+   
+   Summary for selection procedure:
+      n start  end selected nComp      RMSE    R2
+   1  0     1 1098    FALSE    15 0.8010530 0.914
+   2 14   953 1025     TRUE    15 0.8902166 0.894
+   3 11   734  806     TRUE    15 0.7908851 0.916
+   4 15  1026 1098     TRUE    15 0.7627235 0.922
+   5 10   661  733     TRUE    15 0.7542682 0.924
+   
+   
+   # plot the newly selected spectra regions 
+   dev.new()
+   plot(Model_Spectra.iPLS.F)     
+   
+   Model_Spectra.iPLS.F$int.selected
+   sort(Model_Spectra.iPLS.F$var.selected)
+   
+   # dev.new()  - With a main title
+   # plot(Model_Spectra.iPLS.F, main = NULL)          
+   
+   # plot predictions before and after selection
+   dev.new()
+   par(mfrow = c(2, 1))
+   mdatools::plotPredictions(Model_Spectra.iPLS.F$gm) # gm = global PLS model with all variables included
+   mdatools::plotPredictions(Model_Spectra.iPLS.F$om) # om = optimized PLS model with selected variables
+   
+   dev.new()
+   mdatools::plotRMSE(Model_Spectra.iPLS.F)
+   
+   
+   # RMSE  before and after selection
+   
+   # Visually find the ylim to apply to both figures  and over all areas and WB
+   dev.new()
+   par(mfrow = c(2, 1))
+   mdatools::plotRMSE(Model_Spectra.iPLS.F$gm)
+   mdatools::plotRMSE(Model_Spectra.iPLS.F$om)
+   
+   # Use the ylim for both plots
+   dev.new()
+   par(mfrow = c(2, 1))
+   mdatools::plotRMSE(Model_Spectra.iPLS.F$gm, ylim = c(2.4, 6.5))
+   mdatools::plotRMSE(Model_Spectra.iPLS.F$om, ylim = c(2.4, 6.5))
+   
+   
+   
+   # Select out vars
+   # (p <- length(Model_Spectra.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
+   
+   Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)])
+   
+   Model_Spectra.Age.sg.iPLS <- data.frame(Age = TMA_Vector, Model_Spectra.sg.iPLS)
+   dim(Model_Spectra.Age.sg.iPLS) 
+   
+   # 2D plot
+   # Model_Spectra.sg.iPLS.PLOT <- cbind(Model_Spectra_Meta[, 1, drop = FALSE], Model_Spectra.sg.iPLS, Model_Spectra_Meta[, ncol(Model_Spectra):ncol(Model_Spectra_Meta)])
+   # plotly.Spec(Model_Spectra.sg.iPLS.PLOT, 'all') 
+   
+   
+   # Plot the transformed spectra by age using only variables selected using iPLS
+   (Model_Spectra.Age.sg.iPLS.Long <- reshape2::melt(Model_Spectra.Age.sg.iPLS, id = 'Age', variable.name = 'Freq', value.name = 'Absorbance'))[1:4, ]
+   Model_Spectra.Age.sg.iPLS.Long$Freq <- as.numeric(substring(Model_Spectra.Age.sg.iPLS.Long$Freq, 2))
+   Model_Spectra.Age.sg.iPLS.Long <- sort.f(Model_Spectra.Age.sg.iPLS.Long, 'Freq')
+   Model_Spectra.Age.sg.iPLS.Agg <- aggregate(list(Absorbance = Model_Spectra.Age.sg.iPLS.Long$Absorbance), 
+        list(Freq = Model_Spectra.Age.sg.iPLS.Long$Freq, Age = Model_Spectra.Age.sg.iPLS.Long$Age), mean, na.rm = TRUE)
+   Model_Spectra.Age.sg.iPLS.Agg$Age <- ordered(Model_Spectra.Age.sg.iPLS.Agg$Age, sort(unique(Model_Spectra.Age.sg.iPLS.Agg$Age)))
+   
+   plotly::ggplotly(ggplot2::ggplot(data = Model_Spectra.Age.sg.iPLS.Agg, aes(x = Freq, y = Absorbance, z = Age)) + geom_line(aes(colour = Age), size = 0.2) + 
+                       scale_color_manual(values=rainbow(length(unique(Model_Spectra.Age.sg.iPLS.Agg$Age)), alpha = 1)))
+                    
+   save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
+   save('TMA_Vector', file = paste0(Spectra_Set, '_TMA_Vector.RData'))                
+   
+                    
+                    
+   # --------------- Try ipls() with smoothed spectra data and metadata  - NO METADATA WAS SELECTED ------------------------
+   
+   # Remove NA's with predictors and response together - then re-split
+   Model_Spectra.sg.META <- na.omit(cbind(Model_Spectra.sg, Model_Spectra_Meta[, c("latitude", "longitude", "length", "weight", "sex")], TMA = TMA_Vector))
+   Ncol <- ncol(Model_Spectra.sg.META)
+   Model_Spectra.sg.META[1:3, c(1:2, (Ncol - 4):Ncol)]
+   
+   TMA.META <- Model_Spectra.sg.META[, Ncol]
+   Model_Spectra.sg.META <- Model_Spectra.sg.META[, -Ncol]
+      
+   Model_Spectra.iPLS.META.F <- mdatools::ipls(Model_Spectra.sg.META, TMA.META, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
+                     int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
+   
+   summary(Model_Spectra.iPLS.META.F)
+   
+   # Plot the newly selected spectra regions 
+   dev.new()
+   plot(Model_Spectra.iPLS.META.F)     
+   
+   Model_Spectra.iPLS.META.F$int.selected
+   sort(Model_Spectra.iPLS.META.F$var.selected)
+   
+   Model_Spectra.sg.META[, Model_Spectra.iPLS.F$var.selected][1:3, c(1:3, 373:380)]
+   names(Model_Spectra.sg.META[, Model_Spectra.iPLS.F$var.selected])
+       
+   }
+   
 }
-
+}
 # ------ NN Model -------
-{
+{ ###
 # Load the data if needed
 load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
 load(paste0(Spectra_Set, '_TMA_Vector.RData')
+
+# Save out 15 oties for final model check.
+set.seed(Seed_Fold)
+TMA_Tab <- Table(TMA_Vector)
+(Low_strata <- sum(TMA_Tab[1:3]))
+(Mid_strata <- sum(TMA_Tab[4:20]))
+(High_strata <- sum(TMA_Tab[21:length(TMA_Tab)]))
+(SaveOutOties <- c(sample(order(TMA_Vector)[1:Low_strata], 5), sample(order(TMA_Vector)[1:Mid_strata], 5), sample(order(TMA_Vector)[1:High_strata], 5)) )  
+
+Model_Spectra.sg.iPLS_SaveOutOties <- Model_Spectra.sg.iPLS[SaveOutOties, ]
+save(Model_Spectra.sg.iPLS_SaveOutOties, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS_SaveOutOties.RData'))
+
+TMA_Vector_SaveOutOties <- TMA_Vector[SaveOutOties]
+save(TMA_Vector_SaveOutOties, file = paste0(Spectra_Set, '_TMA_Vector_SaveOutOties.RData'))
+
+dim(Model_Spectra.sg.iPLS)
+Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[-(SaveOutOties), ]
+dim(Model_Spectra.sg.iPLS)
+TMA_Vector <- TMA_Vector[-(SaveOutOties)]
+
+# Use full file names (with '.0' at the end)
+fileNames <- dir(path = Spectra_Path)
+# fileNames <- get.subs(fileNames, sep = ".")[1, ]
+fileNames[1:5]
+
+# These are the oties that are not used in the NN model and are saved out for testing
+sort(fileNames[SaveOutOties])
+dir.create(paste0(Spectra_Set, '/Sable_Combo_2022_Saved_Out'), showWarnings = FALSE)
+file.copy(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
+
 
 # = = = = = = = = = = = = = = = = = Intial setup to run the NN code between the '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
@@ -734,8 +771,11 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
    Rdm_models[[j]] <- Fold_models # List of lists being assigned to an element of a list - the best model for each fold (10 or other used) within the jth random rep
    Rdm_folds_index[[j]] <- folds_index # List of vectors being assigned to an element of a list - the index for each fold (10 or other used) within the jth random rep
    
+   SG_Variables_Selected <- names(Model_Spectra.sg.iPLS)
+   roundingDelta <- Delta
+
    save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
-         Rdm_folds_index, file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Rdm_model_', timeStamp(), '.RData'))
+         Rdm_folds_index, SG_Variables_Selected, roundingDelta, file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Rdm_model_', timeStamp(), '.RData'))
    
    x.fold.test.ALL <- NULL
    y.fold.test.ALL <- NULL
@@ -758,7 +798,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 }
 
 # Find Median over all Rdm_reps Models and create figures
-{
+{ ###
 (Rdm_reps <- length(Rdm_folds_index))
 
 y.fold.test.pred_RDM <- NULL
