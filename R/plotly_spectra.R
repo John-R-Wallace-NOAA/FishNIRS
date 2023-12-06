@@ -1,8 +1,8 @@
  
 
-# Sable_2020_Scans <- Read_OPUS_Spectra("Sable_2022", Spectra_Path = 'Sable_2022_Scans')
-# plotly_spectra(Sable_2020_Scans)
-# plotly_spectra(Sable_2020_Scans, N_Samp = 300, htmlPlotFolder = 'Figures/Sablefish_2022_Spectra_Sample_of_300')
+# Sable_Combo_2022_Scans <- Read_OPUS_Spectra(Spectra_Path = 'Model_Scans')
+# plotly_spectra(Sable_Combo_2022_Scans)
+# plotly_spectra(Sable_Combo_2022_Scans, N_Samp = 300, htmlPlotFolder = 'Figures/Sablefish_2022_Spectra_Sample_of_300')
 
 
  plotly_spectra <- function(Spectra, N_Samp = min(c(nrow(Spectra), 50)), htmlPlotFolder = NULL, shortName = " ") { 
