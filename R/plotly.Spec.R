@@ -1,4 +1,4 @@
-plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), randomAfterSampNum = NULL, colorGroup = 'TMA', contColorVar = FALSE, facetGroup = NULL, WaveRange = c(0, 8000), 
+plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htmlPlotFolder = NULL, randomAfterSampNum = NULL, colorGroup = 'TMA', contColorVar = FALSE, facetGroup = NULL, WaveRange = c(0, 8000), 
                   scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, alpha = 1, 
                   bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, ...) {
    
@@ -167,7 +167,32 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), ran
       names(Spec)[4] <- colorGroup 
       names(Spec)[5] <- facetGroup  
    }
-  
+   
+   if(!is.null(htmlPlotFolder)) {
+       sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
+                 " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+                 if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
+                 File.ASCII <- tempfile()
+                 if(type == "function")
+                   on.exit(file.remove(File.ASCII))
+                 getTMP <- httr::GET(gsub(' ', '%20', URL))
+                 
+                 if(type == "function") {
+                   write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+                   source(File.ASCII)
+                 } 
+                 if(type == "script") {
+                   fileName <- strsplit(URL, "/")[[1]]
+                   fileName <- rev(fileName)[1]
+                   write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
+                 }  
+          }
+          
+       sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
+       
+       saveHtmlFolder(htmlPlotFolder, view = !interactive())
+    }
+    
   invisible(Spec)       
 }  
 
