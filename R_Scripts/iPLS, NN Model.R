@@ -6,13 +6,13 @@ if(interactive())
       setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
 if(!interactive())   options(width = 120)      
 Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[2]
-Spectra_Path <- "New_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
+Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 Predicted_Ages_Path <- "Predicted_Ages" # The NN predicted ages will go in the path defined below
 dir.create(Predicted_Ages_Path, showWarnings = FALSE)
 TMA_Ages <- c(TRUE, FALSE)[2] # Are TMA ages available and are they to be used?
 verbose <- c(TRUE, FALSE)[1]
 plot <- c(TRUE, FALSE)[1]
-Max_N_Spectra <- list(50, 200, 'All')[[3]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the 'New_Scans' folder will be assigned an age regardless of the number plotted in the figure.)
+Max_N_Spectra <- list(50, 200, 'All')[[3]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.)
 spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1]
 opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
 
@@ -235,9 +235,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
                                                                                            2                                                                                         1                                                                                         1 
                                                                                         tiny                                                                                      <NA> 
                                                                                            2                                                                                      1525 
-   > 
-   
-   
+ 
    
    
    # Look at the data and metadata
@@ -312,7 +310,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    TMA_Vector <- Model_Spectra_Meta$TMA
    length(TMA_Vector)
    
-   save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA'))
+   save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
    
    } ###
    
@@ -472,9 +470,9 @@ TMA_Vector_SaveOutOties <- TMA_Vector[SaveOutOties]
 save(TMA_Vector_SaveOutOties, file = paste0(Spectra_Set, '_TMA_Vector_SaveOutOties.RData'))
 
 dim(Model_Spectra.sg.iPLS)
-Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[-(SaveOutOties), ]
+Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[-SaveOutOties, ]
 dim(Model_Spectra.sg.iPLS)
-TMA_Vector <- TMA_Vector[-(SaveOutOties)]
+TMA_Vector <- TMA_Vector[-SaveOutOties]
 
 # Use full file names (with '.0' at the end)
 fileNames <- dir(path = Spectra_Path)
@@ -756,7 +754,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
        
        x.fold.test <- as.matrix(1000 * Model_Spectra.sg.iPLS[folds_index[[i]], ])
        y.fold.test <- TMA_Vector[folds_index[[i]]]
-       y.fold.test.pred <- predict(unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test)
+       y.fold.test.pred <- predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test)
        
        dev.set(6)
        agreementFigure(y.fold.test, y.fold.test.pred, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j, ": Fold Num = ", i)) 
@@ -784,8 +782,8 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
       x.fold.test <- as.matrix(1000 * Model_Spectra.sg.iPLS[folds_index[[k]], ])
       x.fold.test.ALL <- rbind(x.fold.test.ALL, x.fold.test)
       y.fold.test.ALL <- c(y.fold.test.ALL, TMA_Vector[folds_index[[k]]])
-      print(len(predict(unserialize_model(Fold_models[[k]], custom_objects = NULL, compile = TRUE), x.fold.test)))
-      y.fold.test.pred.ALL <- c(y.fold.test.pred.ALL, predict(unserialize_model(Fold_models[[k]], custom_objects = NULL, compile = TRUE), x.fold.test))
+      print(length(predict(keras::unserialize_model(Fold_models[[k]], custom_objects = NULL, compile = TRUE), x.fold.test)))
+      y.fold.test.pred.ALL <- c(y.fold.test.pred.ALL, predict(keras::unserialize_model(Fold_models[[k]], custom_objects = NULL, compile = TRUE), x.fold.test))
    }
 
    
@@ -799,6 +797,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 
 # Find Median over all Rdm_reps Models and create figures
 { ###
+
 (Rdm_reps <- length(Rdm_folds_index))
 
 y.fold.test.pred_RDM <- NULL
@@ -810,7 +809,7 @@ for (j in 1:Rdm_reps) {
    y.fold.test.pred.ALL <- NULL
    for (i in 1:length(Fold_models)) {
       x.fold.test <- as.matrix(1000 * Model_Spectra.sg.iPLS[folds_index[[i]], ])
-      y.fold.test.pred <- as.vector(predict(unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test))
+      y.fold.test.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test))
       print(c(length(folds_index[[i]]), length(y.fold.test.pred)))
       y.fold.test.pred.ALL <- rbind(y.fold.test.pred.ALL, cbind(Index = folds_index[[i]], y.test.fold.pred = y.fold.test.pred))
    }
@@ -819,7 +818,8 @@ for (j in 1:Rdm_reps) {
    
    y.fold.test.pred_RDM <- rbind(y.fold.test.pred_RDM, y.test.pred)
    
-   dev.new(width = 11, height = 8)
+   # dev.new(width = 11, height = 8)
+   # agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))
    browserPlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
    
    # Full figure only needed for a long-lived species like Sablefish
@@ -830,8 +830,9 @@ for (j in 1:Rdm_reps) {
 
 # ----------------------- Median over all Rdm_reps Models ------------------------
 
+y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM, 2, median)
+
 # Delta <- -0.05  # Previous estimate or guess
-# y.fold.test.pred_RDM_median <- apply(y.fold.test.predDelta <- -0.05 _RDM, 2, median)
 # c(Delta = Delta, Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta)))
 # 
 #      Delta Correlation   R_squared        RMSE         MAE         SAD 
@@ -852,12 +853,13 @@ print(Delta_Table <- data.frame(Delta_Table))
 # Best Delta from table above
 Delta <- Delta_Table$Delta[order(Delta_Table$SAD, Delta_Table$RMSE)[1]]
 
-# Best Delta from above figure
+# Best Delta from above
 # dev.new(width = 11, height = 8)
 # agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, ' Full k-Fold Models'), cex = 1.25)   
 # browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = 'Figures/Sable_2022_Combo_20_Rdm_Final.pdf', pdf = TRUE)
-browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = 'Figures/Sable_2022_Combo_20_Rdm_Final.png')
-
+browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final.png'))
+browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = FALSE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final_Zoomed.png'))
+                                                                                                                                               
 
 # Apply that best Delta to all Rdm_reps models individually
 Stats_RDM_median_by_model <- NULL
@@ -912,7 +914,100 @@ for (i in 1:5) {
         
    matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Randomized Order')
 }
+
+
+
+if(is.null(NumRdmModels))
+      N <- length(Rdm_models)
+  else
+      N <- NumRdmModels
  
+   newScans.pred.ALL <- NULL
+   for(j in 1:N) {
+      Fold_models <- Rdm_models[[j]]
+      for (i in 1:length(Fold_models)) {      
+            newScans.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
+            newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
+     }
+   }  
+
+
+y.fold.test.pred_RDM
+y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM, 2, median)
+y.fold.test.pred_RDM_median
+
+Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median, na.rm = TRUE)[,2], 
+      Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025, na.rm = TRUE)[,2],
+      Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975, na.rm = TRUE)[,2]), 4) 
  
+
+Pred_median <- r(data.frame(NN_Pred_Median = y.fold.test.pred_RDM_median, 
+                            Lower_Quantile_0.025 = apply(y.fold.test.pred_RDM, 2, quantile, probs = 0.025, na.rm = TRUE),
+                            Upper_Quantile_0.975 = apply(y.fold.test.pred_RDM, 2, quantile, probs = 0.975, na.rm = TRUE)), 4) 
+cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", N, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
+ 
+assign(paste0(Spectra_Set, 'NN_Pred_Median_TMA'), data.frame(filenames = Model_Spectra_Meta$filenames[-SaveOutOties], Pred_median, TMA = TMA_Vector), pos = 1)
+save(list = paste0(Spectra_Set, 'NN_Pred_Median_TMA'), file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Pred_Median_TMA_', timeStamp(), '.RData'))
+
+# browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)')
+
+Model_Ages <- get(paste0(Spectra_Set, 'NN_Pred_Median_TMA'))
+Model_Ages <- Model_Ages[sample(1:nrow(Model_Ages), 100),  ]
+Model_Ages$Age_Rounded <- round(Model_Ages$NN_Pred_Median + Delta)
+Model_Ages$Index <- 1:nrow(Model_Ages)
+
+# - Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ?????????????????
+cols <- c('green', 'red')
+g <- ggplot(Model_Ages, aes(Index, NN_Pred_Median)) +  
+geom_point() +
+geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
+scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+browserPlot('print(g)', file = paste0('Figures/Predicted_Ages_Order_by_File_Names.png'))
+
+   
+# -- Plot by sorted NN predicted ages --
+Model_Ages_Sorted <- sort.f(Model_Ages, 'NN_Pred_Median') # Sort 'Model_Ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+Model_Ages_Sorted$Index <- sort(Model_Ages_Sorted$Index)  # Reset Index for graphing
+if(verbose) head(Model_Ages_Sorted, 20)
+
+cols <- c('green', 'red')
+g <- ggplot(Model_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+# xlim(0, 65) + ylim(0, 20) +
+geom_point() +
+geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
+scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+browserPlot('print(g)', file = paste0('Figures/Predicted_Ages_Sorted.png'))
+
+
+
+# -- Plot by sorted TMA --
+Model_Ages_Sorted <- sort.f(Model_Ages, 'TMA') # Sort 'Model_Ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+Model_Ages_Sorted$Index <- sort(Model_Ages_Sorted$Index)  # Reset Index for graphing
+if(verbose) head(Model_Ages_Sorted, 20)
+
+cols <- c('green', 'red')
+g <- ggplot(Model_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+xlim(0, 65) + ylim(0, 20) +
+geom_point() +
+geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+geom_point(aes(Index, TMA, col = cols[2])) + 
+geom_point(aes(Index + 0.1, Age_Rounded, col = cols[1])) + 
+scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+browserPlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
+
+
+
+# -- Plot by sorted difference --
+g <- ggplot(Model_Ages, aes(jitter(TMA, 1.5), TMA - NN_Pred_Median)) +  
+geom_point() 
+browserPlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
+
+
+Table(TMA_Vector <= 3)/length(TMA_Vector)
+
 } 
    
