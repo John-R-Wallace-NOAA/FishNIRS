@@ -5,23 +5,23 @@
 
 # ------ 'Predict_N_Age_Script' is a wrapper for this function -----
 
-# --- Use 2019 Hake and 2017/2019 Sablefish as examples of the steps needed to use Predict_NN_Age() as a standalone function. ---
+# -- If needed, add 'SG_Variables_Selected' and 'roundingDelta' to the NN Model '.RData' file (2019 Hake, 2017/2019 Sablefish given as examples) --
 
-# # If needed, add 'SG_Variables_Selected' and 'roundingDelta' to the NN Model '.RData' file
 # # Get the variables selected from the column names of the data used in the NN model building
 #   SG_Variables_Selected <- names(Hake_spectra_2019.sg.iPLS)
 #   SG_Variables_Selected <- names(Sable_Spectra_2017_2019.sg.iPLS)  # Sablefish
 
-# Save the rounding Delta for the current NN model 
+# # Save the rounding Delta for the current NN model 
 # roundingDelta <- 0
 # roundingDelta <- -0.2 # Sablefish
+# roundingDelta <- -0.05 # Sablefish 2022 Combo
 
 # # Add 'SG_Variables_Selected' and 'roundingDelta' to the NN Model '.RData' file
 # JRWToolBox::resave(SG_Variables_Selected, roundingDelta, file = 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData')
 # JRWToolBox::resave(SG_Variables_Selected, roundingDelta, file = 'FCNN Model/Sablefish_2017_2019_Rdm_models_22_Mar_2023_14_57_26.RData') # Sablefish 
 
-# --- Test Predict_NN_Age() function ---
 
+# --- Test this Predict_NN_Age() function as a standalone function using 2019 Hake ---
 # - Conda TensorFlow environment -
 # Conda_TF_Eniv <- "C:/Users/John.Wallace/AppData/Local/miniconda3/envs/tf" # Work desktop and laptop  
 # # Conda_TF_Eniv <- "C:/m/envs/tf_cpu_only" # NWFSC GPU machine - CPU only   
@@ -31,7 +31,6 @@
 # library(tensorflow)
 # library(keras)   
 # Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) 
-
 
 # - TensorFlow Math Check  -
 # a <- tf$Variable(5.56)
