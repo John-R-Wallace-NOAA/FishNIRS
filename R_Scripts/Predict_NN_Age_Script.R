@@ -52,7 +52,7 @@
       yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
       fineFreqAdj <- 0
       if(TMA_Ages)
-        TMA_Meta <- "C:/ALL_USR/JRW/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
+        TMA_Meta <- "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
    }  
 
       
@@ -158,10 +158,9 @@ if(verbose) head(New_Ages, 20)
 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = 1;  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = min(c(length(fileNames), Max_N_Spectra))                                      
       
 
-# --- Save() ages and write out to a CSV file ---
+# --- save() ages and write out to a CSV file ---
 save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
 write.csv(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.csv'), row.names = FALSE)
-
 
 # --- Create plots with age estimates and quantile credible intervals ---
 New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
@@ -188,29 +187,15 @@ if(TMA_Ages) {
    New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
    New_Ages$Rounded_Age <- factor(" ")
    New_Ages$TMA <- NULL # Clear old TMA before updating
-   New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1, ]
-   New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')   # Change as needed
-   
-   # if(verbose & !interactive())  Sys.sleep(3)
-   # g <- ggplotly(ggplot(New_Ages, aes(TMA, NN_Pred_Median)) +  
-   # geom_point() +
-   # geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   # geom_point(aes(TMA, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
-   # print(g)
-   # saveHtmlFolder(paste0(Predicted_Ages_Path, '/TMA vs Predicted_Ages'), view = !interactive())
-     
-   #  pdf(width = 16, height = 10, file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
-   
+   if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
+      New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
+   New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
    # browserPlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.pdf'), pdf = TRUE)   
    browserPlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
    
    if(verbose & !interactive())  Sys.sleep(5)
-}   
-
-
-# - Plot by order implied by the spectra file names -
-
-if(TMA_Ages) {
+  
+  # - Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ?????????????????
   cols <- c('green', 'red')
   g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
   geom_point() +
@@ -219,54 +204,51 @@ if(TMA_Ages) {
   geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
   unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
-  browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'))
-}
+  browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'))
 
-if(!TMA_Ages) {
-  g <- ggplotly(ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
-  geom_point() +
-  geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-  geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")) + 
-  geom_point(aes(Index, TMA, color = TMA_Color)) + scale_color_manual(values = c(" " = "red")), dynamicTicks = TRUE)
-  print(g)
-  unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
-  saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), view = !interactive())
- } 
-
-if(!interactive()) Sys.sleep(3)
+  # g <- ggplotly(ggplot(New_Ages, aes(TMA, NN_Pred_Median)) +  
+  # geom_point() +
+  # geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+  # geom_point(aes(TMA, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
+  # print(g)
+  # unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
+  # saveHtmlFolder(paste0(Predicted_Ages_Path, '/TMA vs Predicted_Ages'), view = !interactive())
+  
+  if(!interactive()) Sys.sleep(3)
 
      
-# - Plot by sorted NN predicted ages -
-New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
-New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-
-print(New_Ages_Sorted[1:5, ])
-if(verbose) head(New_Ages_Sorted, 20)
-
-if(TMA_Ages) {
+  # -- Plot by sorted NN predicted ages --
+  New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+  New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+  if(verbose) head(New_Ages_Sorted, 20)
+  
   cols <- c('green', 'red')
   g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+  # xlim(0, 50) + ylim(0, 10) +
   geom_point() +
   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
   geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
   geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-  unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted'), recursive = TRUE)
-  browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted'))
-}
-
-if(!TMA_Ages) {
-  g <- ggplotly(ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+  browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
+  if(!interactive()) Sys.sleep(3)
+  
+  
+  # -- Plot by sorted TMA --
+  New_Ages_Sorted <- sort.f(New_Ages, 'TMA') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+  New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+  if(verbose) head(New_Ages_Sorted, 20)
+  
+  cols <- c('green', 'red')
+  g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
   geom_point() +
   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-  geom_point(aes(Index, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")) + 
-  geom_point(aes(Index, TMA, color = TMA_Color)) + scale_color_manual(values = c(" " = "red")), dynamicTicks = TRUE)
-  print(g)
-  unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted'), recursive = TRUE)
-  saveHtmlFolder(paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted'), view = !interactive())
- } 
-
-
+  geom_point(aes(Index, TMA, col = cols[2])) + 
+  geom_point(aes(Index + 0.1, Age_Rounded, col = cols[1])) + 
+  scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+  browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
+  if(!interactive()) Sys.sleep(3)
+}
 
 
 
