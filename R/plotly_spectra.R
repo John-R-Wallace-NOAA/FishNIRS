@@ -34,6 +34,7 @@
           }
           
        sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
+     
        saveHtmlFolder(htmlPlotFolder, view = !interactive())
     }
 }   
