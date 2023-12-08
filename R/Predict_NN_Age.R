@@ -199,7 +199,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       
       
       
-      newScans.ADJ[[1]] <- newScans.ADJ[[1]]
+      # newScans.ADJ[[1]] <- newScans.ADJ[[1]]
       # c(length(SG_Variables_Selected), sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse))
       newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse)) #make empty matrix for loop
       newScans.ADJ_int[1, ] <- newScans.ADJ[[1]]
@@ -209,7 +209,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
         wavebandsOld <- as.numeric(colnames(newScans.ADJ[[j]]))
         if(all(wavebandsOld %in% wavebandsToUse))
            newScans.ADJ_int[j,] <- newScans.ADJ[[j]]
-        else {    
+        else {
+           cat("\n\n*** Number", j, "waveband is not equal to the first waveband read-in ***\n\n")
            adjFreq <- c(0, min(wavebandsToUse) - min(wavebandsOld) + fineFreqAdj)[1]
            # print(c(j, adjFreq,  min(wavebandsToUse), min(wavebandsOld), min(wavebandsOld) + adjFreq))
            adjAsorb <- c(0, mean(newScans.ADJ[[1]]) - mean(newScans.ADJ[[j]]))[1]
@@ -237,17 +238,14 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
   }
       
       
-# run <- function(...) {     # Use when debugging interactively
+# run <- function(...) {     # Use when debugging interactively to avoid error with dots (...)
   if(plot) {
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      rowNums <- 1:nrow(newScans.RAW)
      if(length(rowNums <= 26^2))
-        plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), colorGroup = 'Otie', ...)
+        plotly.Spec(data.frame(filenames = fileNames, htmlPlotFolder = htmlPlotFolder, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), colorGroup = 'Otie', ...)
      else
-       plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = factor(rowNums), shortName = shortName), colorGroup = 'Otie', ...) 
-  
-     if(!is.null(htmlPlotFolder))
-       saveHtmlFolder(htmlPlotFolder, view = !interactive())
+       plotly.Spec(data.frame(filenames = fileNames, htmlPlotFolder = htmlPlotFolder, newScans.RAW, Otie = factor(rowNums), shortName = shortName), colorGroup = 'Otie', ...) 
    }    
 # }; run() # Use when debugging interactively
 
