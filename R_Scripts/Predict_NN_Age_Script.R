@@ -190,8 +190,7 @@ if(!TMA_Ages) {
    geom_point(aes(Index, Age_Rounded, col = cols)) + 
    scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
    browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'))
-   if(!interactive()) Sys.sleep(3)
-   
+    
    
    # -- Plot by sorted NN predicted ages --
    New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
@@ -204,7 +203,6 @@ if(!TMA_Ages) {
    geom_point(aes(Index, Age_Rounded, col = cols)) + 
    scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
    browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
-   if(!interactive()) Sys.sleep(3)
 }
 
 
@@ -235,16 +233,13 @@ if(TMA_Ages) {
    pchs <- c(16, 1)
    
    # -- Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ????????????????? --
-   
    g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
    geom_point() +
    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
    geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
    geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-   unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
-   browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'))
-   if(!interactive()) Sys.sleep(3)
+   browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'), width = 18, height = 10,)
    
    # New_Ages$Rounded_Age <- factor(" ") # This is needed for ggplotly plotting below
    # g <- ggplotly(ggplot(New_Ages, aes(TMA, NN_Pred_Median)) +  
@@ -263,27 +258,94 @@ if(TMA_Ages) {
    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
    if(verbose) head(New_Ages_Sorted, 20)
    
-   # https://r-graphics.org/recipe-scatter-shapes
-   
-   # g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
    geom_point() +
    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
    geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
-   geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +    
-   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = list(colour = cols, pch = pchs), aesthetics = c('colour', 'shape'), name = ' ') + 
+   geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
+   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')  
+    
+   browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
+   
+   # https://r-graphics.org/recipe-scatter-shapes   
+   # scale_color_manual(labels = c('Rounded Age', 'TMA'), values = list(colour = cols, pch = pchs), aesthetics = c('colour', 'shape'), name = ' ') 
    # scale_shape_manual(values = pchs)
    # scale_fill_manual(values = c(cols[1], NA), guide = guide_legend(override.aes = list(shape = pchs[2])))
    # guides(fill=guide_legend(override.aes=list(shape=16))) +
    # scale_shape_manual(values = pchs, guide = guide_legend(override.aes = list(alpha = 1, size = 10)))
+  
    
-   browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
-   if(!interactive()) Sys.sleep(3)
+   # -- Plot SUBSET of data by sorted NN predicted ages --
+   set.seed(707)
+   New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'NN_Pred_Median') 
+   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+   if(verbose) head(New_Ages_Sorted, 20)
    
+   g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
+   geom_point() +
+   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+   geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+   geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
+   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')    
+   
+   browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
+  
+  
+   # # -- Plot of relative error by sorted NN predicted ages --
+   # New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') 
+   # 
+   # New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+   # if(verbose) head(New_Ages_Sorted, 20)
+   # 
+   # g <- ggplot(New_Ages_Sorted, aes(Index, abs(TMA - NN_Pred_Median)/TMA)) + 
+   # geom_point(col = as.character(New_Ages_Sorted$TMA))
+   # # ylim(0, 6)
+   # 
+   # browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
+   # rm(g)
+   
+   # # -- Plot of relative error by sorted TMA age --
+   # New_Ages_Sorted <- sort.f(New_Ages, 'TMA')
+   # New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+   # if(verbose) head(New_Ages_Sorted, 20)
+   # 
+   # g <- ggplot(New_Ages_Sorted, aes(Index, abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA))) + 
+   # geom_point(col = as.character(New_Ages_Sorted$TMA)) 
+   # # ylim(0, 6)
+   # 
+   # g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted)
+   # 
+   # browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_Index.png'))
+   # rm(g)
+   # 
+   # # -- Plot of relative error by sorted TMA age --
+   # New_Ages_Sorted <- sort.f(New_Ages, 'TMA')
+   # New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+   # if(verbose) head(New_Ages_Sorted, 20)
+   # 
+   # g <- ggplot(New_Ages_Sorted, aes(TMA, abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA))) + 
+   # geom_point(col = as.character(New_Ages_Sorted$TMA))
+   # # ylim(0, 6)
+   # 
+   # browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_sorted_TMA_age.png'))
+   # rm(g)
+   
+   
+   # -- Relative absolute error by TMA age --
+   g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages)
+   browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_TMA_age.png'))
+   
+   # -- Plot of relative error by sorted TMA age --   
+   New_Ages_Sorted <- sort.f(New_Ages, 'TMA')
+   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+   if(verbose) head(New_Ages_Sorted, 20)
+   g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted)
+   browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_sorted_TMA.png'))
    
    # -- Plot by sorted TMA --
    New_Ages_Sorted <- sort.f(New_Ages, 'TMA') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+   New_Ages_Sorted <- na.omit(New_Ages_Sorted)
    if(verbose) head(New_Ages_Sorted, 20)
    
    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
@@ -293,7 +355,6 @@ if(TMA_Ages) {
    geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
    browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
-   if(!interactive()) Sys.sleep(3)
 }
 
 graphics.off()
