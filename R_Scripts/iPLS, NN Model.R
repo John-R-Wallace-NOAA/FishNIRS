@@ -5,11 +5,10 @@
 if(interactive()) 
       setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
 if(!interactive())   options(width = 120)      
-Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[2]
+Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3]
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 Predicted_Ages_Path <- "Predicted_Ages" # The NN predicted ages will go in the path defined below
 dir.create(Predicted_Ages_Path, showWarnings = FALSE)
-TMA_Ages <- c(TRUE, FALSE)[2] # Are TMA ages available and are they to be used?
 verbose <- c(TRUE, FALSE)[1]
 plot <- c(TRUE, FALSE)[1]
 Max_N_Spectra <- list(50, 200, 'All')[[3]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.)
@@ -32,8 +31,6 @@ if(Spectra_Set == "Sable_2017_2019") {
    yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
    fineFreqAdj <- 0
    opusReader <- 'pierreroudier_opusreader'
-   if(TMA_Ages)
-     TMA_Meta <- "C:/ALL_USR/JRW/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
 }  
 
 # (3) Sablefish 2022, Combo survey
@@ -42,8 +39,6 @@ if(Spectra_Set == "Sable_Combo_2022") {
    shortNameSuffix <- 'Year'
    yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
    fineFreqAdj <- 0
-   if(TMA_Ages)
-     TMA_Meta <- "C:/ALL_USR/JRW/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
 }  
 
 }
@@ -97,7 +92,7 @@ if (any(installed.packages()[, 1] %in% "JRWToolBox"))  {
 
 # FishNIRS funtion
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spectra.Only.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/predicted_observed_plot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/residuals_plot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
@@ -191,8 +186,8 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n"))
    
    Model_Spectra <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path)
-   # plotly_spectra(Model_Spectra)
-   plotly_spectra(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
+   # plotly.Spectra.Only(Model_Spectra)
+   plotly.Spectra.Only(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
     
    
    # ADD VESSEL, CRUISE, REGION, LOCATION, AND BIO METADATA
@@ -294,9 +289,9 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    
    
    # Look at the data with plotly and remove rogue oties it needed# 
-   plotly.Spec(Model_Spectra_Meta, 'all')
-   # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ]
-   # plotly.Spec(Model_Spectra_Meta, 'all')
+   plotly.Spec(Model_Spectra_Meta, 'all', htmlPlotFolder = paste0(Figures, '/Spectra Figure by TMA'))
+   # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ] # Example of removing a rogue otie for Hake 2019
+   # plotly.Spec(Model_Spectra_Meta, 'all') # Decide to save figure with rogue otie or the figure without the rogue otie, or both.
    
    
    # Also recreate Model_Spectra so that bad rows are removed 
@@ -452,8 +447,8 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
 # ------ NN Model -------
 { ###
 # Load the data if needed
-load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
-load(paste0(Spectra_Set, '_TMA_Vector.RData')
+base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
+base::load(paste0(Spectra_Set, '_TMA_Vector.RData'))
 
 # Save out 15 oties for final model check.
 set.seed(Seed_Fold)
@@ -461,7 +456,8 @@ TMA_Tab <- Table(TMA_Vector)
 (Low_strata <- sum(TMA_Tab[1:3]))
 (Mid_strata <- sum(TMA_Tab[4:20]))
 (High_strata <- sum(TMA_Tab[21:length(TMA_Tab)]))
-(SaveOutOties <- c(sample(order(TMA_Vector)[1:Low_strata], 5), sample(order(TMA_Vector)[1:Mid_strata], 5), sample(order(TMA_Vector)[1:High_strata], 5)) )  
+(SaveOutOties <- c(sample(order(TMA_Vector)[1:Low_strata], 5), sample(order(TMA_Vector)[Low_strata + 1:Mid_strata], 5), sample(order(TMA_Vector)[Low_strata + Mid_strata + 1:High_strata], 5)) )
+sort(TMA_Vector[SaveOutOties]) # Check the results!!!!!!!!!!!!!!!!
 
 Model_Spectra.sg.iPLS_SaveOutOties <- Model_Spectra.sg.iPLS[SaveOutOties, ]
 save(Model_Spectra.sg.iPLS_SaveOutOties, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS_SaveOutOties.RData'))
@@ -470,20 +466,20 @@ TMA_Vector_SaveOutOties <- TMA_Vector[SaveOutOties]
 save(TMA_Vector_SaveOutOties, file = paste0(Spectra_Set, '_TMA_Vector_SaveOutOties.RData'))
 
 dim(Model_Spectra.sg.iPLS)
-Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[-SaveOutOties, ]
+Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[-SaveOutOties, ] # --- Doing an overwrite here!! ---
 dim(Model_Spectra.sg.iPLS)
-TMA_Vector <- TMA_Vector[-SaveOutOties]
+TMA_Vector <- TMA_Vector[-SaveOutOties] # --- Doing an overwrite here!! ---
 
-# Use full file names (with '.0' at the end)
+# Use full file names, but without '.0' at the end
 fileNames <- dir(path = Spectra_Path)
 # fileNames <- get.subs(fileNames, sep = ".")[1, ]
 fileNames[1:5]
 
 # These are the oties that are not used in the NN model and are saved out for testing
 sort(fileNames[SaveOutOties])
-dir.create(paste0(Spectra_Set, '/Sable_Combo_2022_Saved_Out'), showWarnings = FALSE)
+dir.create(paste0(Spectra_Set, '_Saved_Out'), showWarnings = FALSE)
 file.copy(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
-
+file.remove(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), recursive = TRUE)
 
 # = = = = = = = = = = = = = = = = = Intial setup to run the NN code between the '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
