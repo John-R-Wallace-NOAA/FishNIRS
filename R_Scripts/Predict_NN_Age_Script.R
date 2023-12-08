@@ -120,6 +120,8 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
 
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 
 
@@ -147,15 +149,18 @@ if(exists('shortNameSuffix') && shortNameSuffix != 'Year')
 if(!exists('shortNameSuffix'))
     shortNameSuffix. <- NULL
 
+    
+N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
+
 ##### This is the main call to Predict_NN_Age() #####
 # New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
-#      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = min(c(length(fileNames), Max_N_Spectra)), verbose = verbose) # One random model for faster testing
+#      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # One random model for faster testing
 
 New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj, opusReader = opusReader, 
-   Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = min(c(length(fileNames), Max_N_Spectra)), verbose = verbose) # Use the max number of random model replicates available
+   Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
 if(verbose) head(New_Ages, 20)
 
-# For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = 1;  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = min(c(length(fileNames), Max_N_Spectra))                                      
+# For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = 1;  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp)                                      
       
 
 # --- save() ages and write out to a CSV file ---
@@ -218,9 +223,12 @@ if(TMA_Ages) {
    if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
        New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
    New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
+   
+   plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
+   
    # browserPlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.pdf'), pdf = TRUE)   
    browserPlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
-   browserPlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = FALSE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
+   browserPlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = FALSE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
    if(verbose & !interactive())  Sys.sleep(5)
   
    cols <- c('green', 'red')
