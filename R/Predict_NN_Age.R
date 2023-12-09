@@ -156,7 +156,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
             try(newScans.ADJ[[i]] <- opusreader2::read_opus_single(paste(Spectra_Path, i , sep = "/"))[[3]]$data ) 
       }
       
-      wavebandsNum <- as.numeric(colnames(newScans.ADJ[[1]]))
+      head(wavebandsNum <- as.numeric(colnames(newScans.ADJ[[1]])), 5)
       # wavebandsNum <- trunc(wavebandsNum * 10)/10
       # wavebandsToUse <- round(wavebandsNum)
       # wavebandsToUse.tt <- ifelse(dec(wavebandsNum) > 0.5 - 0.00001 & dec(wavebandsNum) < 0.5 + 0.00001 & dec(trunc(wavebandsNum)/2) > 0 - 0.00001 & dec(trunc(wavebandsNum)/2) < 0 + 0.00001 , wavebandsToUse + 1, wavebandsToUse)
@@ -181,14 +181,15 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       
       if(verbose & plot) {          # Extra adjustments added here - THIS IS EXPERIMENTAL
          png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Spline_Function_Raw.png'))
-         plot(wavebandsToUse - 270, newScans.ADJ[[1]] + 0.10, type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000))
+         # plot(wavebandsToUse - 270, newScans.ADJ[[1]] + 0.10, type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000)) # For matching Sable 2022 to Sable 2019
+         plot(wavebandsToUse, newScans.ADJ[[1]], type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000))
          
          for(j in 2:length(fileNames)) {
             wavebandsOld <- as.numeric(colnames(newScans.ADJ[[j]]))
-            # adjFreq <- c(0, min(wavebandsToUse) - min(wavebandsOld) + fineFreqAdj)[2]
-            adjFreq <- ifelse(j > 89, 0, -270)
-            # adjAsorb <- c(0, mean(newScans.ADJ[[1]]) - mean(newScans.ADJ[[j]]))[1]
-            adjAsorb <- ifelse(j > 89, 0, 0.10)
+            adjFreq <- c(0, min(wavebandsToUse) - min(wavebandsOld) + fineFreqAdj)[1]
+            # adjFreq <- ifelse(j > 89, 0, -270) # For matching Sable 2022 to Sable 2019
+            adjAsorb <- c(0, mean(newScans.ADJ[[1]]) - mean(newScans.ADJ[[j]]))[1]
+            # adjAsorb <- ifelse(j > 89, 0, 0.10) # For matching Sable 2022 to Sable 2019
             lines(wavebandsOld + adjFreq, newScans.ADJ[[j]] + adjAsorb, col = j)
          }
          abline(v = as.numeric(substring(SG_Variables_Selected, 2)), col = 'grey')
@@ -198,7 +199,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       } 
       
       
-      
+      # --  Create a dataframe (newScans.RAW) of scan results from the newScans.ADJ list, interpolating the results if the wavebands are not equal --
       # newScans.ADJ[[1]] <- newScans.ADJ[[1]]
       # c(length(SG_Variables_Selected), sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse))
       newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse)) #make empty matrix for loop
@@ -235,25 +236,25 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       newScans.RAW <- as.data.frame(newScans.ADJ_int)
       # dim(newScans.RAW)
       print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
-  }
-      
+   }
+    
+  cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")    
       
 # run <- function(...) {     # Use when debugging interactively to avoid error with dots (...)
-  if(plot) {
+   if(plot) {
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      rowNums <- 1:nrow(newScans.RAW)
      if(length(rowNums <= 26^2))
-        plotly.Spec(data.frame(filenames = fileNames, htmlPlotFolder = htmlPlotFolder, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), colorGroup = 'Otie', ...)
+        plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), htmlPlotFolder = htmlPlotFolder, colorGroup = 'Otie', ...)
      else
-       plotly.Spec(data.frame(filenames = fileNames, htmlPlotFolder = htmlPlotFolder, newScans.RAW, Otie = factor(rowNums), shortName = shortName), colorGroup = 'Otie', ...) 
+       plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = factor(rowNums), shortName = shortName), htmlPlotFolder = htmlPlotFolder, colorGroup = 'Otie', ...) 
    }    
 # }; run() # Use when debugging interactively
 
-   cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
-   
+
+   # -- Estimation of NN ages based the spectra scans provided --   
    if(verbose) 
        cat("\nStarting the estimation of NN ages based the spectra scans provided:\n\n")
-       
    
    # all(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
 
