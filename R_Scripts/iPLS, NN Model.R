@@ -234,7 +234,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    
    
    # Look at the data and metadata
-   Model_Spectra_Meta[1:5, c(1:3, 504:540)]
+   Model_Spectra_Meta[1:5, c(1:3, 504:ncol(Model_Spectra_Meta))]
    
    # These are not matched to the scans, since they are unscannable
    Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
@@ -294,9 +294,14 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    # plotly.Spec(Model_Spectra_Meta, 'all') # Decide to save figure with rogue otie or the figure without the rogue otie, or both.
    
    
-   # Also recreate Model_Spectra so that bad rows are removed 
+   # If used, remove those oties with missing lengths and otie weight. For Sable 2022 there are too many fish weights missing to use as factor in the NN model.
+   dim(Model_Spectra_Meta)
+   Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g), ]
+   dim(Model_Spectra_Meta)
+   
+   # Now recreate Model_Spectra so that bad rows are removed 
    Model_Spectra_Raw <- Model_Spectra
-   Model_Spectra <- Model_Spectra_Meta[, 2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1)]
+   Model_Spectra <- cbind(Model_Spectra_Meta[, 2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1)], Model_Spectra_Meta$length_cm, Model_Spectra_Meta$structure_weight_g)
    dim(Model_Spectra_Raw)
    dim(Model_Spectra)
    
@@ -307,7 +312,38 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    
    save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
    
-   } ###
+   
+   # Save out 15 oties for final model check.
+   set.seed(Seed_Fold)
+   TMA_Tab <- Table(TMA_Vector)
+   (Low_strata <- sum(TMA_Tab[1:3]))
+   (Mid_strata <- sum(TMA_Tab[4:20]))
+   (High_strata <- sum(TMA_Tab[21:length(TMA_Tab)]))
+   (SaveOutOties <- c(sample(order(TMA_Vector)[1:Low_strata], 5), sample(order(TMA_Vector)[Low_strata + 1:Mid_strata], 5), sample(order(TMA_Vector)[Low_strata + Mid_strata + 1:High_strata], 5)) )
+   sort(TMA_Vector[SaveOutOties]) # Check the results!!!!!!!!!!!!!!!!
+   
+   TMA_Vector_SaveOutOties <- TMA_Vector[SaveOutOties]
+   save(TMA_Vector_SaveOutOties, file = paste0(Spectra_Set, '_TMA_Vector_SaveOutOties.RData'))
+   
+   Model_Spectra_Meta_SaveOutOties <- Model_Spectra_Meta[SaveOutOties, ]
+   save(Model_Spectra_Meta_SaveOutOties, file = paste0(Spectra_Set, '_Model_Spectra_Meta_SaveOutOties.RData'))
+   
+   dim(Model_Spectra_Meta)
+   Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ] # --- Doing an overwrite here!! ---
+   dim(Model_Spectra_Meta)
+   
+   TMA_Vector <- TMA_Vector[-SaveOutOties] # --- Doing another overwrite here!! ---
+   # Use full file names, but with '.0' at the end
+   fileNames <- dir(path = Spectra_Path)
+   # fileNames <- get.subs(fileNames, sep = ".")[1, ]
+   fileNames[1:5]
+   
+   # These are the oties that are not used in the NN model and are saved out for testing
+   sort(fileNames[SaveOutOties])
+   dir.create(paste0(Spectra_Set, '_Saved_Out'), showWarnings = FALSE)
+   file.copy(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
+   file.remove(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), recursive = TRUE)
+   }
    
    # Savitzky-Golay smoothing    
    { ###
@@ -449,37 +485,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
 # Load the data if needed
 base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
 base::load(paste0(Spectra_Set, '_TMA_Vector.RData'))
-
-# Save out 15 oties for final model check.
-set.seed(Seed_Fold)
-TMA_Tab <- Table(TMA_Vector)
-(Low_strata <- sum(TMA_Tab[1:3]))
-(Mid_strata <- sum(TMA_Tab[4:20]))
-(High_strata <- sum(TMA_Tab[21:length(TMA_Tab)]))
-(SaveOutOties <- c(sample(order(TMA_Vector)[1:Low_strata], 5), sample(order(TMA_Vector)[Low_strata + 1:Mid_strata], 5), sample(order(TMA_Vector)[Low_strata + Mid_strata + 1:High_strata], 5)) )
-sort(TMA_Vector[SaveOutOties]) # Check the results!!!!!!!!!!!!!!!!
-
-Model_Spectra.sg.iPLS_SaveOutOties <- Model_Spectra.sg.iPLS[SaveOutOties, ]
-save(Model_Spectra.sg.iPLS_SaveOutOties, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS_SaveOutOties.RData'))
-
-TMA_Vector_SaveOutOties <- TMA_Vector[SaveOutOties]
-save(TMA_Vector_SaveOutOties, file = paste0(Spectra_Set, '_TMA_Vector_SaveOutOties.RData'))
-
-dim(Model_Spectra.sg.iPLS)
-Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[-SaveOutOties, ] # --- Doing an overwrite here!! ---
-dim(Model_Spectra.sg.iPLS)
-TMA_Vector <- TMA_Vector[-SaveOutOties] # --- Doing an overwrite here!! ---
-
-# Use full file names, but without '.0' at the end
-fileNames <- dir(path = Spectra_Path)
-# fileNames <- get.subs(fileNames, sep = ".")[1, ]
-fileNames[1:5]
-
-# These are the oties that are not used in the NN model and are saved out for testing
-sort(fileNames[SaveOutOties])
-dir.create(paste0(Spectra_Set, '_Saved_Out'), showWarnings = FALSE)
-file.copy(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
-file.remove(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), recursive = TRUE)
+base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
 
 # = = = = = = = = = = = = = = = = = Intial setup to run the NN code between the '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
