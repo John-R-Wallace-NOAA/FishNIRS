@@ -1,9 +1,9 @@
 
-# --- Initial setup  (The curly brakets with a '###' comment and without indented lines directly below them are there to enable the hiding of code sections using Notepad++.) ---
+# --- Initial setup  (The curly brakets with a '###' comment and without indented lines directly below them, are there to enable the hiding of code sections using Notepad++.) ---
 #            (For those who dislike Rstudio,  Notepad++ is here: https://notepad-plus-plus.org/  and NppToR that passes R code from Notepad++ to R is here: https://sourceforge.net/projects/npptor/)
 { ###
 if(interactive()) 
-      setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
+      setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Train_NN_Model", "/more_home/h_jwallace/SIDT/Train_NN_Models"))   # Change path to the Spectra Set's .GlobalEnv as needed
 if(!interactive())   options(width = 120)      
 Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3]
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
@@ -92,7 +92,7 @@ if (any(installed.packages()[, 1] %in% "JRWToolBox"))  {
 
 # FishNIRS funtion
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spectra.Only.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/predicted_observed_plot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/residuals_plot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
@@ -179,22 +179,23 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    # --- Load and look at the raw spectra and metadata  ---
    { ###
    
-   fileNames <- dir(path = Spectra_Path)
-   fileNames <- get.subs(fileNames, sep = ".")[1, ]
+   fileNames.0 <- dir(path = Spectra_Path)
+   fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
    fileNames[1:10]
    
    cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n"))
    
    Model_Spectra <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path)
    # plotly.Spectra.Only(Model_Spectra)
-   plotly.Spectra.Only(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
+   plotly_spectra(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
     
    
    # ADD VESSEL, CRUISE, REGION, LOCATION, AND BIO METADATA
    metadata <- openxlsx::read.xlsx(paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"), sheet = 3) #load in ancillary data
    
-   
+   # Match by filenames and look at the data/metadata
    (Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, Model_Spectra), metadata, join_by("filenames" == "NWFSC_NIR_Filename")))[1:5, c(1:3, 504:540)]
+   
    
                                        filenames     X8000     X7992     X3984     X3976     X3968     X3960     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id age_best length_cm weight_kg sex structure_weight_g NWFSC_NIR_Project
    1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1 0.2202285 0.2201835 0.5210375 0.5241458 0.5254004 0.5238540 0.5198408   COMBO        2022           SABL               1 102157421-SABL-O   102157421       14      51.5      1.40   2             0.0228               PRD
@@ -232,17 +233,12 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
                                                                                            2                                                                                      1525 
  
    
-   
-   # Look at the data and metadata
-   Model_Spectra_Meta[1:5, c(1:3, 504:ncol(Model_Spectra_Meta))]
-   
    # These are not matched to the scans, since they are unscannable
    Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
    
    Model_Spectra_Meta$sex <- recode.simple(Model_Spectra_Meta$sex, cbind(c(1, 2, 3), c('M', 'F', 'U')))  # Wow, sex still in numbers!!
    # xyplot(length_cm ~ age_best, group = sex, data = Model_Spectra_Meta, auto = TRUE)
-   
-      
+         
    Model_Spectra_Meta$crystallized_scan <- !is.na(Model_Spectra_Meta$crystallized_scan)
    Table(Model_Spectra_Meta$crystallized_scan)
    
@@ -278,12 +274,20 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    
    names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
    Table(is.finite(Model_Spectra_Meta$TMA))
+         
    rev(sort(Model_Spectra_Meta$TMA))[1:20]
    
-   dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows
-   Model_Spectra_Meta <- Model_Spectra_Meta[is.finite(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & 
-                         Model_Spectra_Meta$percent_crystallized_scan <= 10 & Model_Spectra_Meta$tissue_level_scan <= 10, ]
-   dim(Model_Spectra_Meta) # Sable Combo 2022: 1554 rows
+   dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows 535 cols
+   
+   
+   TF <- !is.na(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 &
+          Model_Spectra_Meta$tissue_level_scan <= 10 & !is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
+   sum(TF); sum(!TF)
+   sort(fileNamesRemove <- Model_Spectra_Meta$filenames[!TF])
+   file.remove(paste0(Spectra_Path, "/", fileNamesRemove, ".0"), recursive = TRUE)
+   Model_Spectra_Meta <- Model_Spectra_Meta[TF, ] # --- Doing an overwrite here!! ---
+   dim(Model_Spectra_Meta) # Sable Combo 2022: 1528 rows
+
    
    Model_Spectra_Meta$shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
    
@@ -293,22 +297,17 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ] # Example of removing a rogue otie for Hake 2019
    # plotly.Spec(Model_Spectra_Meta, 'all') # Decide to save figure with rogue otie or the figure without the rogue otie, or both.
    
-   
-   # If used, remove those oties with missing lengths and otie weight. For Sable 2022 there are too many fish weights missing to use as factor in the NN model.
-   dim(Model_Spectra_Meta)
-   Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g), ]
-   dim(Model_Spectra_Meta)
-   
+     
    # Now recreate Model_Spectra so that bad rows are removed 
    Model_Spectra_Raw <- Model_Spectra
-   Model_Spectra <- cbind(Model_Spectra_Meta[, 2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1)], Model_Spectra_Meta$length_cm, Model_Spectra_Meta$structure_weight_g)
-   dim(Model_Spectra_Raw)
-   dim(Model_Spectra)
+   Model_Spectra <- cbind(Model_Spectra_Meta[, 2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1)], Model_Spectra_Meta$length_cm, Model_Spectra_Meta$structure_weight_g, Model_Spectra_Meta$sex)
+   dim(Model_Spectra_Raw) # 1557  507
+   dim(Model_Spectra) # 1528  510
    
    
    # TMA only
    TMA_Vector <- Model_Spectra_Meta$TMA
-   length(TMA_Vector)
+   length(TMA_Vector) # 1528
    
    save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
    
@@ -320,29 +319,29 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    (Mid_strata <- sum(TMA_Tab[4:20]))
    (High_strata <- sum(TMA_Tab[21:length(TMA_Tab)]))
    (SaveOutOties <- c(sample(order(TMA_Vector)[1:Low_strata], 5), sample(order(TMA_Vector)[Low_strata + 1:Mid_strata], 5), sample(order(TMA_Vector)[Low_strata + Mid_strata + 1:High_strata], 5)) )
-   sort(TMA_Vector[SaveOutOties]) # Check the results!!!!!!!!!!!!!!!!
+   sort(TMA_Vector[SaveOutOties]) # Check the results
    
-   TMA_Vector_SaveOutOties <- TMA_Vector[SaveOutOties]
-   save(TMA_Vector_SaveOutOties, file = paste0(Spectra_Set, '_TMA_Vector_SaveOutOties.RData'))
+   # TMA_Vector_SaveOutOties <- TMA_Vector[SaveOutOties]
+   # save(TMA_Vector_SaveOutOties, file = paste0(Spectra_Set, '_TMA_Vector_SaveOutOties.RData'))
+   # 
+   # Model_Spectra_Meta_SaveOutOties <- Model_Spectra_Meta[SaveOutOties, ]
+   # save(Model_Spectra_Meta_SaveOutOties, file = paste0(Spectra_Set, '_Model_Spectra_Meta_SaveOutOties.RData'))
    
-   Model_Spectra_Meta_SaveOutOties <- Model_Spectra_Meta[SaveOutOties, ]
-   save(Model_Spectra_Meta_SaveOutOties, file = paste0(Spectra_Set, '_Model_Spectra_Meta_SaveOutOties.RData'))
-   
-   dim(Model_Spectra_Meta)
+   dim(Model_Spectra_Meta) # 1528  536
    Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ] # --- Doing an overwrite here!! ---
-   dim(Model_Spectra_Meta)
+   dim(Model_Spectra_Meta) #  1513  536
    
    TMA_Vector <- TMA_Vector[-SaveOutOties] # --- Doing another overwrite here!! ---
-   # Use full file names, but with '.0' at the end
-   fileNames <- dir(path = Spectra_Path)
-   # fileNames <- get.subs(fileNames, sep = ".")[1, ]
-   fileNames[1:5]
+   
+   # Use full file names - with '.0' at the end
+   fileNames.0 <- dir(path = Spectra_Path)
+   fileNames.0[1:5]
    
    # These are the oties that are not used in the NN model and are saved out for testing
    sort(fileNames[SaveOutOties])
    dir.create(paste0(Spectra_Set, '_Saved_Out'), showWarnings = FALSE)
-   file.copy(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
-   file.remove(paste0(Spectra_Path, "/", fileNames[SaveOutOties]), recursive = TRUE)
+   file.copy(paste0(Spectra_Path, "/", fileNames.0[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
+   file.remove(paste0(Spectra_Path, "/", fileNames.0[SaveOutOties]), recursive = TRUE)
    }
    
    # Savitzky-Golay smoothing    
