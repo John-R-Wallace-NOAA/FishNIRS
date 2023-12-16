@@ -91,6 +91,7 @@ if (any(installed.packages()[, 1] %in% "JRWToolBox"))  {
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/loess.line.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/plot.loess.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browserPlot.R")
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
 }    
 
 # FishNIRS funtion
@@ -884,7 +885,9 @@ print(Stats_RDM_median_by_model)
  
 
 # An additional full k-fold added to the total number of models at each step in turn
-dev.new(width = 11, height = 8)
+# dev.new(width = 11, height = 8)
+
+browserPlot("
 par(mfrow = c(3,2))  
 # Delta <- -0.05  # Reset Delta if recreating this figure as an old Delta may linger.
 Stats_RDM_median_by_model_added <- NULL
@@ -901,14 +904,14 @@ minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.s
 max.of.Adj <- apply(minAdj, 2, max)
 (Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[,1:2], t(t(minAdj)/max.of.Adj)))
 
-matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
 
+matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
  
 # Add 5 more Randomized order figures
 set.seed(c(Seed_Main, 747)[2]) 
 (Seed_reps <- round(runif(6, 0, 1e8)))
 
-for (i in 1:5) {
+for (i in 1:5) { 
    set.seed(Seed_reps[i])
    (Rdm_Vec <- sample(1:Rdm_reps)) 
    Stats_RDM_median_by_model_added <- NULL
@@ -925,6 +928,7 @@ for (i in 1:5) {
         
    matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Randomized Order')
 }
+", width = 11, height = 8, file = paste0('Figures/Full_k-fold_models_added_sequentially.png'))
 
 
 Pred_median <- r(data.frame(NN_Pred_Median = apply(y.fold.test.pred_RDM, 2, median), 
@@ -991,10 +995,16 @@ browserPlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
 
 
 # -- Plot by sorted difference --
-g <- ggplot(Model_Ages, aes(jitter(TMA, 1.5), TMA - NN_Pred_Median)) +  
-geom_point() 
-browserPlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
-
+# g <- ggplot(Model_Ages, aes(jitter(TMA, 1.25), TMA - NN_Pred_Median)) +  
+# geom_point() 
+# browserPlot('print(g)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))
+  
+# Vertical line for each unique TMA - without standard grid            
+xlim <- c(min(TMA) - 1.25, max(TMA) + 1.25)       
+browserPlot('set.seed(707); gPlot(Model_Ages, jitter(TMA), TMA - NN_Pred_Median, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE); abline(v = unique(TMA), col = "grey"); 
+             set.seed(707); points(jitter(TMA), TMA - NN_Pred_Median)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))    
+             
+             
 
 Table(TMA_Vector <= 3)/length(TMA_Vector)
 
