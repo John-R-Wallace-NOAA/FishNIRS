@@ -944,33 +944,34 @@ save(list = paste0(Spectra_Set, '_NN_Pred_Median_TMA'), file = paste0(Spectra_Se
 # browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)')
 
 Model_Ages <- get(paste0(Spectra_Set, '_NN_Pred_Median_TMA'))
+Model_Ages$Pred_Age_Rounded <- round(Model_Ages$NN_Pred_Median + Delta)
+
 set.seed(Seed_Fold)
-Model_Ages <- Model_Ages[sample(1:nrow(Model_Ages), 100),  ]  # Using a sample of 100 ages so the figures are not too crowded
-Model_Ages$Age_Rounded <- round(Model_Ages$NN_Pred_Median + Delta)
-Model_Ages$Index <- 1:nrow(Model_Ages)
+Model_Ages_Sub <- Model_Ages[sample(1:nrow(Model_Ages), 100),  ]  # Using a sample of 100 ages so the figures are not too crowded
+Model_Ages_Sub$Index <- 1:nrow(Model_Ages_Sub)
 
 # - Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ?????????????????
 cols <- c('green', 'red')
-g <- ggplot(Model_Ages, aes(Index, NN_Pred_Median)) +  
+g <- ggplot(Model_Ages_Sub, aes(Index, NN_Pred_Median)) +  
 geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+geom_point(aes(Index, Pred_Age_Rounded, col = cols[1])) + 
 geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
 browserPlot('print(g)', file = paste0('Figures/Predicted_Ages_Order_by_File_Names.png'))
 
    
 # -- Plot by sorted NN predicted ages --
-Model_Ages_Sorted <- sort.f(Model_Ages, 'NN_Pred_Median') # Sort Model_Ages by NN_Pred_Median, except for "Index" (see the next line below)
-Model_Ages_Sorted$Index <- sort(Model_Ages_Sorted$Index)  # Reset Index for graphing
-if(verbose) head(Model_Ages_Sorted, 20)
+Model_Ages_Sub_Sorted <- sort.f(Model_Ages_Sub, 'NN_Pred_Median') # Sort Model_Ages_Sub by NN_Pred_Median, except for "Index" (see the next line below)
+Model_Ages_Sub_Sorted$Index <- sort(Model_Ages_Sub_Sorted$Index)  # Reset Index for graphing
+if(verbose) head(Model_Ages_Sub_Sorted, 20)
 
 cols <- c('green', 'red')
-g <- ggplot(Model_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+g <- ggplot(Model_Ages_Sub_Sorted, aes(Index, NN_Pred_Median)) +  
 # xlim(0, 65) + ylim(0, 20) +
 geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+geom_point(aes(Index, Pred_Age_Rounded, col = cols[1])) + 
 geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
 browserPlot('print(g)', file = paste0('Figures/Predicted_Ages_Sorted.png'))
@@ -978,33 +979,38 @@ browserPlot('print(g)', file = paste0('Figures/Predicted_Ages_Sorted.png'))
 
 
 # -- Plot by sorted TMA --
-Model_Ages_Sorted <- sort.f(Model_Ages, 'TMA') # Sort Model_Ages by TMA, except for "Index" (see the next line below)
-Model_Ages_Sorted$Index <- sort(Model_Ages_Sorted$Index)  # Reset Index for graphing
-if(verbose) head(Model_Ages_Sorted, 20)
+Model_Ages_Sub_Sorted <- sort.f(Model_Ages_Sub, 'TMA') # Sort Model_Ages_Sub by TMA, except for "Index" (see the next line below)
+Model_Ages_Sub_Sorted$Index <- sort(Model_Ages_Sub_Sorted$Index)  # Reset Index for graphing
+if(verbose) head(Model_Ages_Sub_Sorted, 20)
 
 cols <- c('green', 'red')
-g <- ggplot(Model_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+g <- ggplot(Model_Ages_Sub_Sorted, aes(Index, NN_Pred_Median)) +  
 # xlim(0, 65) + ylim(0, 20) +
 geom_point() +
 geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
 geom_point(aes(Index, TMA, col = cols[2])) + 
-geom_point(aes(Index + 0.1, Age_Rounded, col = cols[1])) + 
+geom_point(aes(Index + 0.1, Pred_Age_Rounded, col = cols[1])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
 browserPlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
 
 
 
 # -- Plot by sorted difference --
-# g <- ggplot(Model_Ages, aes(jitter(TMA, 1.25), TMA - NN_Pred_Median)) +  
+# g <- ggplot(Model_Ages_Sub, aes(jitter(TMA, 1.25), TMA - NN_Pred_Median)) +  
 # geom_point() 
 # browserPlot('print(g)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))
-  
-# Vertical line for each unique TMA - without standard grid            
-xlim <- c(min(TMA) - 1.25, max(TMA) + 1.25)       
-browserPlot('set.seed(707); gPlot(Model_Ages, jitter(TMA), TMA - NN_Pred_Median, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE); abline(v = unique(TMA), col = "grey"); 
-             set.seed(707); points(jitter(TMA), TMA - NN_Pred_Median)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))    
-             
-             
+
+# Back to all data; round(NN_Pred_Median + Delta); jitter TMA; vertical line for each unique TMA - without standard grid            
+xlim <- c(min(Model_Ages$TMA) - 1.25, max(Model_Ages$TMA) + 1.25)   
+Model_Ages$TMA_Minus_Pred_Age_Rounded <- Model_Ages$TMA - Model_Ages$Pred_Age_Rounded
+browserPlot('set.seed(707); gPlot(Model_Ages, "TMA", "TMA_Minus_Pred_Age_Rounded", ylab = "TMA - Pred_Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+               grid = FALSE, vertLineEachPoint = TRUE)', file = paste0('Figures/TMA_minus_round_NN_Pred_vs_TMA_Jitter.png')) 
+
+
+
+# Difference plotted against NN_Pred_Median (not rounded)
+# browserPlot('set.seed(707); gPlot(Model_Ages, NN_Pred_Median, NN_Pred_Median - TMA, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE)')    
+    
 
 Table(TMA_Vector <= 3)/length(TMA_Vector)
 
