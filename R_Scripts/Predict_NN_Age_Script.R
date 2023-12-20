@@ -88,6 +88,7 @@ if (!any(installed.packages()[, 1] %in% "tensorflow"))
 if (!any(installed.packages()[, 1] %in% "keras")) 
      install.packages("keras") 
 
+library(lattice)
 library(R.utils)     
 library(ggplot2)
 library(plotly)        
@@ -115,6 +116,7 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
    }
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
@@ -160,7 +162,7 @@ New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, h
    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
 if(verbose) head(New_Ages, 20)
 
-# For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = 1;  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp)                                      
+# For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
       
 
 # --- save() ages and write out to a CSV file ---
@@ -355,6 +357,14 @@ if(TMA_Ages) {
    geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
    browserPlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
+
+   # -- Plot by sorted difference --
+   # Back to all data; round(NN_Pred_Median + Delta); jitter TMA; vertical line for each unique TMA - without standard grid            
+   xlim <- c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25)   
+   New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
+   browserPlot('set.seed(707); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                  grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
+   
 }
 
 graphics.off()
