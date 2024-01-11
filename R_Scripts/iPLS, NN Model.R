@@ -7,8 +7,7 @@ if(interactive())
 if(!interactive())   options(width = 120)      
 Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3]
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
-Predicted_Ages_Path <- "Predicted_Ages" # The NN predicted ages will go in the path defined below
-dir.create(Predicted_Ages_Path, showWarnings = FALSE)
+dir.create('Figures', showWarnings = FALSE)
 verbose <- c(TRUE, FALSE)[1]
 plot <- c(TRUE, FALSE)[1]
 Max_N_Spectra <- list(50, 200, 'All')[[3]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.)
@@ -290,7 +289,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    
    sort(fileNamesRemove <- Model_Spectra_Meta$filenames[!TF])
    
-   file.remove(paste0(Spectra_Path, "/", fileNamesRemove, ".0"), recursive = TRUE)  # Raw scans removed here
+   file.remove(paste0(Spectra_Path, "/", fileNamesRemove, ".0"), recursive = TRUE)  # Bad raw scans removed here
    
    Model_Spectra_Meta <- Model_Spectra_Meta[TF, ] # --- Doing an overwrite here!! --- Gettin rid of bad scans or ones with no metadata that is wanted
    dim(Model_Spectra_Meta) # Sable Combo 2022: 1528 rows
@@ -351,7 +350,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    sort(fileNames.0[SaveOutOties])
    dir.create(paste0(Spectra_Set, '_Saved_Out'), showWarnings = FALSE)
    file.copy(paste0(Spectra_Path, "/", fileNames.0[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
-   file.remove(paste0(Spectra_Path, "/", fileNames.0[SaveOutOties]), recursive = TRUE) # More raw scans removed here - number of scans left should match Model_Spectra_Meta, Model_Spectra, and TMA_Vector
+   file.remove(paste0(Spectra_Path, "/", fileNames.0[SaveOutOties]), recursive = TRUE) # Leave out raw scans removed here - number of scans left should match Model_Spectra_Meta, Model_Spectra, and TMA_Vector
    }
    
    # Savitzky-Golay smoothing    
@@ -497,17 +496,35 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
 } ###
 } ###
 
-# ------ NN Model -------
+# --- NN Model ---
 { ###
 # Load the data if needed
-base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
-base::load(paste0(Spectra_Set, '_TMA_Vector.RData'))
-base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')); load('SaveOutOties.RData'); Model_Spectra_Meta <-  Model_Spectra_Meta[-SaveOutOties, ] # 
+base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')); print(dim(Model_Spectra.sg.iPLS))
+base::load(paste0(Spectra_Set, '_TMA_Vector.RData')); print(length(TMA_Vector))
+base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
+base::load(paste0(Spectra_Set, '_SaveOutOties_Seed_727.RData')); print(length(SaveOutOties))
+Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ]; print(dim(Model_Spectra_Meta))
+TMA_Vector <- Model_Spectra_Meta$TMA 
 
-# = = = = = = = = = = = = = = = = = Intial setup - run the NN code between the '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+# ----- Remove both metadata columns for testing  -----
+# Model_Spectra.sg.iPLS$length_prop_max <- Model_Spectra.sg.iPLS$structure_weight_dg <- NULL
+
+# ----- Leave only the fish length for testing  -----
+# Model_Spectra.sg.iPLS$structure_weight_dg <- NULL
+
+# ----- Leave only the otie weight for testing  -----
+# Model_Spectra.sg.iPLS$length_prop_max <- NULL
+
+print(dim(Model_Spectra.sg.iPLS))
+print(Model_Spectra.sg.iPLS$length_prop_max[1:4])
+print(Model_Spectra.sg.iPLS$structure_weight_dg[1:4])
+
+
+# = = = = = = = = = = = = = = = = = Intial setup - run the NN code between the first '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
 # Split the data into folds, spitting the remainder of an un-even division into the first folds, one otie per fold until finished
-set.seed(Seed_Fold)
+Seed_Fold <- 747 # Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight
+set.seed(Seed_Fold) # Seed_Fold = 727 used in the code above and for previous runs of Sable_2022 before 28 Dec 2023
 num_folds <- 10
 index_org <- 1:nrow(Model_Spectra.sg.iPLS)
 (fold_size_min <- floor(length(index_org)/num_folds))
@@ -534,11 +551,11 @@ dev.new(width = 10, height = 10) # 6
 dev.new(width = 10, height = 10) # 7
 
 
-# = = = = = = = = = = = = = = = = = Pick number of random reps (Rdm_reps) and run the NN code between the next '= = =' lines and expect long run times = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+# = = = = = = = = = = = = = = = = = Pick number of random reps (Rdm_reps) and run the NN code between the next '= = =' lines and expect long run times = = = = = = = = =
     
 Rdm_reps <- 20    
 # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
-Seed_Main <- 707   # Reducing the number of seeds will be considered later
+Seed_Main <- 747 # Seed_Main <- 707 used for previous runs of Sable_2022 before 28 Dec 2023  # Reducing the number of seeds will be considered later
 set.seed(Seed_Main) 
 Seed_reps <- sample(1e7, Rdm_reps)
 
@@ -549,7 +566,7 @@ Rdm_folds_index <- list()
 
 file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now.
 
-# Note that errors from plot.loess() are trapped by try() and are normal early in the iteration loop since there are not enough data to smooth.
+# Note that errors from plot.loess() are trapped by try() and are normal early in the iteration loop since there is not enough data to smooth.
 for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
  
    cat(paste0("\n\nStart of Random Rep = ", j , "\n\n"))
@@ -807,8 +824,13 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 
 }
 
-# Find Median over all Rdm_reps Models and create figures
+# --- Find Median over all Rdm_reps Models and create figures ---
 { ###
+
+# Only 2 loads needed to redo this section with new data - the Model_Spectra.sg.iPLS has to, of course, match the Rdm_model and Rdm_folds_index 
+# base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_GPU_Machine\\Sable_Combo_2022_FCNN_model_ver_1_5_Rdm_model_21_Dec_2023_08_14_19.RData")
+# base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_Model_Spectra.sg.iPLS.RData")
+
 
 (Rdm_reps <- length(Rdm_folds_index))
 
@@ -865,7 +887,7 @@ print(Delta_Table <- data.frame(Delta_Table))
 # Best Delta from table above
 (Delta <- Delta_Table$Delta[order(Delta_Table$SAD, Delta_Table$RMSE)[1]])
 
-# Best Delta from above
+# Agreement Figures (standard and zoomed) using the best delta from above
 # dev.new(width = 11, height = 8) # R plot window version
 # agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, ' Full k-Fold Models'), cex = 1.25) # R plot window version
 # browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = 'Figures/Sable_2022_Combo_20_Rdm_Final.pdf', pdf = TRUE) # PDF version
@@ -931,6 +953,7 @@ for (i in 1:5) {
 ", width = 11, height = 8, file = paste0('Figures/Full_k-fold_models_added_sequentially.png'))
 
 
+# --- NN prediction for each otie in the NN model ---
 Pred_median <- r(data.frame(NN_Pred_Median = apply(y.fold.test.pred_RDM, 2, median), 
                             Lower_Quantile_0.025 = apply(y.fold.test.pred_RDM, 2, quantile, probs = 0.025, na.rm = TRUE),
                             Upper_Quantile_0.975 = apply(y.fold.test.pred_RDM, 2, quantile, probs = 0.975, na.rm = TRUE)), 4) 
@@ -939,15 +962,32 @@ cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precis
 assign(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), data.frame(filenames = Model_Spectra_Meta$filenames, Pred_median, TMA = TMA_Vector), pos = 1)
 save(list = paste0(Spectra_Set, '_NN_Pred_Median_TMA'), file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Pred_Median_TMA_', timeStamp(), '.RData'))
 
+
 # This agreementFigure() already produced above
 # (y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM, 2, median))[1:10]
 # browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)')
 
+
+# Copy the spectra set prediction to a generic name and add a rounded prediction by adding the best delta found above
 Model_Ages <- get(paste0(Spectra_Set, '_NN_Pred_Median_TMA'))
 Model_Ages$Pred_Age_Rounded <- round(Model_Ages$NN_Pred_Median + Delta)
+Model_Ages[1:5,]
 
+# -- Plot by sorted difference --
+# g <- ggplot(Model_Ages_Sub, aes(jitter(TMA, 1.25), TMA - NN_Pred_Median)) +  
+# geom_point() 
+# browserPlot('print(g)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))
+
+# Jitter TMA; vertical line for each unique TMA - without standard grid        
+xlim <- c(min(Model_Ages$TMA) - 1.25, max(Model_Ages$TMA) + 1.25)   
+Model_Ages$TMA_Minus_Pred_Age_Rounded <- Model_Ages$TMA - Model_Ages$Pred_Age_Rounded
+browserPlot('set.seed(707); gPlot(Model_Ages, "TMA", "TMA_Minus_Pred_Age_Rounded", ylab = "TMA - Pred_Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+               grid = FALSE, vertLineEachPoint = TRUE)', file = paste0('Figures/TMA_minus_round_NN_Pred_vs_TMA_Jitter.png')) 
+
+               
+# ----- Using a sample of 100 ages so the figures are not too crowded ------
 set.seed(Seed_Fold)
-Model_Ages_Sub <- Model_Ages[sample(1:nrow(Model_Ages), 100),  ]  # Using a sample of 100 ages so the figures are not too crowded
+Model_Ages_Sub <- Model_Ages[sample(1:nrow(Model_Ages), 100),  ]  
 Model_Ages_Sub$Index <- 1:nrow(Model_Ages_Sub)
 
 # - Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ?????????????????
@@ -995,24 +1035,11 @@ browserPlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
 
 
 
-# -- Plot by sorted difference --
-# g <- ggplot(Model_Ages_Sub, aes(jitter(TMA, 1.25), TMA - NN_Pred_Median)) +  
-# geom_point() 
-# browserPlot('print(g)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))
-
-# Back to all data; round(NN_Pred_Median + Delta); jitter TMA; vertical line for each unique TMA - without standard grid            
-xlim <- c(min(Model_Ages$TMA) - 1.25, max(Model_Ages$TMA) + 1.25)   
-Model_Ages$TMA_Minus_Pred_Age_Rounded <- Model_Ages$TMA - Model_Ages$Pred_Age_Rounded
-browserPlot('set.seed(707); gPlot(Model_Ages, "TMA", "TMA_Minus_Pred_Age_Rounded", ylab = "TMA - Pred_Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-               grid = FALSE, vertLineEachPoint = TRUE)', file = paste0('Figures/TMA_minus_round_NN_Pred_vs_TMA_Jitter.png')) 
-
-
-
 # Difference plotted against NN_Pred_Median (not rounded)
 # browserPlot('set.seed(707); gPlot(Model_Ages, NN_Pred_Median, NN_Pred_Median - TMA, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE)')    
     
 
-Table(TMA_Vector <= 3)/length(TMA_Vector)
+print(Table(TMA_Vector <= 3)/length(TMA_Vector))
 
 } 
    
