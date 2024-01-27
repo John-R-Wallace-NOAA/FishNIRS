@@ -89,7 +89,7 @@ if (any(installed.packages()[, 1] %in% "JRWToolBox"))  {
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/dec.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/loess.line.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/plot.loess.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browserPlot.R")
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
 }    
 
@@ -436,7 +436,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    # (p <- length(Model_Spectra.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
    
    Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], length_prop_max = Model_Spectra_Meta$length_cm/max(Model_Spectra_Meta$length_cm), 
-                                           structure_weight_dg = 10* Model_Spectra_Meta$structure_weight_g) # dg = decigram
+                                           structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g) # dg = decigram
                                            
    save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
    save(TMA_Vector, file = paste0(Spectra_Set, '_TMA_Vector.RData'))                
@@ -465,7 +465,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
        
                      
                      
-       # --------------- Try ipls() with smoothed spectra data and metadata  - NO METADATA WAS SELECTED ------------------------
+       # --------------- Try ipls() with smoothed spectra data and metadata - NO METADATA WAS SELECTED HERE ------------------------
        
        # Remove NA's with predictors and response together - then re-split
        Model_Spectra.sg.META <- na.omit(cbind(Model_Spectra.sg, Model_Spectra_Meta[, c("latitude", "longitude", "length", "weight", "sex")], TMA = TMA_Vector))
@@ -816,7 +816,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
    }
 
    
-   browserPlot('agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j))')   
+   browsePlot('agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j))')   
    
 }  # k Random Replicate loop
 
@@ -854,7 +854,7 @@ for (j in 1:Rdm_reps) {
    
    # dev.new(width = 11, height = 8)
    # agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))
-   browserPlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
+   browsePlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
    
    # Full figure only needed for a long-lived species like Sablefish
    # dev.new(width = 11, height = 8)
@@ -890,9 +890,9 @@ print(Delta_Table <- data.frame(Delta_Table))
 # Agreement Figures (standard and zoomed) using the best delta from above
 # dev.new(width = 11, height = 8) # R plot window version
 # agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, ' Full k-Fold Models'), cex = 1.25) # R plot window version
-# browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = 'Figures/Sable_2022_Combo_20_Rdm_Final.pdf', pdf = TRUE) # PDF version
-browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final.png'))
-browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = FALSE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final_Zoomed.png'))
+# browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = 'Figures/Sable_2022_Combo_20_Rdm_Final.pdf', pdf = TRUE) # PDF version
+browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final.png'))
+browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = FALSE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final_Zoomed.png'))
                                                                                                                                                
 
 # Apply that best Delta (from above) to all Rdm_reps models individually
@@ -909,7 +909,7 @@ print(Stats_RDM_median_by_model)
 # An additional full k-fold added to the total number of models at each step in turn
 # dev.new(width = 11, height = 8)
 
-browserPlot("
+browsePlot("
 par(mfrow = c(3,2))  
 # Delta <- -0.05  # Reset Delta if recreating this figure as an old Delta may linger.
 Stats_RDM_median_by_model_added <- NULL
@@ -965,7 +965,7 @@ save(list = paste0(Spectra_Set, '_NN_Pred_Median_TMA'), file = paste0(Spectra_Se
 
 # This agreementFigure() already produced above
 # (y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM, 2, median))[1:10]
-# browserPlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)')
+# browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)')
 
 
 # Copy the spectra set prediction to a generic name and add a rounded prediction by adding the best delta found above
@@ -976,12 +976,12 @@ Model_Ages[1:5,]
 # -- Plot by sorted difference --
 # g <- ggplot(Model_Ages_Sub, aes(jitter(TMA, 1.25), TMA - NN_Pred_Median)) +  
 # geom_point() 
-# browserPlot('print(g)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))
+# browsePlot('print(g)', file = paste0('Figures/TMA_minus_NN_Pred_vs_TMA.png'))
 
 # Jitter TMA; vertical line for each unique TMA - without standard grid        
 xlim <- c(min(Model_Ages$TMA) - 1.25, max(Model_Ages$TMA) + 1.25)   
 Model_Ages$TMA_Minus_Pred_Age_Rounded <- Model_Ages$TMA - Model_Ages$Pred_Age_Rounded
-browserPlot('set.seed(707); gPlot(Model_Ages, "TMA", "TMA_Minus_Pred_Age_Rounded", ylab = "TMA - Pred_Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+browsePlot('set.seed(707); gPlot(Model_Ages, "TMA", "TMA_Minus_Pred_Age_Rounded", ylab = "TMA - Pred_Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                grid = FALSE, vertLineEachPoint = TRUE)', file = paste0('Figures/TMA_minus_round_NN_Pred_vs_TMA_Jitter.png')) 
 
                
@@ -998,7 +998,7 @@ geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) +
 geom_point(aes(Index, Pred_Age_Rounded, col = cols[1])) + 
 geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-browserPlot('print(g)', file = paste0('Figures/Predicted_Ages_Order_by_File_Names.png'))
+browsePlot('print(g)', file = paste0('Figures/Predicted_Ages_Order_by_File_Names.png'))
 
    
 # -- Plot by sorted NN predicted ages --
@@ -1014,7 +1014,7 @@ geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) +
 geom_point(aes(Index, Pred_Age_Rounded, col = cols[1])) + 
 geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-browserPlot('print(g)', file = paste0('Figures/Predicted_Ages_Sorted.png'))
+browsePlot('print(g)', file = paste0('Figures/Predicted_Ages_Sorted.png'))
 
 
 
@@ -1031,12 +1031,12 @@ geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) +
 geom_point(aes(Index, TMA, col = cols[2])) + 
 geom_point(aes(Index + 0.1, Pred_Age_Rounded, col = cols[1])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-browserPlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
+browsePlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
 
 
 
 # Difference plotted against NN_Pred_Median (not rounded)
-# browserPlot('set.seed(707); gPlot(Model_Ages, NN_Pred_Median, NN_Pred_Median - TMA, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE)')    
+# browsePlot('set.seed(707); gPlot(Model_Ages, NN_Pred_Median, NN_Pred_Median - TMA, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE)')    
     
 
 print(Table(TMA_Vector <= 3)/length(TMA_Vector))
