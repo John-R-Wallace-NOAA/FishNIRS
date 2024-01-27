@@ -43,7 +43,7 @@
 
 
 
-Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, shortNameSegments = c(2,4), shortNameSuffix = NULL, 
+Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, shortNameSegments = c(2,4), shortNameSuffix = NULL, 
      opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1], fineFreqAdj = 150, Predicted_Ages_Path = NULL, verbose = FALSE,  ...) {
    
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
@@ -68,7 +68,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/r.R") 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ll.R")  
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")    
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")   
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")  
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
@@ -121,18 +122,28 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    
    # --- Load the NN model for SG_Variables_Selected and Rdm_models objects ---
    if(!verbose)
-      base::load(NN_Model)
+     # base::load(NN_Model)
       
    if(verbose) {
       '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
-      base::load(NN_Model, envir = parent.frame()) # Save to [[.GlobalEnv]] 
+     # base::load(NN_Model, envir = parent.frame()) # Save to [[.GlobalEnv]] 
       print(ll()); cat("\n\n")
       if(!interactive())  Sys.sleep(3)
    }
    
+   # Find the metadata variables that are in the NN Model
+   metaDataVar <- (1:length(SG_Variables_Selected))[is.na(as.numeric(substring(SG_Variables_Selected, 2)))]
+   SG_Scan_Variables_only <- SG_Variables_Selected[-metaDataVar]
+
+   
+   
+   
    # --- Create a character vector of all spectral files within 'Spectra_Path'---   
-   (fileNames <- dir(path = Spectra_Path))[1:10]
-   cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n"))
+   (fileNames.0 <- dir(path = Spectra_Path))[1:10]
+   cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
+   fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' suffix in the metadata xlsx
+   
+   
    
    shortName <- apply(matrix(fileNames, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
    if(!is.null(shortNameSuffix))
@@ -147,7 +158,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    
       # ----------- Re-sampling wavebands using stats::splinefun() with lowess() (inside of the JRWToolBox::predict.lowess() function) or prospectr::resample() --------------
       newScans.ADJ <- list()
-      for (i in fileNames)  {
+      for (i in fileNames.0)  {
          print(i)
          if(opusReader == 'pierreroudier_opusreader')
             try(newScans.ADJ[[i]] <- opusreader::opus_read(paste(Spectra_Path, i , sep = "/"), simplify = TRUE, wns_digits = 0)[[2]] )
@@ -165,17 +176,18 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       # tmp[tmp[,3] != tmp[,4], ]
       # 
       
-      wavebandsToUse <- round(wavebandsNum)
-      # For Sablefish 2017.2019 a handful of SG_Variables_Selected spectra (consecutive numbers) whose trunc() is an even number rounded up and not down when the decimal was 0.5. ????????????????
-      # c(length(SG_Variables_Selected), sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse))
-      (adjNum <- as.numeric(substring(SG_Variables_Selected, 2))[!as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse])
-      
-      if(length(adjNum) >= 1) {
-        for (i in adjNum)
-          wavebandsToUse[wavebandsToUse == i - 1] <- i
+	  wavebandsToUse <- round(wavebandsNum)
+	  if(sum(wavebandsToUse - wavebandsNum) != 0) {
+         # For Sablefish 2017.2019 a handful of SG_Scan_Variables_only spectra (consecutive numbers) whose trunc() is an even number rounded up and not down when the decimal was 0.5. ????????????????
+         # c(length(SG_Scan_Variables_only), sum(as.numeric(substring(SG_Scan_Variables_only, 2)) %in% wavebandsToUse))
+         (adjNum <- as.numeric(substring(SG_Scan_Variables_only, 2))[!as.numeric(substring(SG_Scan_Variables_only, 2)) %in% wavebandsToUse])
+         
+         if(length(adjNum) >= 1) {
+           for (i in adjNum)
+             wavebandsToUse[wavebandsToUse == i - 1] <- i
+         }
       }
-      
-      # c(length(SG_Variables_Selected), sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse))
+      # c(length(SG_Scan_Variables_only), sum(as.numeric(substring(SG_Scan_Variables_only, 2)) %in% wavebandsToUse))
       
       colnames(newScans.ADJ[[1]]) <- wavebandsToUse
       
@@ -192,7 +204,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
             # adjAsorb <- ifelse(j > 89, 0, 0.10) # For matching Sable 2022 to Sable 2019
             lines(wavebandsOld + adjFreq, newScans.ADJ[[j]] + adjAsorb, col = j)
          }
-         abline(v = as.numeric(substring(SG_Variables_Selected, 2)), col = 'grey')
+         abline(v = as.numeric(substring(SG_Scan_Variables_only, 2)), col = 'grey')
          dev.off()
          browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Spline_Function_Raw.png'), browser = ifelse(.Platform$OS.type == 'windows', "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe", getOption("browser")))
          # browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Spline_Function_Raw.png'))
@@ -201,8 +213,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       
       # --  Create a dataframe (newScans.RAW) of scan results from the newScans.ADJ list, interpolating the results if the wavebands are not equal --
       # newScans.ADJ[[1]] <- newScans.ADJ[[1]]
-      # c(length(SG_Variables_Selected), sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse))
-      newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse)) #make empty matrix for loop
+      # c(length(SG_Scan_Variables_only), sum(as.numeric(substring(SG_Scan_Variables_only, 2)) %in% wavebandsToUse))
+      newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse)) # Make empty matrix for loop
       newScans.ADJ_int[1, ] <- newScans.ADJ[[1]]
       
       for (j in 2:length(newScans.ADJ)) { 
@@ -232,10 +244,14 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
       
       # colnames(newScans.ADJ_int) <- colnames(newScans.ADJ[[1]])
       colnames(newScans.ADJ_int) <- wavebandsToUse
-      # sum(as.numeric(substring(SG_Variables_Selected, 2)) %in% wavebandsToUse)
-      newScans.RAW <- as.data.frame(newScans.ADJ_int)
+      # sum(as.numeric(substring(SG_Scan_Variables_only, 2)) %in% wavebandsToUse)
+      # newScans.RAW <- match.f(data.frame(fileNames, newScans.ADJ_int)[fileNames %in% Model_Spectra_Meta$filenames, ], Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]
+	  newScans.RAW <- data.frame(newScans.ADJ_int)[fileNames %in% Model_Spectra_Meta$filenames, ]
       # dim(newScans.RAW)
-      print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
+	  # sum(apply(newScans.RAW, 2, function(x) sum(is.na(x)))) # Should be zero	 
+      print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 5):(ncol(newScans.RAW)))])); cat("\n\n")
+	  shortName <- shortName[fileNames %in% Model_Spectra_Meta$filenames]
+	  fileNames <- fileNames[fileNames %in% Model_Spectra_Meta$filenames]
    }
     
   cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")    
@@ -258,7 +274,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    
    # all(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
 
-   trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
+   trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
    if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
         shell(paste0("echo.  > ", Predicted_Ages_Path, "\\ERROR_READ_ME.txt"))
         shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "\\ERROR.txt"))
@@ -266,13 +282,15 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = TRUE, h
    }
    
    # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))))
+  
+   newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
    
-  save(newScans, newScans.RAW, file = 'newScans.RData' )
+   save(newScans, newScans.RAW, file = 'newScans.RData')
     
-  if(is.null(NumRdmModels))
-      N <- length(Rdm_models)
-  else
-      N <- NumRdmModels
+   if(is.null(NumRdmModels))
+       N <- length(Rdm_models)
+   else
+       N <- NumRdmModels
  
    newScans.pred.ALL <- NULL
    for(j in 1:N) {
