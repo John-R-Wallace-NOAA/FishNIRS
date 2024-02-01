@@ -5,44 +5,17 @@
 if(interactive()) 
       setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Train_NN_Model", "/more_home/h_jwallace/SIDT/Train_NN_Models"))   # Change path to the Spectra Set's .GlobalEnv as needed
 if(!interactive())   options(width = 120)      
-Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3]
+Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3] # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 dir.create('Figures', showWarnings = FALSE)
 verbose <- c(TRUE, FALSE)[1]
 plot <- c(TRUE, FALSE)[1]
-Max_N_Spectra <- list(50, 200, 'All')[[3]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.)
-spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1]
-opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-
-
-# (1) Hake 2019, BMS
-if(Spectra_Set == "Hake_2019") {
-   shortNameSegments <- c(2, 4) # Segments 2 and 4 of the spectra file name, e.g.: (PACIFIC, HAKE, BMS201906206C, 1191, OD1) => (HAKE, 1191)
-   shortNameSuffix <- 'BMS'
-   opusReader <- 'pierreroudier_opusreader'
-   fineFreqAdj <- 150
-}
+# Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
+# All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
+Max_N_Spectra <- list(50, 200, 'All')[[3]] 
  
-# (2) Sablefish 2017 & 2019, Combo survey
-if(Spectra_Set == "Sable_2017_2019") { 
-   shortNameSegments <- c(1, 3) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
-   shortNameSuffix <- 'Year'
-   yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
-   fineFreqAdj <- 0
-   opusReader <- 'pierreroudier_opusreader'
-}  
-
-# (3) Sablefish 2022, Combo survey
-if(Spectra_Set == "Sable_Combo_2022") {
-   shortNameSegments <- c(1,5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
-   shortNameSuffix <- 'Year'
-   yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
-   fineFreqAdj <- 0
-}  
-
 getwd()
 Spectra_Set
-
 }
 
 # --- Load functions and packages ---
@@ -180,26 +153,32 @@ tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 
 if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
 
-   # --- Load and look at the raw spectra and metadata  ---
-   { ###
+   #   # --- Load and look at the raw spectra and metadata  ---
+   #   { ###
+   #   
+   #   fileNames.0 <- dir(path = Spectra_Path)
+   #   fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
+   #   fileNames[1:10]
+   #   
+   #   cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n")) # Sable_Combo_2022: 1557
    
-   fileNames.0 <- dir(path = Spectra_Path)
-   fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
-   fileNames[1:10]
+   #   Model_Spectra <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path)
+   #   # plotly.Spectra.Only(Model_Spectra)
+   #   plotly_spectra(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
+   #   
+   #   # ADD VESSEL, CRUISE, REGION, LOCATION, AND BIO METADATA
+   #   metadata <- openxlsx::read.xlsx(paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"), sheet = 3) # Load in ancillary data
+   #   
+   #   # Match by filenames and look at the data/metadata
+   #   (Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, Model_Spectra), metadata, join_by("filenames" == "NWFSC_NIR_Filename")))[1:5, c(1:3, 504:540)]
    
-   cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames), "\n\n")) # Sable_Combo_2022: 1557
+   # Example of using Read_OPUS_Spectra() and not adding metadata
+   # Model_Spectra <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = 300, Meta_Add = FALSE, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
    
-   Model_Spectra <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path)
-   # plotly.Spectra.Only(Model_Spectra)
-   plotly_spectra(Model_Spectra, N_Samp = 300, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
-    
+   # Grabbing the metadata where it lives at: C:\ALL_USR\JRW\SIDT\Sablefish 2022 Combo 
    
-   # ADD VESSEL, CRUISE, REGION, LOCATION, AND BIO METADATA
-   metadata <- openxlsx::read.xlsx(paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"), sheet = 3) #load in ancillary data
-   
-   # Match by filenames and look at the data/metadata
-   (Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, Model_Spectra), metadata, join_by("filenames" == "NWFSC_NIR_Filename")))[1:5, c(1:3, 504:540)]
-   
+   Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = 300, Meta_Path = paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"),
+                                               verbose = verbose, plot = plot, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
    
   #                                      filenames     X8000     X7992     X3984     X3976     X3968     X3960     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id age_best length_cm weight_kg sex structure_weight_g NWFSC_NIR_Project
   #  1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1 0.2202285 0.2201835 0.5210375 0.5241458 0.5254004 0.5238540 0.5198408   COMBO        2022           SABL               1 102157421-SABL-O   102157421       14      51.5      1.40   2             0.0228               PRD
@@ -237,71 +216,71 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
   #                                                                                          2                                                                                      1525 
  
    
-   # These are not matched to the scans, since they are unscannable
-   Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
-   
-   Model_Spectra_Meta$sex <- recode.simple(Model_Spectra_Meta$sex, cbind(c(1, 2, 3), c('M', 'F', 'U')))  # Wow, sex still in numbers!!
-   # xyplot(length_cm ~ age_best, group = sex, data = Model_Spectra_Meta, auto = TRUE)
-         
-   Model_Spectra_Meta$crystallized_scan <- !is.na(Model_Spectra_Meta$crystallized_scan)
-   Table(Model_Spectra_Meta$crystallized_scan)
-   
-   Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan)  # All NA percent_crystallized_scan's are zeros
-   Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done (see below).
-   Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan) 
-   
-   Table(Model_Spectra_Meta$broken_scan)  #  Do all of these broken pieces fit together well? What about entering the number of pieces the otie is broken into - zero for an unbroken ototlith.
-                                          # Are the oties ever broken during scanning or the handling of the otie for scanning?
-                                          
-   Table(Model_Spectra_Meta$tip_only_scan)  # is there a difference between 'no' and an NA for this one?
-     
-   Table(Model_Spectra_Meta$anterior_tip_missing)
-   
-   Table(Model_Spectra_Meta$posterior_tip_missing)
-   
-   Table(Model_Spectra_Meta$percent_missing_scan)   
-   Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0 # Now a numerical test can be done (see below).
-   Table(Model_Spectra_Meta$percent_missing_scan)  
-   
-   Table(Model_Spectra_Meta$tissue_present_scan)  
-   
-   Table(Model_Spectra_Meta$tissue_level_scan) # Change this to 'percent_tissue_level_scan'?
-   Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0 # Now a numerical test can be done (see below).
-   Table(Model_Spectra_Meta$tissue_level_scan)
-   
-   Table(Model_Spectra_Meta$oil_clay_contamination_scan) # No percentage for this one
-   
-   Table(Model_Spectra_Meta$stained_scan) # All NA's. Is this 'yes'/'no' or percentage?
-   
-   Table(Model_Spectra_Meta$contamination_other_scan) # All NA's. Is this 'yes'/'no' or percentage?
-     
-   
-   names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
-   Table(is.finite(Model_Spectra_Meta$TMA))
-         
-   rev(sort(Model_Spectra_Meta$TMA))[1:20]
-   
-   dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows 535 cols
-   
-   TF <- !is.na(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 &
-          Model_Spectra_Meta$tissue_level_scan <= 10 & !is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
-   c(sum(TF), sum(!TF), sum(TF) + sum(!TF))
-   
-   sort(fileNamesRemove <- Model_Spectra_Meta$filenames[!TF])
-   
-   file.remove(paste0(Spectra_Path, "/", fileNamesRemove, ".0"), recursive = TRUE)  # Bad raw scans removed here
-   
-   Model_Spectra_Meta <- Model_Spectra_Meta[TF, ] # --- Doing an overwrite here!! --- Gettin rid of bad scans or ones with no metadata that is wanted
-   dim(Model_Spectra_Meta) # Sable Combo 2022: 1528 rows
-
-   Model_Spectra_Meta$shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
-   
-   
-   # Look at the data with plotly and remove rogue oties if needed# 
-   plotly.Spec(Model_Spectra_Meta, 'all', htmlPlotFolder = paste0(Figures, '/Spectra Figure by TMA'))
-   # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ] # Example of removing a rogue otie for Hake 2019
-   # plotly.Spec(Model_Spectra_Meta, 'all') # Decide to save figure with rogue otie or the figure without the rogue otie, or both.
-   
+   #    # These are not matched to the scans, since they are unscannable
+   #    Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
+   #    
+   #    Model_Spectra_Meta$sex <- recode.simple(Model_Spectra_Meta$sex, cbind(c(1, 2, 3), c('M', 'F', 'U')))  # Wow, sex still in numbers!!
+   #    # xyplot(length_cm ~ age_best, group = sex, data = Model_Spectra_Meta, auto = TRUE)
+   #          
+   #    Model_Spectra_Meta$crystallized_scan <- !is.na(Model_Spectra_Meta$crystallized_scan)
+   #    Table(Model_Spectra_Meta$crystallized_scan)
+   #    
+   #    Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan)  # All NA percent_crystallized_scan's are zeros
+   #    Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done (see below).
+   #    Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan) 
+   #    
+   #    Table(Model_Spectra_Meta$broken_scan)  #  Do all of these broken pieces fit together well? What about entering the number of pieces the otie is broken into - zero for an unbroken ototlith.
+   #                                           # Are the oties ever broken during scanning or the handling of the otie for scanning?
+   #                                           
+   #    Table(Model_Spectra_Meta$tip_only_scan)  # is there a difference between 'no' and an NA for this one?
+   #      
+   #    Table(Model_Spectra_Meta$anterior_tip_missing)
+   #    
+   #    Table(Model_Spectra_Meta$posterior_tip_missing)
+   #    
+   #    Table(Model_Spectra_Meta$percent_missing_scan)   
+   #    Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0 # Now a numerical test can be done (see below).
+   #    Table(Model_Spectra_Meta$percent_missing_scan)  
+   #    
+   #    Table(Model_Spectra_Meta$tissue_present_scan)  
+   #    
+   #    Table(Model_Spectra_Meta$tissue_level_scan) # Change this to 'percent_tissue_level_scan'?
+   #    Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0 # Now a numerical test can be done (see below).
+   #    Table(Model_Spectra_Meta$tissue_level_scan)
+   #    
+   #    Table(Model_Spectra_Meta$oil_clay_contamination_scan) # No percentage for this one
+   #    
+   #    Table(Model_Spectra_Meta$stained_scan) # All NA's. Is this 'yes'/'no' or percentage?
+   #    
+   #    Table(Model_Spectra_Meta$contamination_other_scan) # All NA's. Is this 'yes'/'no' or percentage?
+   #      
+   #    
+   #    names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
+   #    Table(is.finite(Model_Spectra_Meta$TMA))
+   #          
+   #    rev(sort(Model_Spectra_Meta$TMA))[1:20]
+   #    
+   #    dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows 535 cols
+   #    
+   #    TF <- !is.na(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 &
+   #           Model_Spectra_Meta$tissue_level_scan <= 10 & !is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
+   #    c(sum(TF), sum(!TF), sum(TF) + sum(!TF))
+   #    
+   #    sort(fileNamesRemove <- Model_Spectra_Meta$filenames[!TF])
+   #    
+   #    file.remove(paste0(Spectra_Path, "/", fileNamesRemove, ".0"), recursive = TRUE)  # Bad raw scans removed here
+   #    
+   #    Model_Spectra_Meta <- Model_Spectra_Meta[TF, ] # --- Doing an overwrite here!! --- Gettin rid of bad scans or ones with no metadata that is wanted
+   #    dim(Model_Spectra_Meta) # Sable Combo 2022: 1528 rows
+   #    
+   #    Model_Spectra_Meta$shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
+   #    
+   #    
+   #    # Look at the data with plotly and remove rogue oties if needed# 
+   #    plotly.Spec(Model_Spectra_Meta, 'all', htmlPlotFolder = paste0(Figures, '/Spectra Figure by TMA'))
+   #    # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ] # Example of removing a rogue otie for Hake 2019
+   #    # plotly.Spec(Model_Spectra_Meta, 'all') # Decide to save figure with rogue otie or the figure without the rogue otie, or both.
+   #    
    
    save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) # 1528
    # load(file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
