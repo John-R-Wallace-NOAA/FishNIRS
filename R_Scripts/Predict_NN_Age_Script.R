@@ -13,18 +13,18 @@
  if(!interactive())   
        options(width = 120)      
        
- Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3]
- Spectra_Path <- "New_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
- Predicted_Ages_Path <- "Predicted_Ages" # The NN predicted ages will go in the path defined below
- dir.create(Predicted_Ages_Path, showWarnings = FALSE)
- metadata <- c(TRUE, FALSE)[1] # Will metadata be used
- TMA_Ages <- c(TRUE, FALSE)[1] # Are TMA ages available and are they to be used?
- verbose <- c(TRUE, FALSE)[1]
- plot <- c(TRUE, FALSE)[1]
- Max_N_Spectra <- list(50, 200, 'All')[[2]]  # Max number of new spectra to be plotted in the spectra figure. (All spectra in the 'New_Scans' folder will be assigned an age regardless of the number plotted in the figure.)
- spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1]
- opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-   
+Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3]
+Spectra_Path <- "New_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
+Predicted_Ages_Path <- "Predicted_Ages" # The NN predicted ages will go in the path defined below
+dir.create(Predicted_Ages_Path, showWarnings = FALSE)
+metadata <- c(TRUE, FALSE)[1] # Will metadata be used
+TMA_Ages <- c(TRUE, FALSE)[1] # Are TMA ages available and are they to be used?
+verbose <- c(TRUE, FALSE)[1]
+plot <- c(TRUE, FALSE)[1]
+# Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
+# All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
+Max_N_Spectra <- list(50, 200, 'All')[[2]] 
+
    
 #  ----------------- Packages ------------------------
 if (!any(installed.packages()[, 1] %in% "R.utils")) 
@@ -79,7 +79,9 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+
 
 # -----------------------------------------------------------------------------------------------------------------   
    
@@ -108,21 +110,6 @@ if(Spectra_Set == "Sable_2017_2019") {
 # (3) Sablefish 2022, Combo survey
 if(Spectra_Set == "Sable_Combo_2022") { 
    NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'
-   shortNameSegments <- c(1,5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
-   shortNameSuffix <- 'Year'
-   yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
-   fineFreqAdj <- 0
-   Model_Spectra_Meta_Path <- "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData"  # Matching done via 'filenames'.	  
-   load(Model_Spectra_Meta_Path, str = verbose) # This is JRWToolBox::load() (sourced above) not base::load() nor R.oo::load which uses base::load() via R.oo::load.default()
-   Model_Spectra_Meta$length_prop_max <- Model_Spectra_Meta$length_cm/max(Model_Spectra_Meta$length_cm, na.rm = TRUE)
-   Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
-   TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 & Model_Spectra_Meta$tissue_level_scan <= 10
-   if(metadata)
-        TF <- TF & !is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
-   if(TMA_Ages)		
-	   TF <- TF & !is.na(Model_Spectra_Meta$TMA)
-   print(c(sum(TF), sum(!TF), sum(TF) + sum(!TF)))
-   Model_Spectra_Meta <- Model_Spectra_Meta[TF, ]
 }  
 
    
@@ -170,13 +157,19 @@ if(!exists('shortNameSuffix'))
     
 N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
 
+Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TRUE, Max_N_Spectra = 300, verbose = verbose, 
+                               plot = plot, htmlPlotFolder = paste0('Predicted_Ages/', Spectra_Set, '_Spectra_Sample_of_300'))
+
 ##### This is the main call to Predict_NN_Age() #####
 # New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
 #      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # One random model for faster testing
 
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj, opusReader = opusReader, 
-   Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
-if(verbose) head(New_Ages, 20)
+# New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj, opusReader = opusReader, 
+#    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
+
+New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
+                                    Predicted_Ages_Path = Predicted_Ages_Path, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
+head(New_Ages, 5)
 
 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
       
@@ -185,9 +178,11 @@ if(verbose) head(New_Ages, 20)
 save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
 write.csv(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.csv'), row.names = FALSE)
 
-# --- Create plots with age estimates and quantile credible intervals ---
+
+# ----- Create plots with age estimates and quantile credible intervals -----
+
 New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
-print(New_Ages[1:5, ])
+New_Ages[1:5, ]
 
 Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
 New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
@@ -236,8 +231,10 @@ if(TMA_Ages) {
        New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
    New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
    
+   # -- Spectra Figure with TMA for New Ages --
    plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
    
+   # -- Agreement Figures --
    # browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.pdf'), pdf = TRUE)   
    browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
    browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = FALSE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
@@ -271,14 +268,12 @@ if(TMA_Ages) {
       #  New_Ages_Sorted <- New_Ages_Sorted[New_Ages_Sorted$NN_Pred_Median <= 10, ]
    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
    if(verbose) head(New_Ages_Sorted, 20)
-   
    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
    geom_point() +
    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
    geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
    geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')  
-    
    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
    
    # https://r-graphics.org/recipe-scatter-shapes   
@@ -294,14 +289,12 @@ if(TMA_Ages) {
    New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'NN_Pred_Median') 
    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
    if(verbose) head(New_Ages_Sorted, 20)
-   
    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
    geom_point() +
    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
    geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
    geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
-   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')    
-   
+   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
   
   
@@ -361,7 +354,6 @@ if(TMA_Ages) {
    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
    New_Ages_Sorted <- na.omit(New_Ages_Sorted)
    if(verbose) head(New_Ages_Sorted, 20)
-   
    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
    geom_point() +
    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -377,7 +369,6 @@ if(TMA_Ages) {
    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
    New_Ages_Sorted <- na.omit(New_Ages_Sorted)
    if(verbose) head(New_Ages_Sorted, 20)
-      
    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
    geom_point() +
    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -387,12 +378,95 @@ if(TMA_Ages) {
    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sortedd_Subset.png'))
 
 
-   # -- Plot by sorted difference --
+   # -- Plot ALL THE DATA by sorted difference --
    # Back to all data; round(NN_Pred_Median + Delta); jitter TMA; vertical line for each unique TMA - without standard grid            
    xlim <- c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25)   
    New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
    browsePlot('set.seed(707); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                   grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
+				  
+				  
+   # -- Plot ALL THE DATA by sorted difference, highlighting those oties that were left out of the NN model--
+   Sable_Combo_2022_NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
+   dim(Sable_Combo_2022_NN_Pred_Median_TMA)
+   # [1] 1513    5
+         
+   New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
+   dim(New_Ages_Good)
+   # [1] 1528    4
+   
+   Sable_Combo_2022_NN_Pred_Median_TMA$Used_NN_Model <- TRUE
+   New_Ages_Good <- match.f(New_Ages_Good, Sable_Combo_2022_NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
+   New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
+   Table(New_Ages_Good$Used_NN_Model)
+   # FALSE  TRUE 
+   #    15  1513   # 15 Oties left out of the NN model
+     
+   xlim <- c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25)   
+   New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+   browsePlot('
+       set.seed(707)
+       gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                  grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+       set.seed(707)
+       points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
+       points(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model], New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = 19)
+                 
+   ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
+   
+
+
+
+
+
+
+
+
+
+
+
+  
+Model_Spectra_Meta_PRED <- Model_Spectra_Meta
+dim(Model_Spectra_Meta_PRED)
+[1] 1554  538
+
+
+load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+dim(Model_Spectra_Meta)
+[1] 1528  536
+
+
+test <- match.f(Model_Spectra_Meta, New_Ages_Good, 'filenames', 'filenames', 'Used_NN_Model')
+test[is.na(test$Used_NN_Model), ]
+
+# This otie looks good - so why is it not in New_Ages_Good. It is not one the fifteen that was left out for testing.
+test[is.na(test$Used_NN_Model), c(1:2, 500:537)]
+                                       filenames     X8000     X4016     X4008     X4000     X3992     X3984     X3976     X3968     X3960     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id TMA
+441 SABL_COMBO2022_NIR0022D_PRD_477_102189617_O1 0.2107899 0.4067253 0.4105164 0.4145668 0.4185508 0.4219342 0.4243378 0.4252431 0.4239198 0.4206884   COMBO        2022           SABL             477 102189617-SABL-O   102189617   1
+    length_cm weight_kg sex structure_weight_g NWFSC_NIR_Project NWFSC_NIR_Scan_Session age_structure_side_scan crystallized_scan percent_crystallized_scan broken_scan tip_only_scan anterior_tip_missing posterior_tip_missing
+441        35      0.36   M             0.0092               PRD               NIR0022D                       L             FALSE                         0        <NA>          <NA>                 <NA>                  <NA>
+    percent_missing_scan tissue_present_scan tissue_level_scan oil_clay_contamination_scan stained_scan contamination_other_scan notes_scan shortName Used_NN_Model
+441                    0                <NA>                 0                        <NA>           NA                       NA       <NA>  SABL_477            NA
+
+
+   
+sort(Model_Spectra_Meta[SaveOutOties, 'filenames'])
+ [1] "SABL_COMBO2022_NIR0022A_PRD_56_102157476_O1"   "SABL_COMBO2022_NIR0022B_PRD_139_102157559_O1"  "SABL_COMBO2022_NIR0022C_PRD_265_102188545_O1"  "SABL_COMBO2022_NIR0022E_PRD_600_102133190_O1" 
+ [5] "SABL_COMBO2022_NIR0022F_PRD_656_102133246_O1"  "SABL_COMBO2022_NIR0022G_PRD_1008_102133338_O1" "SABL_COMBO2022_NIR0022G_PRD_1026_102133356_O1" "SABL_COMBO2022_NIR0022G_PRD_1086_102133416_O1"
+ [9] "SABL_COMBO2022_NIR0022G_PRD_897_102187647_O1"  "SABL_COMBO2022_NIR0022G_PRD_928_102187678_O1"  "SABL_COMBO2022_NIR0022H_PRD_1131_102187951_O1" "SABL_COMBO2022_NIR0022H_PRD_1226_102150796_O1"
+[13] "SABL_COMBO2022_NIR0022H_PRD_1279_102167329_O1" "SABL_COMBO2022_NIR0022I_PRD_1496_102187406_O1" "SABL_COMBO2022_NIR0022I_PRD_1504_102187414_O1"
+
+
+dim(New_Ages_Good)
+[1] 1527    4
+
+sort(New_Ages_Good[!New_Ages_Good$Used_NN_Model, 'filenames'])
+ [1] "SABL_COMBO2022_NIR0022A_PRD_56_102157476_O1"   "SABL_COMBO2022_NIR0022B_PRD_139_102157559_O1"  "SABL_COMBO2022_NIR0022C_PRD_265_102188545_O1"  "SABL_COMBO2022_NIR0022E_PRD_600_102133190_O1" 
+ [5] "SABL_COMBO2022_NIR0022F_PRD_656_102133246_O1"  "SABL_COMBO2022_NIR0022G_PRD_1008_102133338_O1" "SABL_COMBO2022_NIR0022G_PRD_1026_102133356_O1" "SABL_COMBO2022_NIR0022G_PRD_1086_102133416_O1"
+ [9] "SABL_COMBO2022_NIR0022G_PRD_897_102187647_O1"  "SABL_COMBO2022_NIR0022G_PRD_928_102187678_O1"  "SABL_COMBO2022_NIR0022H_PRD_1131_102187951_O1" "SABL_COMBO2022_NIR0022H_PRD_1226_102150796_O1"
+[13] "SABL_COMBO2022_NIR0022H_PRD_1279_102167329_O1" "SABL_COMBO2022_NIR0022I_PRD_1496_102187406_O1" "SABL_COMBO2022_NIR0022I_PRD_1504_102187414_O1"
+   
+		  
    
 }
 
