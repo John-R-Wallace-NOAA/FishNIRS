@@ -205,15 +205,19 @@
 	  Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
 	  Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0
 	  Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0
+	  Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName) 
+	  
       TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 & Model_Spectra_Meta$tissue_level_scan <= 10 & 
                     !is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
-	  names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"		   
+	  names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"	
       if(TMA_Ages)        
           TF <- TF & !is.na(Model_Spectra_Meta$TMA)
+      Model_Spectra_Meta <- Model_Spectra_Meta[TF, ]
+	  
       if(verbose)
          print(paste0('Total number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.'), quote = FALSE)
-      Model_Spectra_Meta <- data.frame(Model_Spectra_Meta[TF, ], shortName = shortName)   
-      invisible(Model_Spectra_Meta) 
+      
+	  invisible(Model_Spectra_Meta) 
    } else  
       invisible(newScans.RAW)
 }   
