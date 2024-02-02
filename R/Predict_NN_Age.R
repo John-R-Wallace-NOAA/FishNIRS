@@ -99,15 +99,10 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
      
    if (!any(installed.packages()[, 1] %in% "keras")) 
      install.packages("keras") 
-
-   if (!any(installed.packages()[, 1] %in% "prospectr") & spectraInterp == 'prospectr_resample') 
-     install.packages("prospectr") 
    
    # --- Setup for TensorFlow and Keras ---
    require(tensorflow)
    require(keras) 
-   if(spectraInterp == 'prospectr_resample')
-        require(prospectr)   
    
    # --- Change this path to where your Conda TensorFlow environment is located. ---
    Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) # If this is function is called in the normal way from a species script, then this is line is redundant, otherwise it may be needed.
@@ -149,7 +144,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
    if(plot) { 
      # Extra adjustments added here - THIS IS EXPERIMENTAL (pre browsePlot(), but no comment color and font in Notepad++)
      png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))
-     # plot(wavebandsToUse - 270, newScans.ADJ[[1]] + 0.10, type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000)) # For matching Sable 2022 to Sable 2019wavebandsToUse <- as.numeric(substring(colnames(newScans.RAW), 2))
+     # plot(wavebandsToUse - 270, newScans.ADJ[[1]] + 0.10, type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000)) # For matching Sable 2022 to Sable 2019
+	 wavebandsToUse <- as.numeric(substring(colnames(newScans.RAW), 2))
      plot(wavebandsToUse, newScans.RAW[1, ], type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000))
      
      for(j in 2:100) {
