@@ -138,36 +138,20 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
    
    fileNames <- Model_Spectra_Meta$filenames
    shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
-   
-   
-# run <- function(...) {     # Use when debugging interactively to avoid error with dots (...) 
+  
    if(plot) { 
-     # Extra adjustments added here - THIS IS EXPERIMENTAL (pre browsePlot(), but no comment color and font in Notepad++)
      png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))
-     # plot(wavebandsToUse - 270, newScans.ADJ[[1]] + 0.10, type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000)) # For matching Sable 2022 to Sable 2019
-	 wavebandsToUse <- as.numeric(substring(colnames(newScans.RAW), 2))
+	 wavebandsToUse <- as.numeric(substring(colnames(newScans.RAW), 2))	
      plot(wavebandsToUse, newScans.RAW[1, ], type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000))
      
-     for(j in 2:100) {
-        adjAsorb <- c(0, mean(newScans.RAW[1, ]) - mean(newScans.RAW[j, ]))[1]
-        # adjAsorb <- ifelse(j > 89, 0, 0.10) # For matching Sable 2022 to Sable 2019
-        lines(wavebandsToUse, newScans.RAW[j, ] + adjAsorb, col = j)
-     }
+     for(j in 2:100)  # Just the first 100 wavebands - the point is to look at the variables selected via Savitzky Golay.
+         lines(wavebandsToUse, newScans.RAW[j, ], col = j)
+     
      abline(v = as.numeric(substring(SG_Variables_Selected, 2)), col = 'grey')
      dev.off()
      browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'), browser = ifelse(.Platform$OS.type == 'windows', "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe", getOption("browser")))
      # browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))  # Try the default browser.  If getOption("browser") is NULL, I get the Windows Photo Viewer.
-
-     # plotly.Spec() figure. plotly() needs the third variable (oties in the case) to start with letter
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-     rowNums <- 1:nrow(newScans.RAW)
-     if(length(rowNums <= 26^2))
-        plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), htmlPlotFolder = htmlPlotFolder, colorGroup = 'Otie', ...)
-     else
-       plotly.Spec(data.frame(filenames = fileNames, newScans.RAW, Otie = factor(rowNums), shortName = shortName), htmlPlotFolder = htmlPlotFolder, colorGroup = 'Otie', ...) 
    }    
-# }; run() # Use when debugging interactively
-
 
    # -- Estimation of NN ages based the spectra scans provided --   
    if(verbose) 
