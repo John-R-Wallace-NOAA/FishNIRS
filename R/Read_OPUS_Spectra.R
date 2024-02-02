@@ -212,7 +212,7 @@
           TF <- TF & !is.na(Model_Spectra_Meta$TMA)
       if(verbose)
          print(paste0('Total number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.'), quote = FALSE)
-      Model_Spectra_Meta <- Model_Spectra_Meta[TF, ]    
+      Model_Spectra_Meta <- data.frame(Model_Spectra_Meta[TF, ], shortName = shortName)   
       invisible(Model_Spectra_Meta) 
    } else  
       invisible(newScans.RAW)
