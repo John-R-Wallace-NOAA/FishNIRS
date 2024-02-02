@@ -79,8 +79,8 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
-# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
-# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 
 
 # -----------------------------------------------------------------------------------------------------------------   
@@ -104,12 +104,13 @@ if(Spectra_Set == "Sable_2017_2019") {
    yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
    fineFreqAdj <- 0
    opusReader <- 'pierreroudier_opusreader'
-   Model_Spectra_Meta <- "C:/ALL_USR/JRW/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
+   Meta_Path <- "C:/ALL_USR/JRW/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
 }  
 
 # (3) Sablefish 2022, Combo survey
 if(Spectra_Set == "Sable_Combo_2022") { 
    NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'
+   opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
 }  
 
    
@@ -168,7 +169,7 @@ Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path
 #    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
 
 New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
-                                    Predicted_Ages_Path = Predicted_Ages_Path, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
+                                    Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
 head(New_Ages, 5)
 
 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
@@ -222,6 +223,7 @@ if(!TMA_Ages) {
 # --- Use TMA ages, if available ---
 if(TMA_Ages) {
 
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
@@ -233,6 +235,7 @@ if(TMA_Ages) {
    
    # -- Spectra Figure with TMA for New Ages --
    plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
+  
    
    # -- Agreement Figures --
    # browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.pdf'), pdf = TRUE)   
@@ -414,59 +417,6 @@ if(TMA_Ages) {
                  
    ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
    
-
-
-
-
-
-
-
-
-
-
-
-  
-Model_Spectra_Meta_PRED <- Model_Spectra_Meta
-dim(Model_Spectra_Meta_PRED)
-[1] 1554  538
-
-
-load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-dim(Model_Spectra_Meta)
-[1] 1528  536
-
-
-test <- match.f(Model_Spectra_Meta, New_Ages_Good, 'filenames', 'filenames', 'Used_NN_Model')
-test[is.na(test$Used_NN_Model), ]
-
-# This otie looks good - so why is it not in New_Ages_Good. It is not one the fifteen that was left out for testing.
-test[is.na(test$Used_NN_Model), c(1:2, 500:537)]
-                                       filenames     X8000     X4016     X4008     X4000     X3992     X3984     X3976     X3968     X3960     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id TMA
-441 SABL_COMBO2022_NIR0022D_PRD_477_102189617_O1 0.2107899 0.4067253 0.4105164 0.4145668 0.4185508 0.4219342 0.4243378 0.4252431 0.4239198 0.4206884   COMBO        2022           SABL             477 102189617-SABL-O   102189617   1
-    length_cm weight_kg sex structure_weight_g NWFSC_NIR_Project NWFSC_NIR_Scan_Session age_structure_side_scan crystallized_scan percent_crystallized_scan broken_scan tip_only_scan anterior_tip_missing posterior_tip_missing
-441        35      0.36   M             0.0092               PRD               NIR0022D                       L             FALSE                         0        <NA>          <NA>                 <NA>                  <NA>
-    percent_missing_scan tissue_present_scan tissue_level_scan oil_clay_contamination_scan stained_scan contamination_other_scan notes_scan shortName Used_NN_Model
-441                    0                <NA>                 0                        <NA>           NA                       NA       <NA>  SABL_477            NA
-
-
-   
-sort(Model_Spectra_Meta[SaveOutOties, 'filenames'])
- [1] "SABL_COMBO2022_NIR0022A_PRD_56_102157476_O1"   "SABL_COMBO2022_NIR0022B_PRD_139_102157559_O1"  "SABL_COMBO2022_NIR0022C_PRD_265_102188545_O1"  "SABL_COMBO2022_NIR0022E_PRD_600_102133190_O1" 
- [5] "SABL_COMBO2022_NIR0022F_PRD_656_102133246_O1"  "SABL_COMBO2022_NIR0022G_PRD_1008_102133338_O1" "SABL_COMBO2022_NIR0022G_PRD_1026_102133356_O1" "SABL_COMBO2022_NIR0022G_PRD_1086_102133416_O1"
- [9] "SABL_COMBO2022_NIR0022G_PRD_897_102187647_O1"  "SABL_COMBO2022_NIR0022G_PRD_928_102187678_O1"  "SABL_COMBO2022_NIR0022H_PRD_1131_102187951_O1" "SABL_COMBO2022_NIR0022H_PRD_1226_102150796_O1"
-[13] "SABL_COMBO2022_NIR0022H_PRD_1279_102167329_O1" "SABL_COMBO2022_NIR0022I_PRD_1496_102187406_O1" "SABL_COMBO2022_NIR0022I_PRD_1504_102187414_O1"
-
-
-dim(New_Ages_Good)
-[1] 1527    4
-
-sort(New_Ages_Good[!New_Ages_Good$Used_NN_Model, 'filenames'])
- [1] "SABL_COMBO2022_NIR0022A_PRD_56_102157476_O1"   "SABL_COMBO2022_NIR0022B_PRD_139_102157559_O1"  "SABL_COMBO2022_NIR0022C_PRD_265_102188545_O1"  "SABL_COMBO2022_NIR0022E_PRD_600_102133190_O1" 
- [5] "SABL_COMBO2022_NIR0022F_PRD_656_102133246_O1"  "SABL_COMBO2022_NIR0022G_PRD_1008_102133338_O1" "SABL_COMBO2022_NIR0022G_PRD_1026_102133356_O1" "SABL_COMBO2022_NIR0022G_PRD_1086_102133416_O1"
- [9] "SABL_COMBO2022_NIR0022G_PRD_897_102187647_O1"  "SABL_COMBO2022_NIR0022G_PRD_928_102187678_O1"  "SABL_COMBO2022_NIR0022H_PRD_1131_102187951_O1" "SABL_COMBO2022_NIR0022H_PRD_1226_102150796_O1"
-[13] "SABL_COMBO2022_NIR0022H_PRD_1279_102167329_O1" "SABL_COMBO2022_NIR0022I_PRD_1496_102187406_O1" "SABL_COMBO2022_NIR0022I_PRD_1504_102187414_O1"
-   
-		  
    
 }
 
