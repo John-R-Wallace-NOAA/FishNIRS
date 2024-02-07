@@ -109,7 +109,9 @@ if(Spectra_Set == "Sable_2017_2019") {
 
 # (3) Sablefish 2022, Combo survey
 if(Spectra_Set == "Sable_Combo_2022") { 
-   NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'
+   # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'
+   # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"
+   NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"
    opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
 }  
 
@@ -381,15 +383,9 @@ if(TMA_Ages) {
    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sortedd_Subset.png'))
 
 
-   # -- Plot ALL THE DATA by sorted difference --
-   # Back to all data; round(NN_Pred_Median + Delta); jitter TMA; vertical line for each unique TMA - without standard grid            
-   xlim <- c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25)   
-   New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
-   browsePlot('set.seed(707); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                  grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
 				  
-				  
-   # -- Plot ALL THE DATA by sorted difference, highlighting those oties that were left out of the NN model--
+   # -- Plot ALL THE DATA by sorted difference, highlighting those oties that were left out of the NN model - if any --
+   # Back to all data; round(NN_Pred_Median + Delta); jitter TMA; vertical line for each unique TMA - without standard grid       
    Sable_Combo_2022_NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
    dim(Sable_Combo_2022_NN_Pred_Median_TMA)
    # [1] 1513    5
@@ -404,20 +400,28 @@ if(TMA_Ages) {
    Table(New_Ages_Good$Used_NN_Model)
    # FALSE  TRUE 
    #    15  1513   # 15 Oties left out of the NN model
+   
+   if(all(New_Ages_Good$Used_NN_Model)) {
+            
+       xlim <- c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25)   
+       New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
+       browsePlot('set.seed(707); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                      grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
+					  
+   } else {
      
-   xlim <- c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25)   
-   New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
-   browsePlot('
-       set.seed(707)
-       gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                  grid = FALSE, vertLineEachPoint = TRUE, col = "white")
-       set.seed(707)
-       points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
-       points(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model], New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = 19)
-                 
-   ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
-   
-   
+      xlim <- c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25)   
+      New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+      browsePlot('
+          set.seed(707)
+          gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                     grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+          set.seed(707)
+          points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
+          points(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model], New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = 19)
+                    
+      ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
+  } 
 }
 
 graphics.off()
