@@ -83,8 +83,7 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 
 
-# -----------------------------------------------------------------------------------------------------------------   
-   
+# =================================================================================================================================================================== 
    
    
 # (1) Hake 2019, BMS
@@ -109,10 +108,14 @@ if(Spectra_Set == "Sable_2017_2019") {
 
 # (3) Sablefish 2022, Combo survey
 if(Spectra_Set == "Sable_Combo_2022") { 
-   # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'
-   # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"
-   NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"
+   NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'
+   # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+   # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+   NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
+               "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
    opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
+   Seed_Plot <- 707
+   
 }  
 
    
@@ -160,8 +163,10 @@ if(!exists('shortNameSuffix'))
     
 N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
 
-Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TRUE, Max_N_Spectra = 300, verbose = verbose, 
-                               plot = plot, htmlPlotFolder = paste0('Predicted_Ages/', Spectra_Set, '_Spectra_Sample_of_300'))
+Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, 
+                               plot = plot, htmlPlotFolder = paste0('Predicted_Ages/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+dim(Model_Spectra_Meta)
+
 
 ##### This is the main call to Predict_NN_Age() #####
 # New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
@@ -171,8 +176,9 @@ Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path
 #    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
 
 New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
-                                    Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
+                                    Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
 head(New_Ages, 5)
+dim(New_Ages)
 
 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
       
@@ -195,233 +201,193 @@ cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
 # --- If TMA ages are not available ---
 if(!TMA_Ages) {
 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
-
-   cols <- 'green'
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
+  
+    cols <- 'green'
+     
+    # -- Plot by order implied by the spectra file names --
+    g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
+    geom_point() +
+    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    geom_point(aes(Index, Age_Rounded, col = cols)) + 
+    scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'))
+     
     
-   # -- Plot by order implied by the spectra file names --
-   g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
-   geom_point() +
-   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   geom_point(aes(Index, Age_Rounded, col = cols)) + 
-   scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'))
+    # -- Plot by sorted NN predicted ages --
+    New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+    if(verbose) head(New_Ages_Sorted, 10)
     
-   
-   # -- Plot by sorted NN predicted ages --
-   New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
-   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   if(verbose) head(New_Ages_Sorted, 10)
-   
-   g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
-   geom_point() +
-   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   geom_point(aes(Index, Age_Rounded, col = cols)) + 
-   scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
+    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+    geom_point() +
+    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    geom_point(aes(Index, Age_Rounded, col = cols)) + 
+    scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
 }
 
 
 # --- Use TMA ages, if available ---
 if(TMA_Ages) {
 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
-
-   New_Ages$TMA <- NULL # Clear old TMA before updating
-   if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
-       New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
-   New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
-   
-   # -- Spectra Figure with TMA for New Ages --
-   plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
   
+    New_Ages$TMA <- NULL # Clear old TMA before updating
+    if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
+        New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
+    New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
+    
+    # -- Spectra Figure with TMA for New Ages --
+    plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
    
-   # -- Agreement Figures --
-   # browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.pdf'), pdf = TRUE)   
-   browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
-   browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = FALSE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
-   if(verbose & !interactive())  Sys.sleep(5)
+    
+    # -- Agreement Figures --
+    # browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.pdf'), pdf = TRUE)   
+    browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
+    browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = FALSE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
+    if(verbose & !interactive())  Sys.sleep(5)
+   
+    cols <- c('green', 'red')
+    pchs <- c(16, 1)
+    
+    # -- Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ????????????????? --
+    g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
+    geom_point() +
+    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+    geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
+    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'), width = 18, height = 10,)
+    
+    # New_Ages$Rounded_Age <- factor(" ") # This is needed for ggplotly plotting below
+    # g <- ggplotly(ggplot(New_Ages, aes(TMA, NN_Pred_Median)) +  
+    # geom_point() +
+    # geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    # geom_point(aes(TMA, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
+    # print(g)
+    # unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
+    # saveHtmlFolder(paste0(Predicted_Ages_Path, '/TMA vs Predicted_Ages'), view = !interactive())
+    
+    
+    # -- Plot by sorted NN predicted ages --
+    New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+       #  New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages_Sorted), 200), ], 'NN_Pred_Median') 
+       #  New_Ages_Sorted <- New_Ages_Sorted[New_Ages_Sorted$NN_Pred_Median <= 10, ]
+    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+    if(verbose) head(New_Ages_Sorted, 20)
+    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
+    geom_point() +
+    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+    geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
+    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')  
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
+    
+    # https://r-graphics.org/recipe-scatter-shapes   
+    # scale_color_manual(labels = c('Rounded Age', 'TMA'), values = list(colour = cols, pch = pchs), aesthetics = c('colour', 'shape'), name = ' ') 
+    # scale_shape_manual(values = pchs)
+    # scale_fill_manual(values = c(cols[1], NA), guide = guide_legend(override.aes = list(shape = pchs[2])))
+    # guides(fill=guide_legend(override.aes=list(shape=16))) +
+    # scale_shape_manual(values = pchs, guide = guide_legend(override.aes = list(alpha = 1, size = 10)))
+   
+    
+    # -- Plot SUBSET of data by sorted NN predicted ages --
+    set.seed(Seed_Plot)
+    New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'NN_Pred_Median')  # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+    if(verbose) head(New_Ages_Sorted, 20)
+    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
+    geom_point() +
+    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+    geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
+    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
+   
+    # -- Relative absolute error by TMA age --
+    g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages)
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_TMA_age.png'))
+    
+    # -- Plot of relative error by sorted TMA age --   
+    New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
+    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+    if(verbose) head(New_Ages_Sorted, 20)
+    g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted)
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_sorted_TMA.png'))
+    
+    # -- Plot by sorted TMA --
+    New_Ages_Sorted <- na.omit(New_Ages_Sorted)
+    if(verbose) head(New_Ages_Sorted, 20)
+    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+    geom_point() +
+    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    geom_point(aes(Index, TMA, col = cols[2])) + 
+    geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
+    
+    
+    # -- Plot SUBSET of data by sorted by TMA --
+    set.seed(Seed_Plot)
+    New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'TMA') 
+    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  
+    New_Ages_Sorted <- na.omit(New_Ages_Sorted)
+    if(verbose) head(New_Ages_Sorted, 20)
+    g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+    geom_point() +
+    geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+    geom_point(aes(Index, TMA, col = cols[2])) + 
+    geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+    scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sortedd_Subset.png'))
   
-   cols <- c('green', 'red')
-   pchs <- c(16, 1)
-   
-   # -- Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ????????????????? --
-   g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
-   geom_point() +
-   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
-   geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
-   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'), width = 18, height = 10,)
-   
-   # New_Ages$Rounded_Age <- factor(" ") # This is needed for ggplotly plotting below
-   # g <- ggplotly(ggplot(New_Ages, aes(TMA, NN_Pred_Median)) +  
-   # geom_point() +
-   # geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   # geom_point(aes(TMA, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
-   # print(g)
-   # unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
-   # saveHtmlFolder(paste0(Predicted_Ages_Path, '/TMA vs Predicted_Ages'), view = !interactive())
-   
-   
-   # -- Plot by sorted NN predicted ages --
-   New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
-      #  New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages_Sorted), 200), ], 'NN_Pred_Median') 
-      #  New_Ages_Sorted <- New_Ages_Sorted[New_Ages_Sorted$NN_Pred_Median <= 10, ]
-   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   if(verbose) head(New_Ages_Sorted, 20)
-   g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
-   geom_point() +
-   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
-   geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
-   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')  
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
-   
-   # https://r-graphics.org/recipe-scatter-shapes   
-   # scale_color_manual(labels = c('Rounded Age', 'TMA'), values = list(colour = cols, pch = pchs), aesthetics = c('colour', 'shape'), name = ' ') 
-   # scale_shape_manual(values = pchs)
-   # scale_fill_manual(values = c(cols[1], NA), guide = guide_legend(override.aes = list(shape = pchs[2])))
-   # guides(fill=guide_legend(override.aes=list(shape=16))) +
-   # scale_shape_manual(values = pchs, guide = guide_legend(override.aes = list(alpha = 1, size = 10)))
   
-   
-   # -- Plot SUBSET of data by sorted NN predicted ages --
-   set.seed(707)
-   New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'NN_Pred_Median') 
-   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   if(verbose) head(New_Ages_Sorted, 20)
-   g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
-   geom_point() +
-   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
-   geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
-   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
-  
-  
-   # # -- Plot of relative error by sorted NN predicted ages --
-   # New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') 
-   # 
-   # New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   # if(verbose) head(New_Ages_Sorted, 20)
-   # 
-   # g <- ggplot(New_Ages_Sorted, aes(Index, abs(TMA - NN_Pred_Median)/TMA)) + 
-   # geom_point(col = as.character(New_Ages_Sorted$TMA))
-   # # ylim(0, 6)
-   # 
-   # browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
-   # rm(g)
-   
-   # # -- Plot of relative error by sorted TMA age --
-   # New_Ages_Sorted <- sort.f(New_Ages, 'TMA')
-   # New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   # if(verbose) head(New_Ages_Sorted, 20)
-   # 
-   # g <- ggplot(New_Ages_Sorted, aes(Index, abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA))) + 
-   # geom_point(col = as.character(New_Ages_Sorted$TMA)) 
-   # # ylim(0, 6)
-   # 
-   # g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted)
-   # 
-   # browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_Index.png'))
-   # rm(g)
-   # 
-   # # -- Plot of relative error by sorted TMA age --
-   # New_Ages_Sorted <- sort.f(New_Ages, 'TMA')
-   # New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   # if(verbose) head(New_Ages_Sorted, 20)
-   # 
-   # g <- ggplot(New_Ages_Sorted, aes(TMA, abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA))) + 
-   # geom_point(col = as.character(New_Ages_Sorted$TMA))
-   # # ylim(0, 6)
-   # 
-   # browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_sorted_TMA_age.png'))
-   # rm(g)
-   
-   
-   # -- Relative absolute error by TMA age --
-   g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages)
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_TMA_age.png'))
-   
-   # -- Plot of relative error by sorted TMA age --   
-   New_Ages_Sorted <- sort.f(New_Ages, 'TMA')
-   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   if(verbose) head(New_Ages_Sorted, 20)
-   g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted)
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_sorted_TMA.png'))
-   
-   # -- Plot by sorted TMA --
-   New_Ages_Sorted <- sort.f(New_Ages, 'TMA') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
-   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   New_Ages_Sorted <- na.omit(New_Ages_Sorted)
-   if(verbose) head(New_Ages_Sorted, 20)
-   g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
-   geom_point() +
-   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   geom_point(aes(Index, TMA, col = cols[2])) + 
-   geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
-   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
-   
-   
-   # -- Plot SUBSET of data by sorted by TMA --
-   set.seed(707)
-   New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'TMA') # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
-   New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-   New_Ages_Sorted <- na.omit(New_Ages_Sorted)
-   if(verbose) head(New_Ages_Sorted, 20)
-   g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
-   geom_point() +
-   geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-   geom_point(aes(Index, TMA, col = cols[2])) + 
-   geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
-   scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-   browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sortedd_Subset.png'))
-
-
-				  
-   # -- Plot ALL THE DATA by sorted difference, highlighting those oties that were left out of the NN model - if any --
-   # Back to all data; round(NN_Pred_Median + Delta); jitter TMA; vertical line for each unique TMA - without standard grid       
-   Sable_Combo_2022_NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
-   dim(Sable_Combo_2022_NN_Pred_Median_TMA)
-   # [1] 1513    5
-         
-   New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
-   dim(New_Ages_Good)
-   # [1] 1528    4
-   
-   Sable_Combo_2022_NN_Pred_Median_TMA$Used_NN_Model <- TRUE
-   New_Ages_Good <- match.f(New_Ages_Good, Sable_Combo_2022_NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
-   New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
-   Table(New_Ages_Good$Used_NN_Model)
-   # FALSE  TRUE 
-   #    15  1513   # 15 Oties left out of the NN model
-   
-   if(all(New_Ages_Good$Used_NN_Model)) {
-            
-       xlim <- c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25)   
-       New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
-       browsePlot('set.seed(707); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                      grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
-					  
-   } else {
-     
-      xlim <- c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25)   
-      New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
-      browsePlot('
-          set.seed(707)
-          gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                     grid = FALSE, vertLineEachPoint = TRUE, col = "white")
-          set.seed(707)
-          points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
-          points(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model], New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = 19)
-                    
-      ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png')) 
-  } 
+  				  
+    # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA  --
+    dim(New_Ages)
+    
+    xlim <- c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25)   
+    New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
+    browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                      grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png'))
+  					 
+    
+    # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA, highlighting those oties that were left out of the NN model - if any --
+    dim(NN_Pred_Median_TMA)
+    # [1] 1513    5
+          
+    # Restrict new ages to those that have predictions from the NN model		 
+    New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
+    dim(New_Ages_Good)
+    # [1] 1528    4
+    
+    # Find those oties that were left out of the NN model for testing - if any.
+    NN_Pred_Median_TMA$Used_NN_Model <- TRUE # Used in the NN model
+    New_Ages_Good <- match.f(New_Ages_Good, NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
+    New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
+    Table(New_Ages_Good$Used_NN_Model)
+    # FALSE  TRUE 
+    #    15  1513   # 15 Oties left out of the NN model for testing of the model with untouched oties
+    
+    # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
+    if(!all(New_Ages_Good$Used_NN_Model)) {
+      
+       xlim <- c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25)   
+       New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+       browsePlot('
+           set.seed(Seed_Plot)
+           gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                      grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+           set.seed(Seed_Plot)
+           points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
+           points(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model], New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = 19)
+                     
+       ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
+    } 
 }
 
 graphics.off()
