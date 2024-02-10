@@ -108,9 +108,11 @@ if(Spectra_Set == "Sable_2017_2019") {
 
 # (3) Sablefish 2022, Combo survey
 if(Spectra_Set == "Sable_Combo_2022") { 
-   NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'
+   # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt
+   # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_5_Rdm_model_21_Dec_2023_08_14_19.RData'  # GPU Machine
    # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-   # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+   # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+     NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
    NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
                "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
    opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
@@ -343,7 +345,7 @@ if(TMA_Ages) {
     geom_point(aes(Index, TMA, col = cols[2])) + 
     geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
     scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sortedd_Subset.png'))
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted_Subset.png'))
   
   
   				  
