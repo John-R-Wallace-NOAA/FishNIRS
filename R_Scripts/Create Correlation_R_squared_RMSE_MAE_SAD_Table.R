@@ -1,5 +1,6 @@
 
 
+setwd("C:/ALL_USR/JRW/SIDT/Predict_NN_Ages")
 
 # 1
 base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData")
@@ -13,16 +14,16 @@ Rdm_models_2 <- Rdm_models
 base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Run_3\\Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_4_Feb_2024_00_20_22.RData")
 
 
-Rdm_models <- c(Rdm_models_1, Rdm_models_2, Rdm_models)
-# Rdm_models <- c(Rdm_models_1, Rdm_models, Rdm_models_2)
+# Rdm_models <- c(Rdm_models_1, Rdm_models_2, Rdm_models)
+Rdm_models <- c(Rdm_models_1, Rdm_models, Rdm_models_2)
 rm(Rdm_models_1, Rdm_models_2)
 
 length(Rdm_models)
 
-save(Rdm_models, SG_Variables_Selected, roundingDelta, file = "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData")
+save(Rdm_models, SG_Variables_Selected, roundingDelta, file = "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData")
 
 
-# Copy and paste the script to run
+# Add the above NN model to be selected and run:
 Predict_NN_Age_Script.R
 
 
@@ -73,7 +74,8 @@ for(N in c(1, 10, 20, 30, 40, 50, 60)) {
     print(Correlation_R_squared_RMSE_MAE_SAD_Table_rd <- rbind(Correlation_R_squared_RMSE_MAE_SAD_Table_rd, 
 	                data.frame(N = N, t(as.matrix(Correlation_R_squared_RMSE_MAE_SAD(New_Ages_Temp$TMA, round(New_Ages_Temp$NN_Pred_Median + Delta)))))))
     }    
-	
+
+	 
 library(JRWToolBox)
 	
 

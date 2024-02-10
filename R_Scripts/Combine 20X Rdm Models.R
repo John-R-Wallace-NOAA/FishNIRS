@@ -35,7 +35,7 @@ Predict_NN_Age_Script.R
 
 
 
-# 20X 1 and 3
+# --- 20X 1 and 3 ---
 
 setwd("C:/ALL_USR/JRW/SIDT/Predict_NN_Ages")
 
@@ -65,6 +65,8 @@ Seed_Fold           numeric      0
 23                          Seed_Model    
 
 
+
+# Check random number seeds
 
 # 1
 extractRData('Seed_Fold', "C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData")
