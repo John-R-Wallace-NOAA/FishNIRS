@@ -1,0 +1,49 @@
+
+
+
+
+Sable_Combo_2022 FCNN (Fully Connected Neural Net) Model (Unless stated otherwise, all runs include both fish length and otie weight.)
+
+  Run details                                Num of Full 10 Fold Models       SAD*    Delta SAD      RMSE
+Sets 1 and 3 of 20 Rdm Model Runs                       40                   1,907        0          2.405
+Sets 1 and 2 of 20 Rdm Model Runs                       40                   1,908        1          2.419
+Set 1 of 20 Rdm Models Runs                             20                   1,912        5          2.409
+Sets 1, 2, and 3 of 20 Rdm Model Runs                   60                   1,913        6          2.420
+Set 1 of 20 Rdm Models Runs on GPU_Machine**            20                   1,936       29          2.461
+Scans plus Otie Weight Only                             20                   2,172      265          2.853
+Scans plus Fish Length Only                             20                   2,182      275          2.871
+Scans Only                                              20                   2,201      294          2.868      
+
+* Sum of Absolute Differences with the age prediction rounded after adding a Delta of: -0.05. (All TMA are integer values also.)
+** The NWFSC's GPU_Machine runs Windows Server 2019 which causes excessive IO and runs all the CPUs at 100%. In contrast, my Windows 10 desktop runs around 30% of full load with the same model.
+   There is also perhaps an inferior NN setup in the Conda environment.
+
+
+
+An additional breakdown is given below, this would not be a normal part of the production process:
+
+Sable_Combo_2022_FCNN_model_60_Rdm_models_Sets_1_2_3:
+
+Prediction rounded after adding a Delta of: -0.05
+   N Correlation R_squared    RMSE     MAE  SAD
+1  1    0.973727  0.948144 2.48793 1.27880 1954
+2 10    0.974952  0.950531 2.42384 1.25720 1921
+3 20    0.975313  0.951235 2.40908 1.25131 1912
+4 30    0.975212  0.951039 2.41573 1.25327 1915
+5 40    0.975200  0.951015 2.41857 1.24869 1908
+6 50    0.975224  0.951062 2.41830 1.24607 1904
+7 60    0.975134  0.950886 2.42033 1.25196 1913
+
+
+
+Sable_Combo_2022_FCNN_model_60_Rdm_models_Sets_1_3_2:
+
+Prediction rounded after adding a Delta of: -0.05
+   N Correlation R_squared    RMSE     MAE  SAD
+1  1    0.973727  0.948144 2.48793 1.27880 1954
+2 10    0.974952  0.950531 2.42384 1.25720 1921
+3 20    0.975313  0.951235 2.40908 1.25131 1912
+4 30    0.975341  0.951290 2.40949 1.24673 1905
+5 40    0.975405  0.951415 2.40514 1.24804 1907
+6 50    0.975104  0.950828 2.42127 1.25262 1914
+7 60    0.975134  0.950886 2.42033 1.25196 1913
