@@ -142,7 +142,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     if(plot) { 
       png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))
  	 wavebandsToUse <- as.numeric(substring(colnames(newScans.RAW), 2))	
-      plot(wavebandsToUse, newScans.RAW[1, ], type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000))
+      plot(wavebandsToUse, newScans.RAW[1, ], type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000), xlab = 'Wavebands Used (1/cm) (Wavelengths of light from 2,500 - 1,250 nm)', ylab = 'Absorbance')
       
       for(j in 2:100)  # Just the first 100 wavebands - the point is to look at the variables selected via Savitzky Golay.
           lines(wavebandsToUse, newScans.RAW[j, ], col = j)
@@ -186,8 +186,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
       }
     }  
       
-    assign("newScans.pred.ALL", newScans.pred.ALL, pos = 1) # Save for Correlation_R_squared_RMSE_MAE_SAD_Table for various values of N
- 	assign("newScans", newScans , pos = 1) # Ditto
+ 	assign("newScans", newScans , pos = 1) # Save for Correlation_R_squared_RMSE_MAE_SAD_Table for various values of N
 	
     Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median, na.rm = TRUE)[,2], 
        Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025, na.rm = TRUE)[,2],
