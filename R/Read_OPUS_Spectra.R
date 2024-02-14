@@ -56,7 +56,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         if(Meta_Add) {
 		    is.null(Meta_Path)
                  Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2021 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
-		    load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+		    base::load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
 		    metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
 	    }	  
         shortNameSegments <- c(1,5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
@@ -214,8 +214,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
         metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
         Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
-        metadata$length_cm <- metadata$weight_kg <- NULL   
-	    metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
+        Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
+	    Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
         if(verbose)
            print(Model_Spectra_Meta[1:5, c(1:3, (ncol(Model_Spectra_Meta) - 36):ncol(Model_Spectra_Meta))])
         Model_Spectra_Meta$length_prop_max <- Model_Spectra_Meta$Length_cm/max(Model_Spectra_Meta$Length_cm, na.rm = TRUE)
