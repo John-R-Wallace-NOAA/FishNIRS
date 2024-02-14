@@ -64,6 +64,22 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
         fineFreqAdj <- 0
     }  
+	
+	# (5) Sablefish 2019, Combo survey
+    if(Spectra_Set == "Sable_Combo_2019") { 
+        if(is.null(Spectra_Path)) 
+           Spectra_Path <- 'C:/ALL_USR/JRW/SIDT/Sablefish 2019 Combo/Sable_2021_Scans'
+        if(Meta_Add) {
+		    is.null(Meta_Path)
+                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2019 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
+		    base::load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+		    metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
+	    }	  
+        shortNameSegments <- c(1,5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
+        shortNameSuffix <- 'Combo'
+        yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
+        fineFreqAdj <- 0
+    }  
 # -----------------------------------------------------------------------------------------------------------------------------------
  
     if(!any(installed.packages()[, 1] %in% "remotes")) 
