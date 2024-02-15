@@ -231,18 +231,22 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
         Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
         Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
-	    Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
+	    Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Month_Scaled'))
         if(verbose)
            print(Model_Spectra_Meta[1:5, c(1:3, (ncol(Model_Spectra_Meta) - 36):ncol(Model_Spectra_Meta))])
         Model_Spectra_Meta$length_prop_max <- Model_Spectra_Meta$Length_cm/max(Model_Spectra_Meta$Length_cm, na.rm = TRUE)
         Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
         Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
         Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0
-        Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0
         Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName) 
         
-        TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 & Model_Spectra_Meta$tissue_level_scan <= 10 & 
-                      !is.na(Model_Spectra_Meta$Length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
+		# For consistennce, don't use the 'light' (or other level) of tissue level until a study is done
+        # TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 & !is.na(Model_Spectra_Meta$Month_Scaled) & 
+		#         (Model_Spectra_Meta$tissue_level_scan == "light" | is.na(Model_Spectra_Meta$tissue_level_scan)) & !is.na(Model_Spectra_Meta$Length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
+				  
+        TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 & is.na(Model_Spectra_Meta$tissue_level_scan) & 
+		          !is.na(Model_Spectra_Meta$Length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g) & !is.na(Model_Spectra_Meta$Month_Scaled)
+				  
         names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"    
         if(TMA_Ages)        
             TF <- TF & !is.na(Model_Spectra_Meta$TMA)
