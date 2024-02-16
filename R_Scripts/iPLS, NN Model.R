@@ -179,26 +179,35 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    
    Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = 300, Meta_Path = paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"),
                                                verbose = verbose, plot = plot, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
-   
-  #                                      filenames     X8000     X7992     X3984     X3976     X3968     X3960     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id age_best length_cm weight_kg sex structure_weight_g NWFSC_NIR_Project
-  #  1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1 0.2202285 0.2201835 0.5210375 0.5241458 0.5254004 0.5238540 0.5198408   COMBO        2022           SABL               1 102157421-SABL-O   102157421       14      51.5      1.40   2             0.0228               PRD
-  #  2  SABL_COMBO2022_NIR0022A_PRD_10_102157430_O1 0.2037776 0.2037497 0.5053568 0.5085597 0.5098205 0.5081757 0.5039832   COMBO        2022           SABL              10 102157430-SABL-O   102157430        6      48.5      1.04   2             0.0173               PRD
-  #  3 SABL_COMBO2022_NIR0022A_PRD_100_102157520_O1 0.1761716 0.1760852 0.4939839 0.4972751 0.4985640 0.4968473 0.4924470   COMBO        2022           SABL             100 102157520-SABL-O   102157520        6      56.0      1.96   2             0.0196               PRD
-  #  4  SABL_COMBO2022_NIR0022A_PRD_11_102157431_O1 0.1911490 0.1911127 0.5702074 0.5739523 0.5753983 0.5733758 0.5683330   COMBO        2022           SABL              11 102157431-SABL-O   102157431       16      55.0      1.66   1             0.0265               PRD
-  #  5  SABL_COMBO2022_NIR0022A_PRD_12_102157432_O1 0.1880359 0.1880160 0.5069040 0.5105314 0.5119459 0.5100320 0.5052297   COMBO        2022           SABL              12 102157432-SABL-O   102157432        6      50.5      1.20   1             0.0200               PRD
-  #    NWFSC_NIR_Scan_Session age_structure_side_scan crystallized_scan percent_crystallized_scan broken_scan tip_only_scan anterior_tip_missing posterior_tip_missing percent_missing_scan tissue_present_scan tissue_level_scan oil_clay_contamination_scan stained_scan
-  #  1               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-  #  2               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-  #  3               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-  #  4               NIR0022A                       R              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-  #  5               NIR0022A                       L              <NA>                        NA        <NA>          <NA>                 <NA>                  <NA>                   NA                <NA>              <NA>                        <NA>           NA
-  #    contamination_other_scan notes_scan unscannable_BB unscannable_Broken_MissingPieces unscannable_Crystalized unscannable_sample_mixed unscannable_no_otolith
-  #  1                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-  #  2                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-  #  3                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-  #  4                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-  #  5                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
-  #  
+											   
+  #                                       filenames     X8000     X7992     X3952 project sample_year pacfin_code_id sequence_number age_structure_id specimen_id TMA sex structure_weight_g NWFSC_NIR_Project
+  # 1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1 0.2202285 0.2201835 0.5198408   COMBO        2022           SABL               1 102157421-SABL-O   102157421  14   2             0.0228               PRD
+  # 2  SABL_COMBO2022_NIR0022A_PRD_10_102157430_O1 0.2037776 0.2037497 0.5039832   COMBO        2022           SABL              10 102157430-SABL-O   102157430   6   2             0.0173               PRD
+  # 3 SABL_COMBO2022_NIR0022A_PRD_100_102157520_O1 0.1761716 0.1760852 0.4924470   COMBO        2022           SABL             100 102157520-SABL-O   102157520   6   2             0.0196               PRD
+  # 4  SABL_COMBO2022_NIR0022A_PRD_11_102157431_O1 0.1911490 0.1911127 0.5683330   COMBO        2022           SABL              11 102157431-SABL-O   102157431  16   1             0.0265               PRD
+  # 5  SABL_COMBO2022_NIR0022A_PRD_12_102157432_O1 0.1880359 0.1880160 0.5052297   COMBO        2022           SABL              12 102157432-SABL-O   102157432   6   1             0.0200               PRD
+  #   NWFSC_NIR_Scan_Session age_structure_side_scan crystallized_scan percent_crystallized_scan broken_scan tip_only_scan anterior_tip_missing posterior_tip_missing percent_missing_scan tissue_present_scan
+  # 1               NIR0022A                       L              <NA>                         0        <NA>          <NA>                 <NA>                  <NA>                    0                <NA>
+  # 2               NIR0022A                       L              <NA>                         0        <NA>          <NA>                 <NA>                  <NA>                    0                <NA>
+  # 3               NIR0022A                       L              <NA>                         0        <NA>          <NA>                 <NA>                  <NA>                    0                <NA>
+  # 4               NIR0022A                       R              <NA>                         0        <NA>          <NA>                 <NA>                  <NA>                    0                <NA>
+  # 5               NIR0022A                       L              <NA>                         0        <NA>          <NA>                 <NA>                  <NA>                    0                <NA>
+  #   tissue_level_scan oil_clay_contamination_scan stained_scan contamination_other_scan notes_scan unscannable_BB unscannable_Broken_MissingPieces unscannable_Crystalized unscannable_sample_mixed unscannable_no_otolith
+  # 1              <NA>                        <NA>           NA                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+  # 2              <NA>                        <NA>           NA                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+  # 3              <NA>                        <NA>           NA                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+  # 4              <NA>                        <NA>           NA                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+  # 5              <NA>                        <NA>           NA                       NA       <NA>           <NA>                             <NA>                    <NA>                     <NA>                   <NA>
+  #   Length_cm Weight_kg Month_Scaled length_prop_max structure_weight_dg      shortName
+  # 1      51.5      1.40    0.4166667       0.5885714               0.228   SABL_1_Combo
+  # 2      48.5      1.04    0.4166667       0.5542857               0.173  SABL_10_Combo
+  # 3      56.0      1.96    0.4166667       0.6400000               0.196 SABL_100_Combo
+  # 4      55.0      1.66    0.4166667       0.6285714               0.265  SABL_11_Combo
+  # 5      50.5      1.20    0.4166667       0.5771429               0.200  SABL_12_Combo
+  # 
+  # Total number of oties read in: 1557.  Number rejected based on metadata (including missing TMA, when asked for): 8.  Number kept: 1549.
+  # 
+  #
   #  
   #                                                           (L) only one otolith in the cell                                                        (L) Only one otolith in the cell .                                                         (L) only one otolith in the cell. 
   #                                                                                          1                                                                                         1                                                                                         3 
@@ -216,71 +225,71 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
   #                                                                                          2                                                                                      1525 
  
    
-   #    # These are not matched to the scans, since they are unscannable
-   #    Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
-   #    
-   #    Model_Spectra_Meta$sex <- recode.simple(Model_Spectra_Meta$sex, cbind(c(1, 2, 3), c('M', 'F', 'U')))  # Wow, sex still in numbers!!
-   #    # xyplot(length_cm ~ age_best, group = sex, data = Model_Spectra_Meta, auto = TRUE)
-   #          
-   #    Model_Spectra_Meta$crystallized_scan <- !is.na(Model_Spectra_Meta$crystallized_scan)
-   #    Table(Model_Spectra_Meta$crystallized_scan)
-   #    
-   #    Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan)  # All NA percent_crystallized_scan's are zeros
-   #    Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done (see below).
-   #    Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan) 
-   #    
-   #    Table(Model_Spectra_Meta$broken_scan)  #  Do all of these broken pieces fit together well? What about entering the number of pieces the otie is broken into - zero for an unbroken ototlith.
-   #                                           # Are the oties ever broken during scanning or the handling of the otie for scanning?
-   #                                           
-   #    Table(Model_Spectra_Meta$tip_only_scan)  # is there a difference between 'no' and an NA for this one?
-   #      
-   #    Table(Model_Spectra_Meta$anterior_tip_missing)
-   #    
-   #    Table(Model_Spectra_Meta$posterior_tip_missing)
-   #    
-   #    Table(Model_Spectra_Meta$percent_missing_scan)   
-   #    Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0 # Now a numerical test can be done (see below).
-   #    Table(Model_Spectra_Meta$percent_missing_scan)  
-   #    
-   #    Table(Model_Spectra_Meta$tissue_present_scan)  
-   #    
-   #    Table(Model_Spectra_Meta$tissue_level_scan) # Change this to 'percent_tissue_level_scan'?
-   #    Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0 # Now a numerical test can be done (see below).
-   #    Table(Model_Spectra_Meta$tissue_level_scan)
-   #    
-   #    Table(Model_Spectra_Meta$oil_clay_contamination_scan) # No percentage for this one
-   #    
-   #    Table(Model_Spectra_Meta$stained_scan) # All NA's. Is this 'yes'/'no' or percentage?
-   #    
-   #    Table(Model_Spectra_Meta$contamination_other_scan) # All NA's. Is this 'yes'/'no' or percentage?
-   #      
-   #    
-   #    names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
-   #    Table(is.finite(Model_Spectra_Meta$TMA))
-   #          
-   #    rev(sort(Model_Spectra_Meta$TMA))[1:20]
-   #    
-   #    dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows 535 cols
-   #    
-   #    TF <- !is.na(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 &
-   #           Model_Spectra_Meta$tissue_level_scan <= 10 & !is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
-   #    c(sum(TF), sum(!TF), sum(TF) + sum(!TF))
-   #    
-   #    sort(fileNamesRemove <- Model_Spectra_Meta$filenames[!TF])
-   #    
-   #    file.remove(paste0(Spectra_Path, "/", fileNamesRemove, ".0"), recursive = TRUE)  # Bad raw scans removed here
-   #    
-   #    Model_Spectra_Meta <- Model_Spectra_Meta[TF, ] # --- Doing an overwrite here!! --- Gettin rid of bad scans or ones with no metadata that is wanted
-   #    dim(Model_Spectra_Meta) # Sable Combo 2022: 1528 rows
-   #    
-   #    Model_Spectra_Meta$shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
-   #    
-   #    
-   #    # Look at the data with plotly and remove rogue oties if needed# 
-   #    plotly.Spec(Model_Spectra_Meta, 'all', htmlPlotFolder = paste0(Figures, '/Spectra Figure by TMA'))
-   #    # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ] # Example of removing a rogue otie for Hake 2019
-   #    # plotly.Spec(Model_Spectra_Meta, 'all') # Decide to save figure with rogue otie or the figure without the rogue otie, or both.
-   #    
+  #    # These are not matched to the scans, since they are unscannable
+  #    Model_Spectra_Meta$unscannable_BB <- Model_Spectra_Meta$unscannable_Broken_MissingPieces <- Model_Spectra_Meta$unscannable_Crystalized <- Model_Spectra_Meta$unscannable_sample_mixed <- Model_Spectra_Meta$unscannable_no_otolith <- NULL
+  #    
+  #    Model_Spectra_Meta$sex <- recode.simple(Model_Spectra_Meta$sex, cbind(c(1, 2, 3), c('M', 'F', 'U')))  # Wow, sex still in numbers!!
+  #    # xyplot(length_cm ~ age_best, group = sex, data = Model_Spectra_Meta, auto = TRUE)
+  #          
+  #    Model_Spectra_Meta$crystallized_scan <- !is.na(Model_Spectra_Meta$crystallized_scan)
+  #    Table(Model_Spectra_Meta$crystallized_scan)
+  #    
+  #    Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan)  # All NA percent_crystallized_scan's are zeros
+  #    Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done (see below).
+  #    Table(Model_Spectra_Meta$percent_crystallized_scan, Model_Spectra_Meta$crystallized_scan) 
+  #    
+  #    Table(Model_Spectra_Meta$broken_scan)  #  Do all of these broken pieces fit together well? What about entering the number of pieces the otie is broken into - zero for an unbroken ototlith.
+  #                                           # Are the oties ever broken during scanning or the handling of the otie for scanning?
+  #                                           
+  #    Table(Model_Spectra_Meta$tip_only_scan)  # is there a difference between 'no' and an NA for this one?
+  #      
+  #    Table(Model_Spectra_Meta$anterior_tip_missing)
+  #    
+  #    Table(Model_Spectra_Meta$posterior_tip_missing)
+  #    
+  #    Table(Model_Spectra_Meta$percent_missing_scan)   
+  #    Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0 # Now a numerical test can be done (see below).
+  #    Table(Model_Spectra_Meta$percent_missing_scan)  
+  #    
+  #    Table(Model_Spectra_Meta$tissue_present_scan)  
+  #    
+  #    Table(Model_Spectra_Meta$tissue_level_scan) # Change this to 'percent_tissue_level_scan'?
+  #    Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 0 # Now a numerical test can be done (see below).
+  #    Table(Model_Spectra_Meta$tissue_level_scan)
+  #    
+  #    Table(Model_Spectra_Meta$oil_clay_contamination_scan) # No percentage for this one
+  #    
+  #    Table(Model_Spectra_Meta$stained_scan) # All NA's. Is this 'yes'/'no' or percentage?
+  #    
+  #    Table(Model_Spectra_Meta$contamination_other_scan) # All NA's. Is this 'yes'/'no' or percentage?
+  #      
+  #    
+  #    names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
+  #    Table(is.finite(Model_Spectra_Meta$TMA))
+  #          
+  #    rev(sort(Model_Spectra_Meta$TMA))[1:20]
+  #    
+  #    dim(Model_Spectra_Meta) # Sable Combo 2022: 1557 rows 535 cols
+  #    
+  #    TF <- !is.na(Model_Spectra_Meta$TMA) & Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_crystallized_scan <= 10 &
+  #           Model_Spectra_Meta$tissue_level_scan <= 10 & !is.na(Model_Spectra_Meta$length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
+  #    c(sum(TF), sum(!TF), sum(TF) + sum(!TF))
+  #    
+  #    sort(fileNamesRemove <- Model_Spectra_Meta$filenames[!TF])
+  #    
+  #    file.remove(paste0(Spectra_Path, "/", fileNamesRemove, ".0"), recursive = TRUE)  # Bad raw scans removed here
+  #    
+  #    Model_Spectra_Meta <- Model_Spectra_Meta[TF, ] # --- Doing an overwrite here!! --- Gettin rid of bad scans or ones with no metadata that is wanted
+  #    dim(Model_Spectra_Meta) # Sable Combo 2022: 1528 rows
+  #    
+  #    Model_Spectra_Meta$shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
+  #    
+  #    
+  #    # Look at the data with plotly and remove rogue oties if needed# 
+  #    plotly.Spec(Model_Spectra_Meta, 'all', htmlPlotFolder = paste0(Figures, '/Spectra Figure by TMA'))
+  #    # Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% 'HAKE_48', ] # Example of removing a rogue otie for Hake 2019
+  #    # plotly.Spec(Model_Spectra_Meta, 'all') # Decide to save figure with rogue otie or the figure without the rogue otie, or both.
+  #    
    
    save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) # 1528
    # load(file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
@@ -330,6 +339,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    dir.create(paste0(Spectra_Set, '_Saved_Out'), showWarnings = FALSE)
    file.copy(paste0(Spectra_Path, "/", fileNames.0[SaveOutOties]), paste0(Spectra_Set, '_Saved_Out'), recursive = TRUE, copy.date = TRUE)
    file.remove(paste0(Spectra_Path, "/", fileNames.0[SaveOutOties]), recursive = TRUE) # Leave out raw scans removed here - number of scans left should match Model_Spectra_Meta, Model_Spectra, and TMA_Vector
+   
    }
    
    # Savitzky-Golay smoothing    
@@ -378,8 +388,7 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    
    
    # plot the newly selected spectra regions 
-   dev.new()
-   plot(Model_Spectra.iPLS.F)     
+   browsePlot('plot(Model_Spectra.iPLS.F)')
    
    Model_Spectra.iPLS.F$int.selected
    sort(Model_Spectra.iPLS.F$var.selected)
@@ -388,34 +397,37 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
    # plot(Model_Spectra.iPLS.F, main = NULL)          
    
    # plot predictions before and after selection
-   dev.new()
-   par(mfrow = c(2, 1))
-   mdatools::plotPredictions(Model_Spectra.iPLS.F$gm) # gm = global PLS model with all variables included
-   mdatools::plotPredictions(Model_Spectra.iPLS.F$om) # om = optimized PLS model with selected variables
+   browsePlot('
+     par(mfrow = c(2, 1))
+     mdatools::plotPredictions(Model_Spectra.iPLS.F$gm) # gm = global PLS model with all variables included
+     mdatools::plotPredictions(Model_Spectra.iPLS.F$om) # om = optimized PLS model with selected variables
+   ')
    
-   dev.new()
-   mdatools::plotRMSE(Model_Spectra.iPLS.F)
+   browsePlot('mdatools::plotRMSE(Model_Spectra.iPLS.F)')
    
    # RMSE  before and after selection
    
-   # Visually find the ylim to apply to both figures  and over all areas and WB
-   dev.new()
-   par(mfrow = c(2, 1))
-   mdatools::plotRMSE(Model_Spectra.iPLS.F$gm)
-   mdatools::plotRMSE(Model_Spectra.iPLS.F$om)
+   # Visually find the ylim to apply to both figures and over all areas and WB
+   browsePlot('
+      par(mfrow = c(2, 1))
+      mdatools::plotRMSE(Model_Spectra.iPLS.F$gm)
+      mdatools::plotRMSE(Model_Spectra.iPLS.F$om)
+   ')
    
    # Use the ylim for both plots
-   dev.new()
-   par(mfrow = c(2, 1))
-   mdatools::plotRMSE(Model_Spectra.iPLS.F$gm, ylim = c(2.4, 6.5))
-   mdatools::plotRMSE(Model_Spectra.iPLS.F$om, ylim = c(2.4, 6.5))
-   
+   browsePlot('
+     par(mfrow = c(2, 1))
+     mdatools::plotRMSE(Model_Spectra.iPLS.F$gm, ylim = c(2.4, 6.5))
+     mdatools::plotRMSE(Model_Spectra.iPLS.F$om, ylim = c(2.4, 6.5))
+   ')
    
    # Select iPLS vars and add metadata wanted
    # (p <- length(Model_Spectra.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
    
-   Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], length_prop_max = Model_Spectra_Meta$length_cm/max(Model_Spectra_Meta$length_cm), 
-                                           structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g) # dg = decigram
+   # Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], length_prop_max = Model_Spectra_Meta$length_cm/max(Model_Spectra_Meta$length_cm), 
+   #                                        structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g) # dg = decigram
+   
+   Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('length_prop_max', 'structure_weight_dg', 'Month_Scaled')]) # dg = decigram
                                            
    save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
    save(TMA_Vector, file = paste0(Spectra_Set, '_TMA_Vector.RData'))                
@@ -477,12 +489,15 @@ if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
 
 # --- NN Model ---
 { ###
+
 # Load the data if needed
 base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')); print(dim(Model_Spectra.sg.iPLS))
-base::load(paste0(Spectra_Set, '_TMA_Vector.RData')); print(length(TMA_Vector))
-base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
+# base::load(paste0(Spectra_Set, '_TMA_Vector.RData')); print(length(TMA_Vector))
+base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) # Model_Spectra_Meta with SaveOutOties removed is only needed for the 'filenames' below
 base::load(paste0(Spectra_Set, '_SaveOutOties_Seed_727.RData')); print(length(SaveOutOties))
+
 Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ]; print(dim(Model_Spectra_Meta))
+print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
 TMA_Vector <- Model_Spectra_Meta$TMA 
 
 # ----- Remove both metadata columns for testing  -----
@@ -495,15 +510,23 @@ TMA_Vector <- Model_Spectra_Meta$TMA
 # Model_Spectra.sg.iPLS$length_prop_max <- NULL
 
 print(dim(Model_Spectra.sg.iPLS))
-print(Model_Spectra.sg.iPLS$length_prop_max[1:4])
-print(Model_Spectra.sg.iPLS$structure_weight_dg[1:4])
+# print(Model_Spectra.sg.iPLS$length_prop_max[1:4])
+# print(Model_Spectra.sg.iPLS$structure_weight_dg[1:4])
+print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+
+
+# --------- Add 'Month_Scaled' to test in NN Model ------------------------------
+base::load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = Model_Spectra_Meta$specimen_id),  Sable_Combo_Ages_DW, "specimen_id", "AgeStr_id", 'Month_Scaled')
+Model_Spectra.sg.iPLS$specimen_id <- NULL
+print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 
 
 # = = = = = = = = = = = = = = = = = Intial setup - run the NN code between the first '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
 # Split the data into folds, spitting the remainder of an un-even division into the first folds, one otie per fold until finished
-Seed_Fold <- 747 # Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight
-set.seed(Seed_Fold) # Seed_Fold = 727 used in the code above and for previous runs of Sable_2022 before 28 Dec 2023
+Seed_Fold <- 787 # Seed 747 used for Fish_Len_Otie_Wgt_Run_2 Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight
+set.seed(Seed_Fold) # Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
 num_folds <- 10
 index_org <- 1:nrow(Model_Spectra.sg.iPLS)
 (fold_size_min <- floor(length(index_org)/num_folds))
@@ -534,7 +557,7 @@ dev.new(width = 10, height = 10) # 7
     
 Rdm_reps <- 20    
 # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
-Seed_Main <- 747 # Seed_Main <- 707 used for previous runs of Sable_2022 before 28 Dec 2023  # Reducing the number of seeds will be considered later
+Seed_Main <- Seed_Fold + 20 # Seed 747 used for Fish_Len_Otie_Wgt_Run_2. Seed_Main <- 707 used for previous runs of Sable_2022 before 28 Dec 2023  # Reducing the number of seeds will be considered later
 set.seed(Seed_Main) 
 Seed_reps <- sample(1e7, Rdm_reps)
 
@@ -543,7 +566,7 @@ Rdm_models <- list()
 Rdm_folds_index <- list()
 # base::load("Sable_Combo_2022_FCNN_model_ver_1_6_Rdm_model_14_Dec_2023_05_34_33.RData") 
 
-file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now.
+file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now in a hope that it can prehaps be fixed.
 
 # Note that errors from plot.loess() are trapped by try() and are normal early in the iteration loop since there is not enough data to smooth.
 for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
@@ -909,7 +932,7 @@ max.of.Adj <- apply(minAdj, 2, max)
 matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
  
 # Add 5 more Randomized order figures
-set.seed(c(Seed_Main, 747)[2]) 
+set.seed(Seed_Main) 
 (Seed_reps <- round(runif(6, 0, 1e8)))
 
 for (i in 1:5) { 
@@ -964,7 +987,7 @@ browsePlot('set.seed(707); gPlot(Model_Ages, "TMA", "TMA_Minus_Pred_Age_Rounded"
                grid = FALSE, vertLineEachPoint = TRUE)', file = paste0('Figures/TMA_minus_round_NN_Pred_vs_TMA_Jitter.png')) 
 
                
-# ----- Using a sample of 100 ages so the figures are not too crowded ------
+# ====== Using a sample of 100 ages so the figures are not too crowded =====
 set.seed(Seed_Fold)
 Model_Ages_Sub <- Model_Ages[sample(1:nrow(Model_Ages), 100),  ]  
 Model_Ages_Sub$Index <- 1:nrow(Model_Ages_Sub)
@@ -1017,7 +1040,7 @@ browsePlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
 # Difference plotted against NN_Pred_Median (not rounded)
 # browsePlot('set.seed(707); gPlot(Model_Ages, NN_Pred_Median, NN_Pred_Median - TMA, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE)')    
     
-
+# How many TMA ages are 3 or under
 print(Table(TMA_Vector <= 3)/length(TMA_Vector))
 
 } 
