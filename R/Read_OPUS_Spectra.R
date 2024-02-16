@@ -41,8 +41,12 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
     if(Spectra_Set == "Sable_Combo_2022") { 
        if(is.null(Spectra_Path)) 
           Spectra_Path = 'C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_2022_Scans'
-       if(Meta_Add & is.null(Meta_Path)) 
-          Meta_Path = paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
+       if(Meta_Add) {
+		    is.null(Meta_Path)
+                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
+		    base::load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+		    metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
+	    }	  
        shortNameSegments <- c(1,5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
        shortNameSuffix <- 'Combo'
        yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
@@ -120,7 +124,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
            }  
     }
     
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")   
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")   	
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
@@ -204,9 +209,9 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         
         # colnames(newScans.ADJ_int) <- colnames(newScans.ADJ[[1]])
         colnames(newScans.ADJ_int) <- wavebandsToUse.8k
-        newScans.RAW <- as.data.frame(newScans.ADJ_int)
+        newScans.RAW <- renum(as.data.frame(newScans.ADJ_int))
         # dim(newScans.RAW)
-        print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
+        # print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
     }
        
     if(plot) {
@@ -232,8 +237,6 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
         Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
 	    Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Month_Scaled'))
-        if(verbose)
-           print(Model_Spectra_Meta[1:5, c(1:3, (ncol(Model_Spectra_Meta) - 36):ncol(Model_Spectra_Meta))])
         Model_Spectra_Meta$length_prop_max <- Model_Spectra_Meta$Length_cm/max(Model_Spectra_Meta$Length_cm, na.rm = TRUE)
         Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
         Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
@@ -250,12 +253,14 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"    
         if(TMA_Ages)        
             TF <- TF & !is.na(Model_Spectra_Meta$TMA)
-        Model_Spectra_Meta <- Model_Spectra_Meta[TF, ]
+        Model_Spectra_Meta <- renum(Model_Spectra_Meta[TF, ])
         
-        if(verbose)
+        if(verbose) {
+		   print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
            cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'), quote = FALSE)
-        
-        invisible(Model_Spectra_Meta) 
+         }
+		 
+        invisible(Model_Spectra_Meta)
     } else  
         invisible(newScans.RAW)
 }   
