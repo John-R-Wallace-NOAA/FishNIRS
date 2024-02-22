@@ -2,6 +2,7 @@
 # --- Initial setup  (The curly brakets with a '###' comment and without indented lines directly below them, are there to enable the hiding of code sections using Notepad++.) ---
 #            (For those who dislike Rstudio,  Notepad++ is here: https://notepad-plus-plus.org/  and NppToR that passes R code from Notepad++ to R is here: https://sourceforge.net/projects/npptor/)
 { ###
+
 if(interactive()) 
       setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Train_NN_Model", "/more_home/h_jwallace/SIDT/Train_NN_Models"))   # Change path to the Spectra Set's .GlobalEnv as needed
 if(!interactive())   options(width = 120)      
@@ -14,12 +15,14 @@ plot <- c(TRUE, FALSE)[1]
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 'All')[[3]] 
  
-getwd()
-Spectra_Set
+print(getwd())
+print(Spectra_Set)
+
 }
 
 # --- Load functions and packages ---
 { ###
+
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
        if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
@@ -40,31 +43,28 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
 }
 
 # Toolbox functions 
-if (any(installed.packages()[, 1] %in% "JRWToolBox"))  {
-       library(JRWToolBox)
-} else {
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Ls.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/openwd.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predicted_observed_plot.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/residuals_plot.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/as.num.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/agg.table.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/r.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gof.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/timeStamp.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/dec.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/loess.line.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/plot.loess.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
-}    
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Ls.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/openwd.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lib.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predicted_observed_plot.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/residuals_plot.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/as.num.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/agg.table.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/r.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gof.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/timeStamp.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/dec.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/loess.line.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/plot.loess.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")   
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
 
 # FishNIRS funtion
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
@@ -515,11 +515,31 @@ print(dim(Model_Spectra.sg.iPLS))
 print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 
 
-# --------- Add 'Month_Scaled' to test in NN Model ------------------------------
-base::load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
-Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = Model_Spectra_Meta$specimen_id),  Sable_Combo_Ages_DW, "specimen_id", "AgeStr_id", 'Month_Scaled')
+# --------- Trying 'Month_Scaled', 'Depth_m', 'Sex', and 'Weight_kg' to test in NN Model ------------------------------
+base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpAgesFramFeb2024.RData")  # From NWFSC Data Warehouse
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg'))
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))
+Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m'))
 Model_Spectra.sg.iPLS$specimen_id <- NULL
+
+###############################
+# These 3 oties in the metadata are missing from the Data WareHouse: AgeStr_id %in% 102133144:102133146  ????????????????
+dim(Model_Spectra.sg.iPLS)
+dim(na.omit(Model_Spectra.sg.iPLS))
+Model_Spectra.sg.iPLS$Month_Scaled[is.na(Model_Spectra.sg.iPLS$Month_Scaled)] <- 6:8/12
+
+Model_Spectra.sg.iPLS$Depth_m[is.na(Model_Spectra.sg.iPLS$Depth_m)] <- mean(Model_Spectra.sg.iPLS$Depth_m, na.rm = TRUE)
+Model_Spectra.sg.iPLS$Depth_m <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
+ 
+#  Model_Spectra.sg.iPLS$Sex[is.na(Model_Spectra.sg.iPLS$Sex)] <- c('M','F', 'M')
+#  Model_Spectra.sg.iPLS$Sex <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric **
+
+Model_Spectra.sg.iPLS$Weight_kg[is.na(Model_Spectra.sg.iPLS$Weight_kg)] <- mean(Model_Spectra.sg.iPLS$Weight_kg, na.rm = TRUE)
+Model_Spectra.sg.iPLS$Weight_kg <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
+
+dim(na.omit(Model_Spectra.sg.iPLS))
 print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+################################
 
 
 # = = = = = = = = = = = = = = = = = Intial setup - run the NN code between the first '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
@@ -824,7 +844,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
-}
+} ###
 
 # --- Find Median over all Rdm_reps Models and create figures ---
 { ###
@@ -833,7 +853,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 # base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_GPU_Machine\\Sable_Combo_2022_FCNN_model_ver_1_5_Rdm_model_21_Dec_2023_08_14_19.RData")
 # base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_Model_Spectra.sg.iPLS.RData")
 
-
+# ----------------------- Put the fitted results for each random reps (Rdm_reps) full fold model into a data frame:  y.fold.test.pred_RDM ------------------------
 (Rdm_reps <- length(Rdm_folds_index))
 
 y.fold.test.pred_RDM <- NULL
@@ -987,7 +1007,7 @@ browsePlot('set.seed(707); gPlot(Model_Ages, "TMA", "TMA_Minus_Pred_Age_Rounded"
                grid = FALSE, vertLineEachPoint = TRUE)', file = paste0('Figures/TMA_minus_round_NN_Pred_vs_TMA_Jitter.png')) 
 
                
-# ====== Using a sample of 100 ages so the figures are not too crowded =====
+# ====== Using a SAMPLE of 100 ages so the figures are not too crowded =====
 set.seed(Seed_Fold)
 Model_Ages_Sub <- Model_Ages[sample(1:nrow(Model_Ages), 100),  ]  
 Model_Ages_Sub$Index <- 1:nrow(Model_Ages_Sub)
@@ -1000,13 +1020,13 @@ geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) +
 geom_point(aes(Index, Pred_Age_Rounded, col = cols[1])) + 
 geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-browsePlot('print(g)', file = paste0('Figures/Predicted_Ages_Order_by_File_Names.png'))
+browsePlot('print(g)', file = paste0('Figures/Predicted_Ages_Order_by_File_Names_Subset.png'))
 
    
 # -- Plot by sorted NN predicted ages --
 Model_Ages_Sub_Sorted <- sort.f(Model_Ages_Sub, 'NN_Pred_Median') # Sort Model_Ages_Sub by NN_Pred_Median, except for "Index" (see the next line below)
 Model_Ages_Sub_Sorted$Index <- sort(Model_Ages_Sub_Sorted$Index)  # Reset Index for graphing
-if(verbose) head(Model_Ages_Sub_Sorted, 20)
+if(verbose) head(Model_Ages_Sub_Sorted, 10)
 
 cols <- c('green', 'red')
 g <- ggplot(Model_Ages_Sub_Sorted, aes(Index, NN_Pred_Median)) +  
@@ -1016,14 +1036,13 @@ geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) +
 geom_point(aes(Index, Pred_Age_Rounded, col = cols[1])) + 
 geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-browsePlot('print(g)', file = paste0('Figures/Predicted_Ages_Sorted.png'))
-
+browsePlot('print(g)', file = paste0('Figures/Predicted_Ages_Sorted_Subset.png'))
 
 
 # -- Plot by sorted TMA --
 Model_Ages_Sub_Sorted <- sort.f(Model_Ages_Sub, 'TMA') # Sort Model_Ages_Sub by TMA, except for "Index" (see the next line below)
 Model_Ages_Sub_Sorted$Index <- sort(Model_Ages_Sub_Sorted$Index)  # Reset Index for graphing
-if(verbose) head(Model_Ages_Sub_Sorted, 20)
+if(verbose) head(Model_Ages_Sub_Sorted, 10)
 
 cols <- c('green', 'red')
 g <- ggplot(Model_Ages_Sub_Sorted, aes(Index, NN_Pred_Median)) +  
@@ -1033,15 +1052,21 @@ geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) +
 geom_point(aes(Index, TMA, col = cols[2])) + 
 geom_point(aes(Index + 0.1, Pred_Age_Rounded, col = cols[1])) + 
 scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-browsePlot('print(g)', file = paste0('Figures/TMA_Sorted.png'))
+browsePlot('print(g)', file = paste0('Figures/TMA_Sorted_Subset.png'))
 
 
-
-# Difference plotted against NN_Pred_Median (not rounded)
-# browsePlot('set.seed(707); gPlot(Model_Ages, NN_Pred_Median, NN_Pred_Median - TMA, ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE)')    
-    
 # How many TMA ages are 3 or under
 print(Table(TMA_Vector <= 3)/length(TMA_Vector))
 
+# How many TMA ages are 15 or under
+print(Table(TMA_Vector <= 15)/length(TMA_Vector))
+
+# How many TMA ages are 20 or under
+print(Table(TMA_Vector <= 20)/length(TMA_Vector))
+
 } 
    
+
+
+
+
