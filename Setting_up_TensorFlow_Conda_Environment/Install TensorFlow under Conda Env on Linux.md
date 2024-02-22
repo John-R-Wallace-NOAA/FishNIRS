@@ -4,6 +4,12 @@
     
     # Install Miniconda
     bash Miniconda3-latest-Linux-x86_64.sh
+
+    # If you'd prefer that conda's base environment not be activated on startup, 
+    #   set the auto_activate_base parameter to false: 
+
+    conda config --set auto_activate_base false
+
     
     # In the first two sections of code below, the only real difference is that for the CPU version "tensorflow" is installed, 
     #    and for the gpu version "tensorflow-gpu" is installed.
