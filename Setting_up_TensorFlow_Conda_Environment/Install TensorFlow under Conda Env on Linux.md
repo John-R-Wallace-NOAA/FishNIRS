@@ -38,7 +38,7 @@
     nvcc --version # If nvcc is installed
     conda list cuda
         
-    conda install tensorflow -c conda-forge
+    conda install  -y -c conda-forge tensorflow=2.10.1
     
     # Find version number of tensorflow (2.10.1)
     conda list tensorflow
@@ -57,7 +57,7 @@
     b = tf.constant(10)
     print(tf.add(a,b))
     
-    tf.reduce_sum(tf.random.normal([1000, 1000]))
+    print(tf.reduce_sum(tf.random.normal([1000, 1000])))
     
     quit()
     >>> 
