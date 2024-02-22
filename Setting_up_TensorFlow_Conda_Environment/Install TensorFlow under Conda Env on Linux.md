@@ -37,10 +37,11 @@
     # Check CUDA installation 
     nvcc --version # If nvcc is installed
     conda list cuda
-        
-    conda install  -y -c conda-forge tensorflow=2.10.1
+
+    # conda install tensorflow -c conda-forge    
+    conda install -y -c conda-forge tensorflow=2.10.1
     
-    # Find version number of tensorflow (2.10.1)
+    # Find version number of tensorflow
     conda list tensorflow
         
     # Verfiy TensorFlow using an interactive approach
