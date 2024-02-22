@@ -64,7 +64,7 @@
     b = tf.constant(10)
     print(tf.add(a,b))
     
-    tf.reduce_sum(tf.random.normal([1000, 1000]))
+    print(tf.reduce_sum(tf.random.normal([1000, 1000])))
     
     quit()
     >>> 
