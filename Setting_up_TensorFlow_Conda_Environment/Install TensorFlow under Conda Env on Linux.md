@@ -15,7 +15,8 @@
     
     conda env list
 
-    # If there is no name given using 'conda env list' use the full path, e.g.: conda activate /more_home/h_jwallace/Python/tf_cpu_only
+    # If there is no name given using 'conda env list' use the full path, 
+    #     e.g.: conda activate /more_home/h_jwallace/Python/tf_cpu_only
     conda activate tf_cpu_only 
     
     python --version
