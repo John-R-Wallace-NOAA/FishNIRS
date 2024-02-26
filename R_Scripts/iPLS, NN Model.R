@@ -126,6 +126,13 @@ Conda_TF_Eniv <- ifelse(.Platform$OS.type == 'windows', "C:/m3/envs/tf", "/more_
 Sys.setenv(RETICULATE_PYTHON = Conda_TF_Eniv) 
 Sys.getenv("RETICULATE_PYTHON") 
 
+if(.Platform$OS.type != 'windows') {
+   # https://github.com/rstudio/tensorflow/issues/412
+   config <- tf$compat$v1$ConfigProto(intra_op_parallelism_threads = 2L, inter_op_parallelism_threads = 2L)
+   session = tf$compat$v1$Session(config=config)
+   tf$compat$v1$keras$backend$set_session(session)
+}
+
 
 # Test to see if  TensorFlow is working in R
 a <- tf$Variable(5.56)
@@ -151,7 +158,7 @@ tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 # --- Create Model_Spectra.sg.iPLS and TMA_Vector for a spectra set ---
 { ###
 
-if(!exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) {
+if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
 
    #   # --- Load and look at the raw spectra and metadata  ---
    #   { ###
@@ -519,26 +526,34 @@ print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(M
 base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpAgesFramFeb2024.RData")  # From NWFSC Data Warehouse
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg'))
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))
-Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m'))
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m'))
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Weight_kg')
+Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Depth_m')
 Model_Spectra.sg.iPLS$specimen_id <- NULL
 
-###############################
-# These 3 oties in the metadata are missing from the Data WareHouse: AgeStr_id %in% 102133144:102133146  ????????????????
+print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+
+# Check for missing data
 dim(Model_Spectra.sg.iPLS)
 dim(na.omit(Model_Spectra.sg.iPLS))
-Model_Spectra.sg.iPLS$Month_Scaled[is.na(Model_Spectra.sg.iPLS$Month_Scaled)] <- 6:8/12
 
-Model_Spectra.sg.iPLS$Depth_m[is.na(Model_Spectra.sg.iPLS$Depth_m)] <- mean(Model_Spectra.sg.iPLS$Depth_m, na.rm = TRUE)
-Model_Spectra.sg.iPLS$Depth_m <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
- 
-#  Model_Spectra.sg.iPLS$Sex[is.na(Model_Spectra.sg.iPLS$Sex)] <- c('M','F', 'M')
-#  Model_Spectra.sg.iPLS$Sex <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric **
 
-Model_Spectra.sg.iPLS$Weight_kg[is.na(Model_Spectra.sg.iPLS$Weight_kg)] <- mean(Model_Spectra.sg.iPLS$Weight_kg, na.rm = TRUE)
-Model_Spectra.sg.iPLS$Weight_kg <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
+###############################
+# These 3 oties in the metadata were missing from the Data WareHouse: AgeStr_id %in% 102133144:102133146  ????????????????
 
-dim(na.omit(Model_Spectra.sg.iPLS))
-print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+#   Model_Spectra.sg.iPLS$Month_Scaled[is.na(Model_Spectra.sg.iPLS$Month_Scaled)] <- 6:8/12
+#   
+#   Model_Spectra.sg.iPLS$Depth_m[is.na(Model_Spectra.sg.iPLS$Depth_m)] <- mean(Model_Spectra.sg.iPLS$Depth_m, na.rm = TRUE)
+#   Model_Spectra.sg.iPLS$Depth_m <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
+#    
+#   #  Model_Spectra.sg.iPLS$Sex[is.na(Model_Spectra.sg.iPLS$Sex)] <- c('M','F', 'M')
+#   #  Model_Spectra.sg.iPLS$Sex <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric **
+#   
+#   Model_Spectra.sg.iPLS$Weight_kg[is.na(Model_Spectra.sg.iPLS$Weight_kg)] <- mean(Model_Spectra.sg.iPLS$Weight_kg, na.rm = TRUE)
+#   Model_Spectra.sg.iPLS$Weight_kg <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
+#   
+#   dim(na.omit(Model_Spectra.sg.iPLS))
+#   print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 ################################
 
 
