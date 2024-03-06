@@ -802,11 +802,11 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           print(saveName <- paste0(Spectra_Set, '_', paste(get.subs(model_Name, "_")[-2], collapse = "_"), '_SM_', Seed_Model, '_RI_', j, '_LR_', 
              format(learningRate, sci = FALSE), '_LD_', ifelse(is.null(layer_dropout_rate), 0, layer_dropout_rate), '_It_', length(SAD), 
              '_SAD_', rev(SAD)[1], '_', timeStamp()))
-          assign(saveName, serialize_model(model, include_optimizer = TRUE))
+          assign(saveName, (keras::serialize_model(model, include_optimizer = TRUE))
           # save(Iter, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, .Random.seed, list = saveName, file = paste0(saveName, '.RData'))
           
           saveModels <- c(saveModels, saveName)
-          saveModels_List[[saveName]] <- serialize_model(model, include_optimizer = TRUE)
+          saveModels_List[[saveName]] <- (keras::serialize_model(model, include_optimizer = TRUE)
          
           if(Iter == Iter_Num)
               break
