@@ -51,8 +51,10 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    } else {
       X <- Y <- axes_zoomed_limits   
    }   
-   
+
+   cat("\n\n")
    print(Correlation_R_squared_RMSE_MAE_SAD(Obs, Predicted.rd))
+   cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n"))
   
    plot(X, Y, main = main,
       xlab = paste0(xlab,': RMSE = ', signif(sqrt(mean((Predicted.rd - Obs)^2, na.rm = TRUE)), 6), '; SAD = ', 
