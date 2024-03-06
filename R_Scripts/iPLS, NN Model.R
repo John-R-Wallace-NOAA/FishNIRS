@@ -122,7 +122,7 @@ lib(RcppArmadillo)
 Sys.getenv("GITHUB_PAT") 
  
 #  --- Conda TensorFlow environment ---
-Conda_TF_Eniv <- ifelse(.Platform$OS.type == 'windows', "C:/m3/envs/tf", "/more_home/h_jwallace/Python/tf_cpu_only/bin")  # Change this path as needed
+Conda_TF_Eniv <- ifelse(.Platform$OS.type == 'windows', "C:/m3/envs/tf", "/more_home/h_jwallace/Python/tf_cpu_only/bin")  # Change these paths as needed
 Sys.setenv(RETICULATE_PYTHON = Conda_TF_Eniv) 
 Sys.getenv("RETICULATE_PYTHON") 
 
@@ -492,7 +492,6 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
    }
    
 } ###
-} ###
 
 # --- NN Model ---
 { ###
@@ -524,61 +523,70 @@ print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(M
 
 # --------- Trying 'Month_Scaled', 'Depth_m', 'Sex', and 'Weight_kg' to test in NN Model ------------------------------
 base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpAgesFramFeb2024.RData")  # From NWFSC Data Warehouse
-# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg'))
-# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))
-# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m'))
-# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Weight_kg')
-Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Depth_m')
+#                                                                                                                                                                                                               #         ****** Run 3 Results *********
+#                                                                                                                                                                                                                NIRS Scans Only: # SAD: 2201; RMSE: 2.8678 # Run 1
+#                                                                                                                                                                                                       Fish length and Otie Wgt: # SAD: 2050; RMSE: 2.7280
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg')) # Very poor results
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))  # SAD: 2029; RMSE: 2.7678
+Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m')) # SAD: 2002; RMSE: 2.6742
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Weight_kg') # SAD: 2088; RMSE: 2.7389
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Depth_m')  # SAD: 2042; RMSE: 2.7404
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Month_Scaled')  # SAD: ????; RMSE: ????
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Days_into_Year')) # SAD: 2090; RMSE: 2.8047
+
 Model_Spectra.sg.iPLS$specimen_id <- NULL
 
 print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 
 # Check for missing data
-dim(Model_Spectra.sg.iPLS)
-dim(na.omit(Model_Spectra.sg.iPLS))
+print(dim(Model_Spectra.sg.iPLS))
+print(dim(na.omit(Model_Spectra.sg.iPLS)))
 
 
-###############################
+################ OLD ###############
 # These 3 oties in the metadata were missing from the Data WareHouse: AgeStr_id %in% 102133144:102133146  ????????????????
 
-#   Model_Spectra.sg.iPLS$Month_Scaled[is.na(Model_Spectra.sg.iPLS$Month_Scaled)] <- 6:8/12
-#   
-#   Model_Spectra.sg.iPLS$Depth_m[is.na(Model_Spectra.sg.iPLS$Depth_m)] <- mean(Model_Spectra.sg.iPLS$Depth_m, na.rm = TRUE)
-#   Model_Spectra.sg.iPLS$Depth_m <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
-#    
-#   #  Model_Spectra.sg.iPLS$Sex[is.na(Model_Spectra.sg.iPLS$Sex)] <- c('M','F', 'M')
-#   #  Model_Spectra.sg.iPLS$Sex <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric **
-#   
-#   Model_Spectra.sg.iPLS$Weight_kg[is.na(Model_Spectra.sg.iPLS$Weight_kg)] <- mean(Model_Spectra.sg.iPLS$Weight_kg, na.rm = TRUE)
-#   Model_Spectra.sg.iPLS$Weight_kg <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
-#   
-#   dim(na.omit(Model_Spectra.sg.iPLS))
-#   print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+#  Model_Spectra.sg.iPLS$Month_Scaled[is.na(Model_Spectra.sg.iPLS$Month_Scaled)] <- 6:8/12
+#  Model_Spectra.sg.iPLS$Depth_m[is.na(Model_Spectra.sg.iPLS$Depth_m)] <- mean(Model_Spectra.sg.iPLS$Depth_m, na.rm = TRUE)
+#  Model_Spectra.sg.iPLS$Weight_kg[is.na(Model_Spectra.sg.iPLS$Weight_kg)] <- mean(Model_Spectra.sg.iPLS$Weight_kg, na.rm = TRUE) 
+#  Model_Spectra.sg.iPLS$Sex[is.na(Model_Spectra.sg.iPLS$Sex)] <- c('M','F', 'M')
+
+#  print(dim(na.omit(Model_Spectra.sg.iPLS)))
+#  print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 ################################
 
 
-# = = = = = = = = = = = = = = = = = Intial setup - run the NN code between the first '= = =' lines = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+if(!is.null(Model_Spectra.sg.iPLS$Sex))
+   Model_Spectra.sg.iPLS$Sex <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
+
+if(!is.null(Model_Spectra.sg.iPLS$Depth_m))
+   Model_Spectra.sg.iPLS$Depth_m <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
+
+if(!is.null(Model_Spectra.sg.iPLS$Weight_kg))
+   Model_Spectra.sg.iPLS$Weight_kg <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
+
+if(!is.null(Model_Spectra.sg.iPLS$Days_into_Year))
+   Model_Spectra.sg.iPLS$Days_into_Year <- (Model_Spectra.sg.iPLS$Days_into_Year - min(Model_Spectra.sg.iPLS$Days_into_Year))/(max(Model_Spectra.sg.iPLS$Days_into_Year) - min(Model_Spectra.sg.iPLS$Days_into_Year))
+
+
+
+# = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
 # Split the data into folds, spitting the remainder of an un-even division into the first folds, one otie per fold until finished
-Seed_Fold <- 787 # Seed 747 used for Fish_Len_Otie_Wgt_Run_2 Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight
-set.seed(Seed_Fold) # Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
+Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
+                 #      Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
 num_folds <- 10
-index_org <- 1:nrow(Model_Spectra.sg.iPLS)
-(fold_size_min <- floor(length(index_org)/num_folds))
-(num_extra <- num_folds * dec(length(index_org)/num_folds))
-index <- index_org
-folds_index <- list()
-for(i in 1:(num_folds - 1)) {
-   print(c(fold_size_min, i, num_extra, i <= num_extra, fold_size_min + ifelse(i <= num_extra, 1, 0), i - num_extra))
-   folds_index[[i]] <- sample(index, fold_size_min + ifelse(i < (num_extra + 0.1), 1, 0))  # Finite math - grr!
-   index <- index[!index %in% folds_index[[i]]]
-}
-folds_index[[num_folds]] <- index
-
-lapply(folds_index, length) # Check the binning result
-c(sum(unlist(lapply(folds_index, length))), length(index_org))  # Check that the number of oties is the same
 
 
+# ------- Reduce model size to see the change in prediction ability ----------------------
+set.seed(Seed_Fold) 
+Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
+Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
+Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
+TMA_Vector <- Model_Spectra_Meta$TMA  
+
+
+# --- Setup graphic windows ---
 graphics.off()  
 dev.new(width = 14, height = 6) #2
 dev.new() # 3
@@ -599,7 +607,7 @@ Seed_reps <- sample(1e7, Rdm_reps)
 # Start fresh or continue by loading a file with model iterations already finished (see the commented line with an example model file). 
 Rdm_models <- list() 
 Rdm_folds_index <- list()
-# base::load("Sable_Combo_2022_FCNN_model_ver_1_6_Rdm_model_14_Dec_2023_05_34_33.RData") 
+# base::load("Sable_Combo_2022_FCNN_model_ver_1_18_Rdm_model_6_Mar_2024_07_19_57.RData") 
 
 file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now in a hope that it can prehaps be fixed.
 
@@ -609,7 +617,6 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
    cat(paste0("\n\nStart of Random Rep = ", j , "\n\n"))
 
    Seed_Data <- Seed_reps[j]
-   num_folds <- 10
    
    # Split the data into folds based on the current seed which is dictated by Seed_Main (see above)
    set.seed(Seed_Data)
@@ -625,8 +632,8 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
    }
    folds_index[[num_folds]] <- index  # Remainder from the above for() loop goes into the last fold index
    
-   lapply(folds_index, length)
-   c(sum(unlist(lapply(folds_index, length))), length(index_org))
+   print(lapply(folds_index, length)) # Check the binning result
+   print(c(sum(unlist(lapply(folds_index, length))), length(index_org)))
 
    
    Fold_models <- list()
@@ -676,7 +683,6 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           (Iter <- Iter + 1)
           cat(paste0("\n\nRandom Replicates = ", j, ": Fold number = ", i, ": Iter = ", Iter,"\n"))
           
-          viewMetrics <- c(TRUE, FALSE)[2]
           
           # config <- tf$compat.v1.ConfigProto(intra_op_parallelism_threads = 2L, inter_op_parallelism_threads = 2L)
           # session <-  tf$Session(config = config)
@@ -690,15 +696,17 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
              x.train.array <- as.matrix(x.train)
              history <- fit(model, x.train.array, y.train, epochs = 1, batch_size = 32, validation_split = 0.2, verbose = 2, 
                              #  callbacks = list(callback_tensorboard(histogram_freq = 1, profile_batch = 2)),
-                             view_metrics = viewMetrics)
-             history <- fit(model, x.train.array, y.train, epochs = 198, batch_size = 32, validation_split = 0.2, verbose = 0, view_metrics = viewMetrics)
-             history <- fit(model, x.train.array, y.train, epochs =   1, batch_size = 32, validation_split = 0.2, verbose = 2, view_metrics = viewMetrics)
-             history <- fit(model, x.train.array, y.train, epochs =  99, batch_size = 32, validation_split = 0.2, verbose = 0, view_metrics = viewMetrics)
-             history <- fit(model, x.train.array, y.train, epochs =   1, batch_size = 32, validation_split = 0.2, verbose = 2, view_metrics = viewMetrics)
-             history <- fit(model, x.train.array, y.train, epochs = 200, batch_size = 32, validation_split = 0.2, verbose = 0, view_metrics = viewMetrics)
+                             view_metrics = FALSE)
+             history <- fit(model, x.train.array, y.train, epochs = 198, batch_size = 32, validation_split = 0.2, verbose = ifelse(file.exists('NN_Verbose_Flag.txt'), 2, 0), view_metrics = ifelse(file.exists('NN_Verbose_Flag.txt'), TRUE, FALSE))
+             history <- fit(model, x.train.array, y.train, epochs =   1, batch_size = 32, validation_split = 0.2, verbose = 2, view_metrics = FALSE)
+             history <- fit(model, x.train.array, y.train, epochs =  99, batch_size = 32, validation_split = 0.2, verbose = 0, view_metrics = FALSE)
+             history <- fit(model, x.train.array, y.train, epochs =   1, batch_size = 32, validation_split = 0.2, verbose = 2, view_metrics = FALSE)
+             history <- fit(model, x.train.array, y.train, epochs = 200, batch_size = 32, validation_split = 0.2, verbose = 0, view_metrics = FALSE)
              x.test.array <- as.matrix(x.test)
           }
           
+		  viewMetrics <- c(TRUE, FALSE)[2]
+		  
           # CNN_model ver 1,3,4,5
           if(model_Name == 'CNN_model_ver_5') {
              x.train.array <- array(as.matrix(x.train), c(nrow(x.train), ncol(x.train), 1))
@@ -729,6 +737,8 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           
           dev.set(3)
           print(plot(history))
+		  if(file.exists('NN_Verbose_Flag.txt'))
+		     browsePlot('print(plot(history))', file = paste0("NN_History_Iter_", Iter)) # Save NN History figures
               
           # Predict using the test set; plot, create statistics, and create an agreement table
           y.test.pred <- predict(model, x.test.array)
@@ -748,12 +758,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           # SAD vector the Sum of absolute differences plot
           # SAD <- c(SAD, sqrt(sum((y.test - y.test.pred.rd)^2)/(length(y.test) - 1)))  # RMSE
           SAD <- c(SAD, sum(abs(y.test - y.test.pred.rd)))
-          
-          # Correlation, R_squared, RMSE, MAE, SAD (Sum of Absolute Differences)
-          cat("\n\n")
-          print(Correlation_R_squared_RMSE_MAE_SAD(y.test, y.test.pred.rd))
-          cat("(Prediction has been rounded to the nearest integer)\n")
-          
+            
           # Correlation vector for the iterations plot
           Cor <- c(Cor, cor(y.test, y.test.pred))
        
@@ -775,7 +780,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           # dev.new(width = 14, height = 10)
           # agreementFigure(y.test, y.test.pred, Delta, full = TRUE)
          
-          dev.set(5)
+          dev.set(5)  # agreementFigure() also prints out the Correlation, R_squared, RMSE, MAE, SAD (Sum of Absolute Differences) 
           agreementFigure(y.test, y.test.pred, Delta, main = paste0("Random Reps = ", j, ": Fold Num = ", i, ": Iter = ", Iter))
          
           dev.set(2)
@@ -784,7 +789,8 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           # abline(h = c(0.2, 0.9), lty = 2, col ='grey39', lwd = 1.25)
           plot(1:length(RMSE), RMSE, col = 'green', type = 'b', ylab = "RMSE (green)", xlab = "Iteration Number")
           abline(h = 4, lty = 2, col ='grey39', lwd = 1.25)
-          try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+		  if(Iter > 3)
+             try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
           abline(h = 0.2, lty = 2, col ='grey39', lwd = 1.25)
          
           # Avoiding high SAD values at the beginning, and rarely during, a run.
@@ -961,7 +967,7 @@ print(Stats_RDM_median_by_model_added)
 min.stats <- apply(Stats_RDM_median_by_model_added[, c(3,5)], 2, min)
 minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.stats)
 max.of.Adj <- apply(minAdj, 2, max)
-(Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[,1:2], t(t(minAdj)/max.of.Adj)))
+print(Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[,1:2], t(t(minAdj)/max.of.Adj)))
 
 
 matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
