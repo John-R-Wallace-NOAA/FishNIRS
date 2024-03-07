@@ -127,6 +127,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")   	
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
+	sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
     
@@ -236,9 +237,19 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
         Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
         Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
-	    Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Month_Scaled', 'Depth_m', 'Sex', 'Days_into_Year'))  
-        Model_Spectra_Meta$length_prop_max <- Model_Spectra_Meta$Length_cm/max(Model_Spectra_Meta$Length_cm, na.rm = TRUE)
-        Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
+	    Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Month_Scaled', 'Depth_m', 'Sex', 'Days_into_Year')) 
+        if(!is.null(Model_Spectra_Meta$Length_cm))		
+           Model_Spectra_Meta$length_prop_max <- Model_Spectra_Meta$Length_cm/max(Model_Spectra_Meta$Length_cm, na.rm = TRUE)
+		if(!is.null(Model_Spectra_Meta$structure_weight_g))	   
+           Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
+        if(!is.null(Model_Spectra_Meta$Sex))
+           Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
+        if(!is.null(Model_Spectra_Meta$Depth_m))
+           Model_Spectra_Meta$Depth_prop_max <- (Model_Spectra_Meta$Depth_m - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))/(max(Model_Spectra_Meta$Depth_m, na.rm = TRUE) - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))
+        if(!is.null(Model_Spectra_Meta$Weight_kg))
+           Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE))/(max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE) - min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE))
+        if(!is.null(Model_Spectra_Meta$Days_into_Year_prop_max))
+           Model_Spectra_Meta$Days_into_Year <- (Model_Spectra_Meta$Days_into_Year - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))/(max(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE) - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))
         Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
         Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0
         Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName) 
