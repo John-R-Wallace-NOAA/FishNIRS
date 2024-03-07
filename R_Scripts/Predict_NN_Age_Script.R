@@ -82,6 +82,7 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
@@ -91,7 +92,8 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 
-
+getwd()
+Spectra_Set
 
 # =================================================================================================================================================================== 
    
@@ -123,11 +125,14 @@ if(Spectra_Set == "Sable_Combo_2022") {
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
+	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_7_Mar_2024_01_02_58.RData"  # Sable_Combo_2022_NN_BEST_250N  !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
+	source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above
 	
     # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
     #            "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
-    NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData")	
+    # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData") # Sable_Combo_2022_NN_BEST_750N
+	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_7_Mar_2024_13_47_08.RData")	 # Sable_Combo_2022_NN_BEST_250N
 	
     Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
     Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
@@ -225,26 +230,8 @@ New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
 dim(New_Ages)
 headTail(New_Ages)
 
-
-
 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
-      
-
-# --- save ages and write out to a CSV file ---
-save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
-
-
-# metadata$length_cm <- metadata$weight_kg <- NULL   
-# metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
-metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975"))
-
-metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
-# metadata.wb # View WorkBook object
-openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
-openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
-# metadata.wb # View WorkBook object
-# Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
-openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
+     
 
 #  -- Look length and weight vs TMA and each other -- 
 # sum(is.na(metadata$weight_kg))
@@ -253,12 +240,7 @@ openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
 # browsePlot('plot.lowess(metadata$length_cm, metadata$weight_kg, 0.15)', file = 'Sablefish Combo 2024 Length vs Weight.png')
 
 
-
-# ----- Create plots with age estimates and quantile credible intervals -----
-
-New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
-New_Ages[1:5, ]
-
+# ----- Extract the rounding Delta -----
 Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
 New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
 cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
@@ -268,7 +250,27 @@ cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
 if(!TMA_Ages) {
 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
-  
+	
+    # --- Save ages ---
+    save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
+	
+	# --- Save metadata to a new NIRS_Scanning_Session_Report
+    # metadata$length_cm <- metadata$weight_kg <- NULL   
+    # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
+    metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975"))
+    
+    metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
+    # metadata.wb # View WorkBook object
+    openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
+    openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
+    # metadata.wb # View WorkBook object
+    # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
+    openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
+	
+	
+    # --- Add Index to New_ages and set cols for the figures below ---
+    New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
+    headTail(New_Ages, 3)
     cols <- 'green'
      
     # -- Plot by order implied by the spectra file names --
@@ -306,7 +308,33 @@ if(TMA_Ages) {
     if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
         New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
     New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
+    headTail(New_Ages)
+	cor(New_Ages$TMA, New_Ages$NN_Pred_Median)
     
+    # --- Save ages ---
+    save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
+	
+	# --- Save metadata to a new NIRS_Scanning_Session_Report
+    # metadata$length_cm <- metadata$weight_kg <- NULL   
+    # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
+    metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975", "TMA"))
+    
+    metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
+    # metadata.wb # View WorkBook object
+    openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
+    openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
+    # metadata.wb # View WorkBook object
+    # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
+    openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
+	
+	
+    # --- Add Index to New_ages and set colors and pchs for the figures below ---
+    New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
+    headTail(New_Ages, 3)
+    cols <- c('green', 'red')
+    pchs <- c(16, 1)
+	
+	
     # -- Spectra Figure with TMA for New Ages --
     plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
    
@@ -317,10 +345,8 @@ if(TMA_Ages) {
     browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Delta = Delta, full = FALSE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
     if(verbose & !interactive())  Sys.sleep(5)
    
-    cols <- c('green', 'red')
-    pchs <- c(16, 1)
-    
-    # -- Plot by order implied by the spectra file names - ggplotly() changes how scale_color_manual() works ????????????????? --
+   
+    # -- Plot by order implied by the spectra file names -  ???? ggplotly() changes how scale_color_manual() works ???? --
     g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
     geom_point() +
     geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -337,6 +363,20 @@ if(TMA_Ages) {
     # print(g)
     # unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
     # saveHtmlFolder(paste0(Predicted_Ages_Path, '/TMA vs Predicted_Ages'), view = !interactive())
+   
+   
+    # -- Relative error by TMA age --
+    g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
+	     panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_TMA_age.png'))
+    
+    # -- Plot of relative error by sorted TMA age --   
+    New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
+    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+    if(verbose) headTail(New_Ages_Sorted, 5)
+    g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
+	      panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_sorted_TMA.png'))
     
     
     # -- Plot by sorted NN predicted ages --
@@ -374,17 +414,7 @@ if(TMA_Ages) {
     scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
     browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
    
-    # -- Relative absolute error by TMA age --
-    g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages)
-    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_TMA_age.png'))
-    
-    # -- Plot of relative error by sorted TMA age --   
-    New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
-    New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-    if(verbose) head(New_Ages_Sorted, 20)
-    g <- xyplot(abs(TMA - NN_Pred_Median)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted)
-    browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_absolute_error_by_sorted_TMA.png'))
-    
+	
     # -- Plot by sorted TMA --
     New_Ages_Sorted <- na.omit(New_Ages_Sorted)
     if(verbose) head(New_Ages_Sorted, 20)
@@ -423,13 +453,15 @@ if(TMA_Ages) {
   					 
     
     # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA, highlighting those oties that were left out of the NN model - if any --
+	
+	#  Look at the oties the were used in the NN model
     dim(NN_Pred_Median_TMA)
-    # [1] 1513    5
+	headTail(NN_Pred_Median_TMA, 2)
           
     # Restrict new ages to those that have predictions from the NN model		 
     New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
     dim(New_Ages_Good)
-    # [1] 1528    4
+
     
     # Find those oties that were left out of the NN model for testing - if any.
     NN_Pred_Median_TMA$Used_NN_Model <- TRUE # Used in the NN model
