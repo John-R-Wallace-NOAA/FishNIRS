@@ -521,7 +521,7 @@ print(dim(Model_Spectra.sg.iPLS))
 print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 
 
-# --------- Trying 'Month_Scaled', 'Depth_m', 'Sex', and 'Weight_kg' to test in NN Model ------------------------------
+# --------- Trying 'Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg', 'Days_into_Year' to test in NN Model ------------------------------
 base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpAgesFramFeb2024.RData")  # From NWFSC Data Warehouse
 #                                                                                                                                                                                                               #         ****** Run 3 Results *********
 #                                                                                                                                                                                                                NIRS Scans Only: # SAD: 2201; RMSE: 2.8678 # Run 1
@@ -534,7 +534,7 @@ Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id =
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Month_Scaled')  # SAD: ????; RMSE: ????
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Days_into_Year')) # SAD: 2090; RMSE: 2.8047
 
-Model_Spectra.sg.iPLS$specimen_id <- NULL
+Model_Spectra.sg.iPLS$specimen_id <- NULL  # specimen_id only needed for the matching above
 
 print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 
@@ -557,16 +557,16 @@ print(dim(na.omit(Model_Spectra.sg.iPLS)))
 
 
 if(!is.null(Model_Spectra.sg.iPLS$Sex))
-   Model_Spectra.sg.iPLS$Sex <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
+   Model_Spectra.sg.iPLS$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
 
 if(!is.null(Model_Spectra.sg.iPLS$Depth_m))
-   Model_Spectra.sg.iPLS$Depth_m <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
+   Model_Spectra.sg.iPLS$Depth_prop_max <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
 
 if(!is.null(Model_Spectra.sg.iPLS$Weight_kg))
-   Model_Spectra.sg.iPLS$Weight_kg <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
+   Model_Spectra.sg.iPLS$Weight_prop_max <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
 
 if(!is.null(Model_Spectra.sg.iPLS$Days_into_Year))
-   Model_Spectra.sg.iPLS$Days_into_Year <- (Model_Spectra.sg.iPLS$Days_into_Year - min(Model_Spectra.sg.iPLS$Days_into_Year))/(max(Model_Spectra.sg.iPLS$Days_into_Year) - min(Model_Spectra.sg.iPLS$Days_into_Year))
+   Model_Spectra.sg.iPLS$Days_into_Year_prop_max <- (Model_Spectra.sg.iPLS$Days_into_Year - min(Model_Spectra.sg.iPLS$Days_into_Year))/(max(Model_Spectra.sg.iPLS$Days_into_Year) - min(Model_Spectra.sg.iPLS$Days_into_Year))
 
 
 
@@ -580,7 +580,7 @@ num_folds <- 10
 
 # ------- Reduce model size to see the change in prediction ability ----------------------
 set.seed(Seed_Fold) 
-Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
+Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 250)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
 Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
 Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
 TMA_Vector <- Model_Spectra_Meta$TMA  
@@ -802,11 +802,11 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           print(saveName <- paste0(Spectra_Set, '_', paste(get.subs(model_Name, "_")[-2], collapse = "_"), '_SM_', Seed_Model, '_RI_', j, '_LR_', 
              format(learningRate, sci = FALSE), '_LD_', ifelse(is.null(layer_dropout_rate), 0, layer_dropout_rate), '_It_', length(SAD), 
              '_SAD_', rev(SAD)[1], '_', timeStamp()))
-          assign(saveName, (keras::serialize_model(model, include_optimizer = TRUE))
+          assign(saveName, keras::serialize_model(model, include_optimizer = TRUE))
           # save(Iter, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, .Random.seed, list = saveName, file = paste0(saveName, '.RData'))
           
           saveModels <- c(saveModels, saveName)
-          saveModels_List[[saveName]] <- (keras::serialize_model(model, include_optimizer = TRUE)
+          saveModels_List[[saveName]] <- keras::serialize_model(model, include_optimizer = TRUE)
          
           if(Iter == Iter_Num)
               break
