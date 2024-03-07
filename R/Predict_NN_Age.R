@@ -127,7 +127,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     }
     
     # Find the metadata variables that are in the NN Model
-    metaDataVar <- (1:length(SG_Variables_Selected))[is.na(as.numeric(substring(SG_Variables_Selected, 2)))]
+    (metaDataVar <- (1:length(SG_Variables_Selected))[is.na(as.numeric(substring(SG_Variables_Selected, 2)))])
    
     # Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta
     newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
@@ -169,9 +169,14 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))))
    
     newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
+	
+ 	assign("newScans", newScans , pos = 1) # Save for Correlation_R_squared_RMSE_MAE_SAD_Table for various values of N
+	
+	if(verbose) {
+	   cat("\n\'newScans' data frame with metadata saved to the .GlobalEnv\n\n")
+	   print(newScans[1:3, c(1:4, (ncol(newScans) - length(metaDataVar) - 3):ncol(newScans))])
+	}
     
-    # save(newScans, newScans.RAW, file = 'newScans.RData')
-     
     if(is.null(NumRdmModels))
         N <- length(Rdm_models)
     else
@@ -186,13 +191,16 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
       }
     }  
       
- 	assign("newScans", newScans , pos = 1) # Save for Correlation_R_squared_RMSE_MAE_SAD_Table for various values of N
-	
     Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median, na.rm = TRUE)[,2], 
        Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025, na.rm = TRUE)[,2],
        Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975, na.rm = TRUE)[,2]), 4)
-     
-    cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", N, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))    
+	 
+    if(verbose) {	 
+	   cat("\n\nPred_median:\n\n")  
+	   print(Pred_median[c(1:5, (nrow(Pred_median) - 5):nrow(Pred_median)), ])
+	   cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", N, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
+    }
+	
     data.frame(filenames = fileNames, Pred_median)
 }
 
