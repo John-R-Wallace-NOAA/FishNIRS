@@ -1,11 +1,16 @@
 
 
-###################################
-#       Need >= R ver 3.0         #
-###################################
+################################################################################################################################################################
+#       Need >= R ver 3.0                                                                                                                                      #
+#                                                                                                                                                              #
+# You will need a 'GITHUB_PAT' from GitHub set somewhere in R (If you need help, search the Web how to get one from GitHub.)                                   # 
+# Sys.setenv(GITHUB_PAT = "**************")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.  #
+# Sys.getenv("GITHUB_PAT")                                                                                                                                     #
+################################################################################################################################################################
+
 
 # ------------------------------------ Main User Setup ------------------------------------------------------------
-
+ 
  if(interactive()) {
        setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
  getwd()
@@ -13,7 +18,7 @@
  if(!interactive())   
        options(width = 120)      
        
-Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022")[3]
+Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019")[3]
 Spectra_Path <- "New_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 Predicted_Ages_Path <- "Predicted_Ages" # The NN predicted ages will go in the path defined below
 dir.create(Predicted_Ages_Path, showWarnings = FALSE)
@@ -29,6 +34,9 @@ Max_N_Spectra <- list(50, 200, 'All')[[2]]
 #  ----------------- Packages ------------------------
 if (!any(installed.packages()[, 1] %in% "R.utils")) 
      install.packages("R.utils") 
+	 
+if(!any(installed.packages()[, 1] %in% "openxlsx")) 
+       install.packages("openxlsx")     
 
 if (!any(installed.packages()[, 1] %in% "ggplot2")) 
      install.packages("ggplot2") 
@@ -73,14 +81,16 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+
 
 
 # =================================================================================================================================================================== 
@@ -108,22 +118,49 @@ if(Spectra_Set == "Sable_2017_2019") {
 
 # (3) Sablefish 2022, Combo survey
 if(Spectra_Set == "Sable_Combo_2022") { 
-   # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt
-   # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_5_Rdm_model_21_Dec_2023_08_14_19.RData'  # GPU Machine
-   # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-   # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-     NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-   NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
-               "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
-   opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-   Seed_Plot <- 707
-   
+    # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_15_Dec_2023_09_54_18.RData'  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt
+    # NN_Model <- 'FCNN Model/Sable_Combo_2022_FCNN_model_ver_1_5_Rdm_model_21_Dec_2023_08_14_19.RData'  # GPU Machine
+    # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+    # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+    # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N
+	
+    # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
+    #            "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
+    NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData")	
+	
+    Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
+    Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+    opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
+    Seed_Plot <- 707
 }  
 
-   
-# You will need a 'GITHUB_PAT' from GitHub set somewhere in R (If you need help, search the Web how to get one from GitHub.)
-# Sys.setenv(GITHUB_PAT = "**************")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.
-# Sys.getenv("GITHUB_PAT") 
+# (4) Sablefish 2021, Combo survey predicted with Sable 2022 Model
+if(Spectra_Set == "Sable_Combo_2021") { 
+    NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+    NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
+                "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
+    Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2021 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
+	# base::load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+    # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
+    Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+    opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
+    Seed_Plot <- 707
+}  
+
+# (5) Sablefish 2019, Combo survey predicted with Sable 2022 Model
+if(Spectra_Set == "Sable_Combo_2019") { 
+    NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+    NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
+                "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
+    Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2019 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
+	# base::load("C:/ALL_USR/JRW/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+    # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
+    Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+    opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
+    Seed_Plot <- 707
+}  
+
  
 #  --- Conda TensorFlow environment ---
 Conda_TF_Eniv <- ifelse(.Platform$OS.type == 'windows', "C:/m3/envs/tf", "/more_home/h_jwallace/Python/tf_cpu_only/bin")  # Change this path as needed
@@ -166,8 +203,14 @@ if(!exists('shortNameSuffix'))
 N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
 
 Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, 
-                               plot = plot, htmlPlotFolder = paste0('Predicted_Ages/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+                                Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
 dim(Model_Spectra_Meta)
+
+metadata <- Model_Spectra_Meta[, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))]
+dim(metadata)
+headTail(metadata, 3)
+
+# For testing Read_OPUS_Spectra():  Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
 
 
 ##### This is the main call to Predict_NN_Age() #####
@@ -179,15 +222,36 @@ dim(Model_Spectra_Meta)
 
 New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
                                     Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
-head(New_Ages, 5)
 dim(New_Ages)
+headTail(New_Ages)
+
+
 
 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
       
 
-# --- save() ages and write out to a CSV file ---
+# --- save ages and write out to a CSV file ---
 save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
-write.csv(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.csv'), row.names = FALSE)
+
+
+# metadata$length_cm <- metadata$weight_kg <- NULL   
+# metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
+metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975"))
+
+metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
+# metadata.wb # View WorkBook object
+openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
+openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
+# metadata.wb # View WorkBook object
+# Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
+openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
+
+#  -- Look length and weight vs TMA and each other -- 
+# sum(is.na(metadata$weight_kg))
+# browsePlot('plot.lowess(metadata$TMA, metadata$length_cm)', file = 'Sablefish Combo 2024 Length vs TMA.png')
+# browsePlot('plot.lowess(metadata$TMA, metadata$weight_kg)', file = 'Sablefish Combo 2024 Weight vs TMA.png')
+# browsePlot('plot.lowess(metadata$length_cm, metadata$weight_kg, 0.15)', file = 'Sablefish Combo 2024 Length vs Weight.png')
+
 
 
 # ----- Create plots with age estimates and quantile credible intervals -----
@@ -386,7 +450,7 @@ if(TMA_Ages) {
                       grid = FALSE, vertLineEachPoint = TRUE, col = "white")
            set.seed(Seed_Plot)
            points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
-           points(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model], New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = 19)
+           points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
                      
        ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
     } 
