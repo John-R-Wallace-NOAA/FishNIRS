@@ -262,7 +262,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
            Model_Spectra_Meta$Depth_prop_max <- (Model_Spectra_Meta$Depth_m - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))/(max(Model_Spectra_Meta$Depth_m, na.rm = TRUE) - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))
 		   
 		if(!is.null(Model_Spectra_Meta$Month))   
-		   Model_Spectra_Met$Month_Scaled <- Model_Spectra_Met$Month/12
+		   Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
 		   
         if(!is.null(Model_Spectra_Meta$Days_into_Year))
            Model_Spectra_Meta$Days_into_Year_prop_max <- (Model_Spectra_Meta$Days_into_Year - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))/(max(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE) - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))
