@@ -70,7 +70,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")    
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")  
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")   
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
     
@@ -132,7 +133,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta
     newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
     if(verbose) {
-       print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 5):(ncol(newScans.RAW)))])); cat("\n\n")
+	   print(headTail(newScans.RAW, 5))
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")    
     }
     
