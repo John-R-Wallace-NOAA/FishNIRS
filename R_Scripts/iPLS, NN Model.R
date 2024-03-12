@@ -65,6 +65,8 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")   
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")  
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/factor.f.R")
 
 # FishNIRS funtion
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
@@ -155,7 +157,7 @@ tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 
 }  ###
 
-# --- Create Model_Spectra.sg.iPLS and TMA_Vector for a spectra set ---
+# --- If missing create Model_Spectra.sg.iPLS and TMA_Vector for a spectra set ---
 { ###
 
 if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
@@ -499,7 +501,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
 # Load the data if needed
 base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')); print(dim(Model_Spectra.sg.iPLS))
 # base::load(paste0(Spectra_Set, '_TMA_Vector.RData')); print(length(TMA_Vector))
-base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) # Model_Spectra_Meta with SaveOutOties removed is only needed for the 'filenames' below
+base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) # Model_Spectra_Meta with SaveOutOties removed is only needed for TMA_Vector and the 'filenames' below
 base::load(paste0(Spectra_Set, '_SaveOutOties_Seed_727.RData')); print(length(SaveOutOties))
 
 Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ]; print(dim(Model_Spectra_Meta))
@@ -523,12 +525,11 @@ print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(M
 
 # --------- Trying 'Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg', 'Days_into_Year' to test in NN Model ------------------------------
 base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpAgesFramFeb2024.RData")  # From NWFSC Data Warehouse
-#                                                                                                                                                                                                               #         ****** Run 3 Results *********
-#                                                                                                                                                                                                                NIRS Scans Only: # SAD: 2201; RMSE: 2.8678 # Run 1
-#                                                                                                                                                                                                       Fish length and Otie Wgt: # SAD: 2050; RMSE: 2.7280
+                                                                                                                                                                                                       Fish length and Otie Wgt: # SAD: 2050; RMSE: 2.7280
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg')) # Very poor results
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))  # SAD: 2029; RMSE: 2.7678
-Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m')) # SAD: 2002; RMSE: 2.6742
+# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m')) # SAD: 2002; RMSE: 2.6742
+   Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, filenames = Model_Spectra_Meta$filenames, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Length_cm', 'Age'))
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Weight_kg') # SAD: 2088; RMSE: 2.7389
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Depth_m')  # SAD: 2042; RMSE: 2.7404
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Month_Scaled')  # SAD: ????; RMSE: ????
@@ -556,18 +557,27 @@ print(dim(na.omit(Model_Spectra.sg.iPLS)))
 ################################
 
 
-if(!is.null(Model_Spectra.sg.iPLS$Sex))
+if(!is.null(Model_Spectra.sg.iPLS$Sex)) {
    Model_Spectra.sg.iPLS$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra.sg.iPLS$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
+   Model_Spectra.sg.iPLS$Sex <- NULL
+}   
 
-if(!is.null(Model_Spectra.sg.iPLS$Depth_m))
+if(!is.null(Model_Spectra.sg.iPLS$Depth_m)) {
    Model_Spectra.sg.iPLS$Depth_prop_max <- (Model_Spectra.sg.iPLS$Depth_m - min(Model_Spectra.sg.iPLS$Depth_m))/(max(Model_Spectra.sg.iPLS$Depth_m) - min(Model_Spectra.sg.iPLS$Depth_m))
+   Model_Spectra.sg.iPLS$Depth_m <- NULL
+}   
 
-if(!is.null(Model_Spectra.sg.iPLS$Weight_kg))
+if(!is.null(Model_Spectra.sg.iPLS$Weight_kg)) {
    Model_Spectra.sg.iPLS$Weight_prop_max <- (Model_Spectra.sg.iPLS$Weight_kg - min(Model_Spectra.sg.iPLS$Weight_kg))/(max(Model_Spectra.sg.iPLS$Weight_kg) - min(Model_Spectra.sg.iPLS$Weight_kg))
+   Model_Spectra.sg.iPLS$Weight_kg <- NULL
+}   
 
-if(!is.null(Model_Spectra.sg.iPLS$Days_into_Year))
+if(!is.null(Model_Spectra.sg.iPLS$Days_into_Year)) {
    Model_Spectra.sg.iPLS$Days_into_Year_prop_max <- (Model_Spectra.sg.iPLS$Days_into_Year - min(Model_Spectra.sg.iPLS$Days_into_Year))/(max(Model_Spectra.sg.iPLS$Days_into_Year) - min(Model_Spectra.sg.iPLS$Days_into_Year))
+    Model_Spectra.sg.iPLS$Days_into_Year <- NULL
+}   
 
+print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 
 
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
@@ -580,10 +590,26 @@ num_folds <- 10
 
 # ------- Reduce model size to see the change in prediction ability ----------------------
 set.seed(Seed_Fold) 
-Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 250)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
-Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
-Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
-TMA_Vector <- Model_Spectra_Meta$TMA  
+#  Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 500)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
+#  Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
+#  Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
+
+print(Bin_Num <- Table(factor.f(Model_Spectra.sg.iPLS$Length_cm, breaks = c(0, 25, 45, 65, Inf))))
+print(Mid_Split <- (500 - Bin_Num[1] - Bin_Num[4])/2)
+
+Model_Spectra.sg.iPLS <- rbind(Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm <= 25 | Model_Spectra.sg.iPLS$Length_cm > 65, ], 
+                               Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 25 & Model_Spectra.sg.iPLS$Length_cm <= 45, ][sample(1:Bin_Num[2], floor(Mid_Split)), ], 
+                               Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 45 & Model_Spectra.sg.iPLS$Length_cm <= 65, ][sample(1:Bin_Num[2], ceiling(Mid_Split)), ])
+print(dim(Model_Spectra.sg.iPLS))
+
+TMA_Vector <- Model_Spectra.sg.iPLS$Age
+Filenames <- Model_Spectra.sg.iPLS$filenames
+
+Model_Spectra.sg.iPLS$Length_cm <- NULL
+Model_Spectra.sg.iPLS$Age <- NULL
+Model_Spectra.sg.iPLS$filenames <- NULL
+
+print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
 
 
 # --- Setup graphic windows ---
@@ -607,7 +633,7 @@ Seed_reps <- sample(1e7, Rdm_reps)
 # Start fresh or continue by loading a file with model iterations already finished (see the commented line with an example model file). 
 Rdm_models <- list() 
 Rdm_folds_index <- list()
-# base::load("Sable_Combo_2022_FCNN_model_ver_1_18_Rdm_model_6_Mar_2024_07_19_57.RData") 
+# base::load("Sable_Combo_2022_FCNN_model_ver_1_13_Rdm_model_8_Mar_2024_11_24_15.RData") 
 
 file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now in a hope that it can prehaps be fixed.
 
@@ -641,7 +667,6 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
    
        Model_Spectra.sg.iPLS.F <- Model_Spectra.sg.iPLS[-folds_index[[i]], ]
        TMA_Vector.F <- TMA_Vector[-folds_index[[i]]]
-       
        
        # Split the data into training set (2/3) and test set (1/3)
        set.seed(Seed_Data)
@@ -789,11 +814,10 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           # abline(h = c(0.2, 0.9), lty = 2, col ='grey39', lwd = 1.25)
           plot(1:length(RMSE), RMSE, col = 'green', type = 'b', ylab = "RMSE (green)", xlab = "Iteration Number")
           abline(h = 4, lty = 2, col ='grey39', lwd = 1.25)
-		  if(Iter > 3)
-             try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+		  try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
           abline(h = 0.2, lty = 2, col ='grey39', lwd = 1.25)
          
-          # Avoiding high SAD values at the beginning, and rarely during, a run.
+          # Avoiding high SAD values at the beginning, and rarely, during a run.
           SAD_plot <- SAD
           SAD_plot[SAD_plot > 1400] <- NA  # Extreme model runs can, on a very rare occasion, put the value of SAD above 1,400 beyond the initial runs
           try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
@@ -816,7 +840,6 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           break
        
        Iter_Best_Model <- sort.f(data.frame(SAD, RMSE, CA_diag, Iter = 1:Iter_Num), c(1, 3))[1, 4]  # Best model is when SAD is lowest, with ties broken by CA_diag
-       # Iter_Best_Model <- sort.f(data.frame(SAD, RMSE, CA_diag, Iter = 1:Iter_Num), c(3, 1))[1, 4]  # Best model is when SAD is lowest, with ties broken by CA_diag
        print(sort.f(data.frame(SAD, RMSE, CA_diag, Iter = 1:Iter_Num), c(1, 3)))
        cat(paste0('\n\nBest_Model Number = ', Iter_Best_Model, '\n\n'))
        
@@ -1002,7 +1025,7 @@ Pred_median <- r(data.frame(NN_Pred_Median = apply(y.fold.test.pred_RDM, 2, medi
                             Upper_Quantile_0.975 = apply(y.fold.test.pred_RDM, 2, quantile, probs = 0.975, na.rm = TRUE)), 4) 
 cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", length(Rdm_models), " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
  
-assign(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), data.frame(filenames = Model_Spectra_Meta$filenames, Pred_median, TMA = TMA_Vector), pos = 1)
+assign(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), data.frame(filenames = Filenames, Pred_median, TMA = TMA_Vector), pos = 1)
 save(list = paste0(Spectra_Set, '_NN_Pred_Median_TMA'), file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Pred_Median_TMA_', timeStamp(), '.RData'))
 
 
