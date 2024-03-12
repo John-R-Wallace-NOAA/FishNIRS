@@ -126,13 +126,17 @@ if(Spectra_Set == "Sable_Combo_2022") {
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
-	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_7_Mar_2024_01_02_58.RData"  # Sable_Combo_2022_NN_BEST_250N  !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
-	source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_7_Mar_2024_01_02_58.RData"  # Sable_Combo_2022_NN_BEST_250N  !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
+	# source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Mar_2024_17_31_10.RData"  # Sable_Combo_2022_NN_BEST_500N
+	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_12_Mar_2024_06_30_35.RData"  # Sable_Combo_2022_NN_BEST_500N_SR
 	
     # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
     #            "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
     # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData") # Sable_Combo_2022_NN_BEST_750N
-	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_7_Mar_2024_13_47_08.RData")	 # Sable_Combo_2022_NN_BEST_250N
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_7_Mar_2024_13_47_08.RData") # Sable_Combo_2022_NN_BEST_250N
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_8_Mar_2024_19_41_28.RData") # Sable_Combo_2022_NN_BEST_500N
+	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_12_Mar_2024_11_35_48.RData")  # Sable_Combo_2022_NN_BEST_500N_SR. Last of lower case: length_prop_max
 	
     Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
     Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
@@ -213,12 +217,12 @@ dim(Model_Spectra_Meta)
 
 metadata <- Model_Spectra_Meta[, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))]
 dim(metadata)
-headTail(metadata, 3)
+headTail(metadata, 6)
 
 # For testing Read_OPUS_Spectra():  Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
 
 
-##### This is the main call to Predict_NN_Age() #####
+##### This is the main call to Predict_NN_Age() function #####
 # New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
 #      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # One random model for faster testing
 
