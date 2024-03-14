@@ -830,7 +830,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           abline(h = 4, lty = 2, col ='grey39', lwd = 1.25)
 		  
 		  if(Iter < 5) 
-		     plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number")
+		     try(plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
 		  else
 		     try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
           abline(h = 0.2, lty = 2, col ='grey39', lwd = 1.25)
@@ -840,7 +840,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           SAD_plot[SAD_plot > 1400] <- NA  # Extreme model runs can, on a very rare occasion, put the value of SAD above 1,400 beyond the initial runs
 		  
 		  if(Iter < 5) 
-		     plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number")
+		     try(plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
 		  else
              try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
           abline(h = 950, lty = 2, col ='grey39', lwd = 1.25)
