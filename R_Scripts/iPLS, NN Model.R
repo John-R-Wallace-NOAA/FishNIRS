@@ -1,6 +1,11 @@
 
 # --- Initial setup  (The curly brakets with a '###' comment and without indented lines directly below them, are there to enable the hiding of code sections using Notepad++.) ---
 #            (For those who dislike Rstudio,  Notepad++ is here: https://notepad-plus-plus.org/  and NppToR that passes R code from Notepad++ to R is here: https://sourceforge.net/projects/npptor/)
+
+# You will need a 'GITHUB_PAT' from GitHub set somewhere in R (If you need help, search the Web how to get one from GitHub.)
+# Sys.setenv(GITHUB_PAT = "**************")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.
+Sys.getenv("GITHUB_PAT") 
+
 { ###
 
 if(interactive()) 
@@ -119,10 +124,6 @@ lib(RcppArmadillo)
 
 # --- Setup for TensorFlow and Keras ---
 
-# You will need a 'GITHUB_PAT' from GitHub set somewhere in R (If you need help, search the Web how to get one from GitHub.)
-# Sys.setenv(GITHUB_PAT = "**************")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.
-Sys.getenv("GITHUB_PAT") 
- 
 #  --- Conda TensorFlow environment ---
 Conda_TF_Eniv <- ifelse(.Platform$OS.type == 'windows', "C:/m3/envs/tf", "/more_home/h_jwallace/Python/tf_cpu_only/bin")  # Change these paths as needed
 Sys.setenv(RETICULATE_PYTHON = Conda_TF_Eniv) 
@@ -520,16 +521,18 @@ TMA_Vector <- Model_Spectra_Meta$TMA
 print(dim(Model_Spectra.sg.iPLS))
 # print(Model_Spectra.sg.iPLS$length_prop_max[1:4])
 # print(Model_Spectra.sg.iPLS$structure_weight_dg[1:4])
-print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 
-# --------- Trying 'Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg', 'Days_into_Year' to test in NN Model ------------------------------
+# --------- Special code to test 'Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg', 'Days_into_Year', and reduced model size in the NN Model with the same scans in Model_Spectra.sg.iPLS ------------------------------
 base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpAgesFramFeb2024.RData")  # From NWFSC Data Warehouse
-                                                                                                                                                                                                       Fish length and Otie Wgt: # SAD: 2050; RMSE: 2.7280
+
+
+#     ===>                                                                                                                                                                                              Fish length and Otie Wgt: # SAD: 2050; RMSE: 2.7280
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg')) # Very poor results
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))  # SAD: 2029; RMSE: 2.7678
-# Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m')) # SAD: 2002; RMSE: 2.6742
-   Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, filenames = Model_Spectra_Meta$filenames, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Length_cm', 'Age'))
+Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m')) # SAD: 2002; RMSE: 2.6742
+#    Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, filenames = Model_Spectra_Meta$filenames, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Length_cm', 'Age'))
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Weight_kg') # SAD: 2088; RMSE: 2.7389
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Depth_m')  # SAD: 2042; RMSE: 2.7404
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Month_Scaled')  # SAD: ????; RMSE: ????
@@ -537,7 +540,7 @@ base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpA
 
 Model_Spectra.sg.iPLS$specimen_id <- NULL  # specimen_id only needed for the matching above
 
-print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 # Check for missing data
 print(dim(Model_Spectra.sg.iPLS))
@@ -553,7 +556,7 @@ print(dim(na.omit(Model_Spectra.sg.iPLS)))
 #  Model_Spectra.sg.iPLS$Sex[is.na(Model_Spectra.sg.iPLS$Sex)] <- c('M','F', 'M')
 
 #  print(dim(na.omit(Model_Spectra.sg.iPLS)))
-#  print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+#  print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 ################################
 
 
@@ -577,39 +580,47 @@ if(!is.null(Model_Spectra.sg.iPLS$Days_into_Year)) {
     Model_Spectra.sg.iPLS$Days_into_Year <- NULL
 }   
 
-print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
-
+print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
-# Split the data into folds, spitting the remainder of an un-even division into the first folds, one otie per fold until finished
-Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
+Seed_Fold <- 727 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
                  #      Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
-num_folds <- 10
-
 
 # ------- Reduce model size to see the change in prediction ability ----------------------
 set.seed(Seed_Fold) 
-#  Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 500)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
-#  Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
-#  Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
 
-print(Bin_Num <- Table(factor.f(Model_Spectra.sg.iPLS$Length_cm, breaks = c(0, 25, 45, 65, Inf))))
-print(Mid_Split <- (500 - Bin_Num[1] - Bin_Num[4])/2)
+# Random selection
+Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
 
-Model_Spectra.sg.iPLS <- rbind(Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm <= 25 | Model_Spectra.sg.iPLS$Length_cm > 65, ], 
-                               Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 25 & Model_Spectra.sg.iPLS$Length_cm <= 45, ][sample(1:Bin_Num[2], floor(Mid_Split)), ], 
-                               Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 45 & Model_Spectra.sg.iPLS$Length_cm <= 65, ][sample(1:Bin_Num[2], ceiling(Mid_Split)), ])
+Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
 print(dim(Model_Spectra.sg.iPLS))
+print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
-TMA_Vector <- Model_Spectra.sg.iPLS$Age
-Filenames <- Model_Spectra.sg.iPLS$filenames
+# Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
+# print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
 
-Model_Spectra.sg.iPLS$Length_cm <- NULL
-Model_Spectra.sg.iPLS$Age <- NULL
-Model_Spectra.sg.iPLS$filenames <- NULL
+TMA_Vector <- TMA_Vector[Rdm_Oties]
+print(length(TMA_Vector))
 
-print(Model_Spectra.sg.iPLS[1:3, c(1:2, (ncol(Model_Spectra.sg.iPLS) - 5):ncol(Model_Spectra.sg.iPLS))])
+
+# Stratified random selection
+#   print(Bin_Num <- Table(factor.f(Model_Spectra.sg.iPLS$Length_cm, breaks = c(0, 25, 45, 65, Inf))))
+#   print(Mid_Split <- (500 - Bin_Num[1] - Bin_Num[4])/2)
+#   
+#   Model_Spectra.sg.iPLS <- rbind(Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm <= 25 | Model_Spectra.sg.iPLS$Length_cm > 65, ], 
+#                                  Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 25 & Model_Spectra.sg.iPLS$Length_cm <= 45, ][sample(1:Bin_Num[2], floor(Mid_Split)), ], 
+#                                  Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 45 & Model_Spectra.sg.iPLS$Length_cm <= 65, ][sample(1:Bin_Num[2], ceiling(Mid_Split)), ])
+#   print(dim(Model_Spectra.sg.iPLS))
+#   
+#   TMA_Vector <- Model_Spectra.sg.iPLS$Age
+#   fileNames <- Model_Spectra.sg.iPLS$filenames
+#   
+#   Model_Spectra.sg.iPLS$Length_cm <- NULL
+#   Model_Spectra.sg.iPLS$Age <- NULL
+#   Model_Spectra.sg.iPLS$filenames <- NULL
+#   
+#   print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 
 # --- Setup graphic windows ---
@@ -622,9 +633,12 @@ dev.new(width = 10, height = 10) # 6
 dev.new(width = 10, height = 10) # 7
 
 
-# = = = = = = = = = = = = = = = = = Pick number of random reps (Rdm_reps) and run the NN code between the next '= = =' lines and expect long run times = = = = = = = = =
+# = = = = = = Pick number of random reps (Rdm_reps), number of folds (num_folds), and iteration number (Iter_Num), then run the NN code to the next '= = =' line and expect long run times = = = = = = = = =
     
-Rdm_reps <- 20    
+Rdm_reps <- 20
+num_folds <- 10
+Iter_Num <- 8
+
 # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
 Seed_Main <- Seed_Fold + 20 # Seed 747 used for Fish_Len_Otie_Wgt_Run_2. Seed_Main <- 707 used for previous runs of Sable_2022 before 28 Dec 2023  # Reducing the number of seeds will be considered later
 set.seed(Seed_Main) 
@@ -644,7 +658,8 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 
    Seed_Data <- Seed_reps[j]
    
-   # Split the data into folds based on the current seed which is dictated by Seed_Main (see above)
+   # Split the data into folds, spitting the remainder of an un-even division into the first folds, one otie per fold until finished.
+   #   The split is based on the current seed which is dictated by Seed_Main (see above).
    set.seed(Seed_Data)
    index_org <- 1:nrow(Model_Spectra.sg.iPLS)
    (fold_size_min <- floor(length(index_org)/num_folds))
@@ -692,7 +707,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
        # -- Don't reset Iter, Cor, CA_diag, SAD, or .Random.seed when re-starting the same run ---
        tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU); Seed_Model  # Trying to this here and above (see the help for: tensorflow::set_random_seed)
        set.seed(Seed_Data); Seed_Data # Re-setting the 'data' seed here to know where the model starts, also the Keras backend needs to cleared and the model reloaded - see above.
-       Iter_Num <- 8
+	   
        Iter <- 0
        Cor <- RMSE <- CA_diag <- SAD <- saveModels <- NULL
        saveModels_List <- list()
@@ -810,17 +825,24 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
          
           dev.set(2)
           par(mfrow = c(3, 1))
-          # plot(1:length(Cor), sqrt(Cor), col = 'green', ylim = c(-0.03, 1.03), ylab = "Correlation (green)", xlab = "Iteration Number")
-          # abline(h = c(0.2, 0.9), lty = 2, col ='grey39', lwd = 1.25)
+          
           plot(1:length(RMSE), RMSE, col = 'green', type = 'b', ylab = "RMSE (green)", xlab = "Iteration Number")
           abline(h = 4, lty = 2, col ='grey39', lwd = 1.25)
-		  try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+		  
+		  if(Iter < 5) 
+		     plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number")
+		  else
+		     try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
           abline(h = 0.2, lty = 2, col ='grey39', lwd = 1.25)
          
           # Avoiding high SAD values at the beginning, and rarely, during a run.
           SAD_plot <- SAD
           SAD_plot[SAD_plot > 1400] <- NA  # Extreme model runs can, on a very rare occasion, put the value of SAD above 1,400 beyond the initial runs
-          try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
+		  
+		  if(Iter < 5) 
+		     plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number")
+		  else
+             try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
           abline(h = 950, lty = 2, col ='grey39', lwd = 1.25)
           
           print(saveName <- paste0(Spectra_Set, '_', paste(get.subs(model_Name, "_")[-2], collapse = "_"), '_SM_', Seed_Model, '_RI_', j, '_LR_', 
@@ -937,7 +959,6 @@ c(Delta = Delta, Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.tes
 #      Delta Correlation   R_squared        RMSE         MAE         SAD 
 #  -0.050000    0.965315    0.931834    2.744340    1.374090 2079.000000 
 
-
   
 
 # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds 
@@ -1025,7 +1046,7 @@ Pred_median <- r(data.frame(NN_Pred_Median = apply(y.fold.test.pred_RDM, 2, medi
                             Upper_Quantile_0.975 = apply(y.fold.test.pred_RDM, 2, quantile, probs = 0.975, na.rm = TRUE)), 4) 
 cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", length(Rdm_models), " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
  
-assign(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), data.frame(filenames = Filenames, Pred_median, TMA = TMA_Vector), pos = 1)
+assign(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), data.frame(filenames = fileNames, Pred_median, TMA = TMA_Vector), pos = 1)
 save(list = paste0(Spectra_Set, '_NN_Pred_Median_TMA'), file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Pred_Median_TMA_', timeStamp(), '.RData'))
 
 
