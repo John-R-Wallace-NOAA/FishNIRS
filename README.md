@@ -10,14 +10,6 @@ See the code in 'Setting_up_TensorFlow_Conda_Environment_under_Windows' to setup
 A TensorFlow Conda environment setup under Windows 10 also works under Windows 11 and can be copied and shared (zip first since there are a lot of small files).  However, the Windows 10 Conda environment does not work in R on a client being served by Windows Server 2019, but I do include a partial solution in 'Install TensorFlow on Win Server 2019 Conda Env.md' for R and another that works fully under Python with GPU support. A conda Keras install would be needed inside the environmnent to run Keras under Python, see:  https://www.activestate.com/resources/quick-reads/what-is-a-keras-model/   
 <br/> 
 <br/>        
- Where you will need to install:
- 
-    conda install -y -c anaconda keras
-    conda install -y -c anaconda matplotlib
-    conda install -y -c anaconda scikit-learn
-         
-
-
 
 ---
 
