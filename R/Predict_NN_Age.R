@@ -128,7 +128,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     }
     
     # Find the metadata variables that are in the NN Model
-    (metaDataVar <- (1:length(SG_Variables_Selected))[is.na(as.numeric(substring(SG_Variables_Selected, 2)))])
+    metaDataVar <- (1:length(SG_Variables_Selected))[is.na(as.numeric(substring(SG_Variables_Selected, 2)))]
+    print(SG_Variables_Selected[metaDataVar])
    
     # Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta
     newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
@@ -160,16 +161,22 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     
     # all(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
   
+    dim(newScans.RAW) # All wavebands
+    length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))])  # Those wavebands selected via SG
+  
     trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
     if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
          shell(paste0("echo.  > ", Predicted_Ages_Path, "\\ERROR_READ_ME.txt"))
          shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "\\ERROR.txt"))
          stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
     }
-    
-    # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))))
+    dim(trySgVarSel)
+	
+    # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))), length(metaDataVar))
    
     newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
+	dim(newScans)
+	headTail(newScans, 3, 3, 3, 5)
 	
  	assign("newScans", newScans , pos = 1) # Save for Correlation_R_squared_RMSE_MAE_SAD_Table for various values of N
 	
@@ -202,6 +209,6 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
 	   cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", N, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
     }
 	
-    data.frame(filenames = fileNames, Pred_median)
+    list(New_Ages = data.frame(filenames = fileNames, Pred_median), newScans.pred.ALL = newScans.pred.ALL)
 }
 
