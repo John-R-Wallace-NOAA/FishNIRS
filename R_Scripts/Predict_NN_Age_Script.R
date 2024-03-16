@@ -125,18 +125,26 @@ if(Spectra_Set == "Sable_Combo_2022") {
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
+	
+	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_3 !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_7_Mar_2024_01_02_58.RData"  # Sable_Combo_2022_NN_BEST_250N  !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
-	# source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above
+	source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above. New version has Sex_prop_max, Depth_prop_max, Weight_prop_max, and Length_prop_max (which was length_prop_max until last of below)
+	
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Mar_2024_17_31_10.RData"  # Sable_Combo_2022_NN_BEST_500N
-	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_12_Mar_2024_06_30_35.RData"  # Sable_Combo_2022_NN_BEST_500N_SR
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_12_Mar_2024_06_30_35.RData"  # Sable_Combo_2022_NN_BEST_500N_SR 
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_14_Mar_2024_16_05_42.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_1  # Last of lower case: length_prop_max
+	lower_case_length_prop_max <- TRUE
+	
 	
     # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
-    #            "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
-    # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData") # Sable_Combo_2022_NN_BEST_750N
+    #            "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")    
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_7_Mar_2024_13_47_08.RData") # Sable_Combo_2022_NN_BEST_250N
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_8_Mar_2024_19_41_28.RData") # Sable_Combo_2022_NN_BEST_500N
-	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_12_Mar_2024_11_35_48.RData")  # Sable_Combo_2022_NN_BEST_500N_SR. Last of lower case: length_prop_max
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_12_Mar_2024_11_35_48.RData")  # Sable_Combo_2022_NN_BEST_500N_SR. 
+	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData") # Sable_Combo_2022_NN_BEST_750N_Run_3
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_14_Mar_2024_16_45_50.RData") # Sable_Combo_2022_NN_BEST_750N_Run_1 # Last of lower case: length_prop_max
+	
+	dim(NN_Pred_Median_TMA)
 	
     Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
     Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
@@ -194,6 +202,8 @@ cat("\n\n")
 
 k_clear_session() 
 
+getwd()
+Spectra_Set
 
 # ============= Pause here when interactively submitting code to R =================
 
@@ -208,16 +218,20 @@ if(exists('shortNameSuffix') && shortNameSuffix != 'Year')
 if(!exists('shortNameSuffix'))
     shortNameSuffix. <- NULL
 
-    
+# Maximum number of wavebands to show in the spectra figure
 N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
 
 Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, 
                                 Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
 dim(Model_Spectra_Meta)
 
+# Change 'Length_prop_max' to 'length_prop_max' if flag is set above
+if(lower_case_length_prop_max)
+    names(Model_Spectra_Meta)[grep("Length_prop_max", names(Model_Spectra_Meta))] <- "length_prop_max"
+
+# Extract the metadata
 metadata <- Model_Spectra_Meta[, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))]
-dim(metadata)
-headTail(metadata, 6)
+headTail(metadata, 2)
 
 # For testing Read_OPUS_Spectra():  Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
 
@@ -229,10 +243,17 @@ headTail(metadata, 6)
 # New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj, opusReader = opusReader, 
 #    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
 
-New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
+New_Ages_Pred <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
                                     Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
-dim(New_Ages)
+
+New_Ages <- New_Ages_Pred[['New_Ages']]
+print(New_Ages[is.na(New_Ages$NN_Pred_Median), ])
+New_Ages <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
 headTail(New_Ages)
+
+newScans.pred.ALL <- New_Ages_Pred[['newScans.pred.ALL']]
+headTail(newScans.pred.ALL, 3, 3)
+
 
 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
      
@@ -317,6 +338,7 @@ if(TMA_Ages) {
     
     # --- Save ages ---
     save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
+	save(newScans.pred.ALL, file = paste0(Predicted_Ages_Path, '/newScans.pred.ALL, ', Date(" "), '.RData'))
 	
 	# --- Save metadata to a new NIRS_Scanning_Session_Report
     # metadata$length_cm <- metadata$weight_kg <- NULL   
@@ -459,8 +481,7 @@ if(TMA_Ages) {
     # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA, highlighting those oties that were left out of the NN model - if any --
 	
 	#  Look at the oties the were used in the NN model
-    dim(NN_Pred_Median_TMA)
-	headTail(NN_Pred_Median_TMA, 2)
+   	headTail(NN_Pred_Median_TMA, 2)
           
     # Restrict new ages to those that have predictions from the NN model		 
     New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
