@@ -186,9 +186,9 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
 	}
     
     if(is.null(NumRdmModels))
-        N <- length(Rdm_models)
+        (N <- length(Rdm_models))
     else
-        N <- NumRdmModels
+        (N <- NumRdmModels)
   
     newScans.pred.ALL <- NULL
     for(j in 1:N) {
@@ -198,12 +198,13 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
              newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
       }
     }  
-      
     
     Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median, na.rm = TRUE)[,2], 
           Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025, na.rm = TRUE)[,2],
           Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975, na.rm = TRUE)[,2],
     	  Num_of_Full_10_Fold_Models = aggregate(list(N = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), function(x) length(x)/10 )[,2]), 4)
+		  
+    New_Ages <- data.frame(filenames = fileNames, Pred_median)		  
  
     if(verbose) {	 
        cat("\n\nPred_median:\n\n")  
@@ -211,6 +212,6 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
        cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", nrow(newScans.pred.ALL)/nrow(New_Ages)/10, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
     }
 	
-    list(New_Ages = data.frame(filenames = fileNames, Pred_median), newScans.pred.ALL = newScans.pred.ALL)
+    list(New_Ages = New_Ages, newScans.pred.ALL = newScans.pred.ALL)
 }
 
