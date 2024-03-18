@@ -532,7 +532,7 @@ base::load("C:\\ALL_USR\\JRW\\SIDT\\Get Otie Info from Data Warehouse\\selectSpA
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg')) # Very poor results
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))  # SAD: 2029; RMSE: 2.7678
 Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m')) # SAD: 2002; RMSE: 2.6742
-#    Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, filenames = Model_Spectra_Meta$filenames, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Length_cm', 'Age'))
+#    Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, filenames = Model_Spectra_Meta$filenames, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Length_cm', 'Age')) # Stratified Random
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Weight_kg') # SAD: 2088; RMSE: 2.7389
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Depth_m')  # SAD: 2042; RMSE: 2.7404
 # Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Month_Scaled')  # SAD: ????; RMSE: ????
@@ -584,7 +584,7 @@ print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
-Seed_Fold <- 727 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
+Seed_Fold <- 747 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
                  #      Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
 
 # ------- Reduce model size to see the change in prediction ability ----------------------
@@ -602,6 +602,9 @@ print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 TMA_Vector <- TMA_Vector[Rdm_Oties]
 print(length(TMA_Vector))
+
+fileNames = Model_Spectra_Meta$filenames[Rdm_Oties]
+print(length(fileNames))
 
 
 # Stratified random selection
@@ -623,6 +626,7 @@ print(length(TMA_Vector))
 #   print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 
+
 # --- Setup graphic windows ---
 graphics.off()  
 dev.new(width = 14, height = 6) #2
@@ -640,14 +644,14 @@ num_folds <- 10
 Iter_Num <- 8
 
 # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
-Seed_Main <- Seed_Fold + 20 # Seed 747 used for Fish_Len_Otie_Wgt_Run_2. Seed_Main <- 707 used for previous runs of Sable_2022 before 28 Dec 2023  # Reducing the number of seeds will be considered later
+Seed_Main <- Seed_Fold + 20 # Seed_Fold 747 used for Fish_Len_Otie_Wgt_Run_2. Seed_Main <- 707 used for previous runs of Sable_2022 before 28 Dec 2023  # Reducing the number of seeds will be considered later
 set.seed(Seed_Main) 
 Seed_reps <- sample(1e7, Rdm_reps)
 
 # Start fresh or continue by loading a file with model iterations already finished (see the commented line with an example model file). 
 Rdm_models <- list() 
 Rdm_folds_index <- list()
-# base::load("Sable_Combo_2022_FCNN_model_ver_1_13_Rdm_model_8_Mar_2024_11_24_15.RData") 
+# base::load("Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_13_Mar_2024_19_24_01.RData") 
 
 file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now in a hope that it can prehaps be fixed.
 
@@ -778,7 +782,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           dev.set(3)
           print(plot(history))
 		  if(file.exists('NN_Verbose_Flag.txt'))
-		     browsePlot('print(plot(history))', file = paste0("NN_History_Iter_", Iter)) # Save NN History figures
+		     browsePlot('print(plot(history))', file = paste0("NN_History_Iter_", Iter, ".png")) # Save NN History figures
               
           # Predict using the test set; plot, create statistics, and create an agreement table
           y.test.pred <- predict(model, x.test.array)
@@ -885,13 +889,8 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 
    Rdm_models[[j]] <- Fold_models # List of lists being assigned to an element of a list - the best model for each fold (10 or other used) within the jth random rep
    Rdm_folds_index[[j]] <- folds_index # List of vectors being assigned to an element of a list - the index for each fold (10 or other used) within the jth random rep
-   
-   SG_Variables_Selected <- names(Model_Spectra.sg.iPLS)
-   roundingDelta <- Delta
-
-   save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
-         Rdm_folds_index, SG_Variables_Selected, roundingDelta, file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Rdm_model_', timeStamp(), '.RData'))
-   
+  
+  
    x.fold.test.ALL <- NULL
    y.fold.test.ALL <- NULL
    y.fold.test.pred.ALL <- NULL
@@ -973,6 +972,13 @@ print(Delta_Table <- data.frame(Delta_Table))
   
 # Best Delta from table above
 (Delta <- Delta_Table$Delta[order(Delta_Table$SAD, Delta_Table$RMSE)[1]])
+
+SG_Variables_Selected <- names(Model_Spectra.sg.iPLS)
+roundingDelta <- Delta
+
+save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
+         Rdm_folds_index, SG_Variables_Selected, roundingDelta, file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Rdm_model_', timeStamp(), '.RData'))
+
 
 # Agreement Figures (standard and zoomed) using the best delta from above
 # dev.new(width = 11, height = 8) # R plot window version
