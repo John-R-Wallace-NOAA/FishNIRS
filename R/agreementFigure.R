@@ -57,8 +57,8 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n"))
   
    plot(X, Y, main = main,
-      xlab = paste0(xlab,': RMSE = ', signif(sqrt(mean((Predicted.rd - Obs)^2, na.rm = TRUE)), 6), '; SAD = ', 
-                    signif(sum(abs(Predicted.rd - Obs)), 6), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
+      xlab = paste0(xlab, ': R^2 = ', format(signif(cor(Predicted.rd, Obs)^2, 4), nsmall = 4), '; RMSE = ', format(signif(sqrt(mean((Predicted.rd - Obs)^2, na.rm = TRUE)), 4), nsmall = 4), '; SAD = ', 
+                    signif(sum(abs(Predicted.rd - Obs)), 4), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
                     
    abline(0, 1, col = col.alpha('grey', ifelse(full, 0.50, 0.35)))
    
@@ -69,3 +69,4 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
                       ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 3 | Agreement_Table$Observed == Agreement_Table$Predicted - 3 |
                              Agreement_Table$Observed == Agreement_Table$Predicted + 4 | Agreement_Table$Observed == Agreement_Table$Predicted - 4, 'green', 'navyblue'))))   
 }
+
