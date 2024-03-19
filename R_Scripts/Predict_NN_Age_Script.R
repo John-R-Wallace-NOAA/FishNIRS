@@ -59,7 +59,11 @@ library(keras)
 
 # --- Download functions from GitHub ---
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
-          " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+          '   # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git()   '
+		  '   # Example to save a function to the working directory:   '
+          '   # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/rgit/master/R/gitAFile.R")   '
+          '   # gitAFile("John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R", File = "browsePlot.R")   '
+		  
           if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
           File.ASCII <- tempfile()
           if(type == "function")
@@ -77,6 +81,7 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           }  
    }
 
+
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/load.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
@@ -87,10 +92,12 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWTool
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
 
+
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+
 
 getwd()
 Spectra_Set
@@ -126,13 +133,14 @@ if(Spectra_Set == "Sable_Combo_2022") {
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
 	
-	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_3 !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_3 !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_7_Mar_2024_01_02_58.RData"  # Sable_Combo_2022_NN_BEST_250N  !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
-	source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above. New version has Sex_prop_max, Depth_prop_max, Weight_prop_max, and Length_prop_max (which was length_prop_max until last of below)
+	# source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above. New version has Sex_prop_max, Depth_prop_max, Weight_prop_max, and Length_prop_max (which was length_prop_max until last of below)
 	
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Mar_2024_17_31_10.RData"  # Sable_Combo_2022_NN_BEST_500N
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_12_Mar_2024_06_30_35.RData"  # Sable_Combo_2022_NN_BEST_500N_SR 
-	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_14_Mar_2024_16_05_42.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_1  # Last of lower case: length_prop_max
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_14_Mar_2024_16_05_42.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_1  
+	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_18_Mar_2024_09_19_27.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_2  # Last of lower case: length_prop_max
 	lower_case_length_prop_max <- TRUE
 	
 	
@@ -141,8 +149,9 @@ if(Spectra_Set == "Sable_Combo_2022") {
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_7_Mar_2024_13_47_08.RData") # Sable_Combo_2022_NN_BEST_250N
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_8_Mar_2024_19_41_28.RData") # Sable_Combo_2022_NN_BEST_500N
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_12_Mar_2024_11_35_48.RData")  # Sable_Combo_2022_NN_BEST_500N_SR. 
-	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData") # Sable_Combo_2022_NN_BEST_750N_Run_3
-	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_14_Mar_2024_16_45_50.RData") # Sable_Combo_2022_NN_BEST_750N_Run_1 # Last of lower case: length_prop_max
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData") # Sable_Combo_2022_NN_BEST_750N_Run_3
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_14_Mar_2024_16_45_50.RData") # Sable_Combo_2022_NN_BEST_750N_Run_1 
+	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_18_Mar_2024_10_45_07.RData") # Sable_Combo_2022_NN_BEST_750N_Run_2 # Last of lower case: length_prop_max
 	
 	dim(NN_Pred_Median_TMA)
 	
@@ -265,17 +274,16 @@ headTail(newScans.pred.ALL, 3, 3)
 # browsePlot('plot.lowess(metadata$length_cm, metadata$weight_kg, 0.15)', file = 'Sablefish Combo 2024 Length vs Weight.png')
 
 
-# ----- Extract the rounding Delta -----
-Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
-New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
-cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
-
-
 # --- If TMA ages are not available ---
 if(!TMA_Ages) {
 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
 	
+    # ----- Extract the rounding Delta -----
+    Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
+    New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
+    cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
+   
     # --- Save ages ---
     save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
 	
@@ -328,13 +336,42 @@ if(TMA_Ages) {
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
+	
+	# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/rgit/master/R/gitAFile.R")  
+    # gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R", File = "agreementFigure.R")  
   
     New_Ages$TMA <- NULL # Clear old TMA before updating
     if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
         New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
     New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
     headTail(New_Ages)
-	cor(New_Ages$TMA, New_Ages$NN_Pred_Median)
+	cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2  # R Squared
+	
+    
+	if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
+	    # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds. A new Delta (likely the same) can be found here since the TMA ages are available.
+        Delta_Table <- NULL
+        for (Delta. in seq(0, -0.45, by  = -0.05)) {
+          # cat("\n\n")
+          # print(c(Delta = Delta., Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
+          Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Correlation_R_squared_RMSE_MAE_SAD(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
+        }
+	    
+        print(Delta_Table <- data.frame(Delta_Table)) 
+          
+        # Best Delta from table above
+		(Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$RMSE))[1]])
+		cat("\nBest Delta from the table above", Delta, "\n\n")
+    
+	} else {
+	    # ----- Extract the rounding Delta -----
+        Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
+        New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
+        cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
+    }
+	
+    New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
+    cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
     
     # --- Save ages ---
     save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
