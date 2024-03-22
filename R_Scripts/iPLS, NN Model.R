@@ -6,7 +6,8 @@
 # Sys.setenv(GITHUB_PAT = "**************")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.
 Sys.getenv("GITHUB_PAT") 
 
-{ ###
+# --- Initial setup ---
+{ ### 
 
 if(interactive()) 
       setwd(ifelse(.Platform$OS.type == 'windows', "C:/ALL_USR/JRW/SIDT/Train_NN_Model", "/more_home/h_jwallace/SIDT/Train_NN_Models"))   # Change path to the Spectra Set's .GlobalEnv as needed
@@ -138,9 +139,11 @@ if(.Platform$OS.type != 'windows') {
 
 
 # Test to see if  TensorFlow is working in R
+ cat("\n\n"); print(tf_config()); cat("\n")
+
 a <- tf$Variable(5.56)
 b <- tf$Variable(2.7)
-a + b
+print(a + b)
 
 k_clear_session() 
 
@@ -154,11 +157,12 @@ Seed_Model <- c(777, 747, 727, 787, 797)[3]
 model_Name <- c('FCNN_model_ver_1', 'CNN_model_ver_5', 'CNN_model_2D')[1]
  
 Disable_GPU <- model_Name == 'FCNN_model_ver_1' # Only using the CPU is faster for the FCNN model but slower for CNN_model_ver_5, at least on Sablefish with data from 2017 and 2019.
+cat("\nDisable_GPU =", Disable_GPU, "\n\n")
 tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU)
 
 }  ###
 
-# --- If missing create Model_Spectra.sg.iPLS and TMA_Vector for a spectra set ---
+# --- If Model_Spectra.sg.iPLS and TMA_Vector are missing for the current spectra set, create them now ---
 { ###
 
 if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
@@ -508,6 +512,10 @@ base::load(paste0(Spectra_Set, '_SaveOutOties_Seed_727.RData')); print(length(Sa
 Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ]; print(dim(Model_Spectra_Meta))
 print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
 TMA_Vector <- Model_Spectra_Meta$TMA 
+print(length(TMA_Vector))
+
+fileNames = Model_Spectra_Meta$filenames
+print(length(fileNames))
 
 # ----- Remove both metadata columns for testing  -----
 # Model_Spectra.sg.iPLS$length_prop_max <- Model_Spectra.sg.iPLS$structure_weight_dg <- NULL
@@ -540,7 +548,14 @@ Model_Spectra.sg.iPLS <- match.f(data.frame(Model_Spectra.sg.iPLS, specimen_id =
 
 Model_Spectra.sg.iPLS$specimen_id <- NULL  # specimen_id only needed for the matching above
 
-print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
+# ---- Metadata only model run----
+    # Metadata only with only 15 oties removed - commented out the random selection code below so that the number oties is not reduced
+    Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[, (grep('length_prop_max', names(Model_Spectra.sg.iPLS))):ncol(Model_Spectra.sg.iPLS)]
+    headTail(Model_Spectra.sg.iPLS)
+
+
+
+headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5)
 
 # Check for missing data
 print(dim(Model_Spectra.sg.iPLS))
@@ -584,30 +599,30 @@ print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
-Seed_Fold <- 747 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
+Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
                  #      Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
 
 # ------- Reduce model size to see the change in prediction ability ----------------------
 set.seed(Seed_Fold) 
 
-# Random selection
-Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
+# --- Random selection of a reduced number of oties ---
+#  Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  # nrow(Model_Spectra.sg.iPLS) for Sablefish 2022 is 1,513 
+#  
+#  Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
+#  print(dim(Model_Spectra.sg.iPLS))
+#  print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
+#  
+#  # Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
+#  # print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
+#  
+#  TMA_Vector <- TMA_Vector[Rdm_Oties]
+#  print(length(TMA_Vector))
+#  
+#  fileNames = Model_Spectra_Meta$filenames[Rdm_Oties]
+#  print(length(fileNames))
+ 
 
-Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
-print(dim(Model_Spectra.sg.iPLS))
-print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
-
-# Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
-# print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
-
-TMA_Vector <- TMA_Vector[Rdm_Oties]
-print(length(TMA_Vector))
-
-fileNames = Model_Spectra_Meta$filenames[Rdm_Oties]
-print(length(fileNames))
-
-
-# Stratified random selection
+# --- Stratified random selection of a reduced number of oties---
 #   print(Bin_Num <- Table(factor.f(Model_Spectra.sg.iPLS$Length_cm, breaks = c(0, 25, 45, 65, Inf))))
 #   print(Mid_Split <- (500 - Bin_Num[1] - Bin_Num[4])/2)
 #   
@@ -640,7 +655,7 @@ dev.new(width = 10, height = 10) # 7
 # = = = = = = Pick number of random reps (Rdm_reps), number of folds (num_folds), and iteration number (Iter_Num), then run the NN code to the next '= = =' line and expect long run times = = = = = = = = =
     
 Rdm_reps <- 20
-num_folds <- 10
+num_folds <- 5
 Iter_Num <- 8
 
 # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
@@ -651,7 +666,7 @@ Seed_reps <- sample(1e7, Rdm_reps)
 # Start fresh or continue by loading a file with model iterations already finished (see the commented line with an example model file). 
 Rdm_models <- list() 
 Rdm_folds_index <- list()
-# base::load("Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_13_Mar_2024_19_24_01.RData") 
+# base::load("Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_11_Mar_2024_12_38_45.RData") 
 
 file.create('Run_NN_Model_Flag', showWarnings = TRUE) # Stopping the model with this flag is broken by the nested loops, but left for now in a hope that it can prehaps be fixed.
 
@@ -738,9 +753,9 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
           # FCNN model
           if(model_Name == 'FCNN_model_ver_1') {
              x.train.array <- as.matrix(x.train)
+			 # callback_tensorboard() writes a log for TensorBoard, which allows you to visualize dynamic graphs of your training and test metrics.
              history <- fit(model, x.train.array, y.train, epochs = 1, batch_size = 32, validation_split = 0.2, verbose = 2, 
-                             #  callbacks = list(callback_tensorboard(histogram_freq = 1, profile_batch = 2)),
-                             view_metrics = FALSE)
+                             callbacks = if(file.exists('NN_Verbose_Flag.txt')) list(callback_tensorboard(histogram_freq = 1, profile_batch = 2)) else NULL, view_metrics = FALSE)  
              history <- fit(model, x.train.array, y.train, epochs = 198, batch_size = 32, validation_split = 0.2, verbose = ifelse(file.exists('NN_Verbose_Flag.txt'), 2, 0), view_metrics = ifelse(file.exists('NN_Verbose_Flag.txt'), TRUE, FALSE))
              history <- fit(model, x.train.array, y.train, epochs =   1, batch_size = 32, validation_split = 0.2, verbose = 2, view_metrics = FALSE)
              history <- fit(model, x.train.array, y.train, epochs =  99, batch_size = 32, validation_split = 0.2, verbose = 0, view_metrics = FALSE)
@@ -849,11 +864,12 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
              try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
           abline(h = 950, lty = 2, col ='grey39', lwd = 1.25)
           
+		  # Save all the iteration models until the best one is found
           print(saveName <- paste0(Spectra_Set, '_', paste(get.subs(model_Name, "_")[-2], collapse = "_"), '_SM_', Seed_Model, '_RI_', j, '_LR_', 
              format(learningRate, sci = FALSE), '_LD_', ifelse(is.null(layer_dropout_rate), 0, layer_dropout_rate), '_It_', length(SAD), 
              '_SAD_', rev(SAD)[1], '_', timeStamp()))
           assign(saveName, keras::serialize_model(model, include_optimizer = TRUE))
-          # save(Iter, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, .Random.seed, list = saveName, file = paste0(saveName, '.RData'))
+          # save(Iter, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, .Random.seed, list = saveName, file = paste0(saveName, '.RData')) # For debugging
           
           saveModels <- c(saveModels, saveName)
           saveModels_List[[saveName]] <- keras::serialize_model(model, include_optimizer = TRUE)
@@ -902,8 +918,15 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
       y.fold.test.pred.ALL <- c(y.fold.test.pred.ALL, predict(keras::unserialize_model(Fold_models[[k]], custom_objects = NULL, compile = TRUE), x.fold.test))
    }
 
-   
    browsePlot('agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j))')   
+   
+   
+   SG_Variables_Selected <- names(Model_Spectra.sg.iPLS)
+   roundingDelta <- Delta  # This Delta is only the previous estimate or guess for now (see above). The best rounding Delta is again tested for in the predict script.
+   
+   save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
+            Rdm_folds_index, SG_Variables_Selected, roundingDelta, file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Rdm_model_', timeStamp(), '.RData'))
+   
    
 }  # k Random Replicate loop
 
@@ -914,9 +937,13 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
 # --- Find Median over all Rdm_reps Models and create figures ---
 { ###
 
-# Only 2 loads needed to redo this section with new data - the Model_Spectra.sg.iPLS has to, of course, match the Rdm_model and Rdm_folds_index 
+# Only 2 loads needed to redo this section with new data - the Model_Spectra.sg.iPLS has to, of course, match the Rdm_model and Rdm_folds_index and the Conda eniv needs to be loaded properly using the code above.
 # base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_GPU_Machine\\Sable_Combo_2022_FCNN_model_ver_1_5_Rdm_model_21_Dec_2023_08_14_19.RData")
-# base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_Model_Spectra.sg.iPLS.RData")
+# base::load("C:\\ALL_USR\\JRW\\SIDT\\Sablefish 2022 Combo\\Sable_Combo_2022_NN_Fish_Len_Otie_Wgt\\Sable_Combo_2022_Model_Spectra.sg.iPLS.RData") 
+#    A generic Model_Spectra.sg.iPLS may need metadata added to the scans - compare to the end of SG_Variables_Selected (found within e.g. ...FCNN_model_ver_1_20_Pred_Median_TMA.RData).
+#    If the model has a reduced number of otoliths, then the correct Run number's pseudo random number seed has to set.
+#    cor(Sable_Combo_2022_NN_Pred_Median_TMA$TMA, TMA_Vector) needs to be 1 (one).
+
 
 # ----------------------- Put the fitted results for each random reps (Rdm_reps) full fold model into a data frame:  y.fold.test.pred_RDM ------------------------
 (Rdm_reps <- length(Rdm_folds_index))
@@ -929,20 +956,31 @@ for (j in 1:Rdm_reps) {
    
    y.fold.test.pred.ALL <- NULL
    for (i in 1:length(Fold_models)) {
+      if(verbose)
+         cat(paste0("\nRdm_reps ", j, ": Fold_model ", i, "\n"))
       x.fold.test <- as.matrix(1000 * Model_Spectra.sg.iPLS[folds_index[[i]], ])
       y.fold.test.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test))
-      print(c(length(folds_index[[i]]), length(y.fold.test.pred)))
+	  if(verbose)
+         print(c(length(folds_index[[i]]), length(y.fold.test.pred)))
       y.fold.test.pred.ALL <- rbind(y.fold.test.pred.ALL, cbind(Index = folds_index[[i]], y.test.fold.pred = y.fold.test.pred))
    }
+   
+   cat(paste0("\nFold_model ", j, "\n"))
+   print(dim(y.fold.test.pred.ALL ))
    
    y.test.pred <- sort.f(data.frame(y.fold.test.pred.ALL))[, 2]  # Sort on the Index to match back to the order of the full TMA_Vector and Model_Spectra.sg.iPLS
    
    y.fold.test.pred_RDM <- rbind(y.fold.test.pred_RDM, y.test.pred)
    
+   cat(paste0("\nRdm_reps ", j, "\n"))
+   print(dim(y.fold.test.pred_RDM))
+   
    # dev.new(width = 11, height = 8)
    # agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))
-   browsePlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
    
+   # if(verbose)
+   #   browsePlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
+  
    # Full figure only needed for a long-lived species like Sablefish
    # dev.new(width = 11, height = 8)
    # agreementFigure(TMA_Vector, y.test.pred, Delta = -0.25, full = FALSE, main = paste0("Random Rep = ", j))
@@ -951,21 +989,22 @@ for (j in 1:Rdm_reps) {
 
 # ----------------------- Median over all Rdm_reps Models ------------------------
 
+# Look to see if all random reps fit well and didn't have an issue with good fitting (only seen in the metadata only models). Also compare the agreement figures.
+renum(t(apply(y.fold.test.pred_RDM, 1, function(x) unlist(Correlation_R_squared_RMSE_MAE_SAD(x, TMA_Vector)))))
+
 y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM, 2, median)
+# y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[1, , drop = FALSE], 2, median)  # Select only those random runs which show good fits # SAD = 3300. R2 = 0.8432
 
 # Delta <- -0.05  # Previous estimate or guess
-c(Delta = Delta, Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta)))
-#      Delta Correlation   R_squared        RMSE         MAE         SAD 
-#  -0.050000    0.965315    0.931834    2.744340    1.374090 2079.000000 
+data.frame(Delta = Delta, Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta)))
 
   
-
 # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds 
 Delta_Table <- NULL
 for (Delta. in seq(0, -0.45, by  = -0.05)) {
   # cat("\n\n")
   # print(c(Delta = Delta., Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
-  Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
+  Delta_Table <- rbind(Delta_Table, c(Delta = Delta., unlist(Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.)))))
 }
   
 print(Delta_Table <- data.frame(Delta_Table)) 
@@ -976,6 +1015,7 @@ print(Delta_Table <- data.frame(Delta_Table))
 SG_Variables_Selected <- names(Model_Spectra.sg.iPLS)
 roundingDelta <- Delta
 
+# Do a final save after the best rounding Delta is official found for this spectra set - the best rounding Delta is again tested for in the predict script.
 save(Iter, i, j, Cor, CA_diag, SAD, learningRate, layer_dropout_rate, Seed_Fold, Seed_Model, Seed_Main, Rdm_models, 
          Rdm_folds_index, SG_Variables_Selected, roundingDelta, file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Rdm_model_', timeStamp(), '.RData'))
 
@@ -993,7 +1033,7 @@ Stats_RDM_median_by_model <- NULL
 for(numRdmModels in 1:Rdm_reps) {
 
    y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[numRdmModels, ,drop = FALSE], 2, median)
-   Stats_RDM_median_by_model <- rbind(Stats_RDM_median_by_model, data.frame(t(Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta)))))
+   Stats_RDM_median_by_model <- rbind(Stats_RDM_median_by_model, data.frame(t(unlist(Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta))))))
 }
 
 print(Stats_RDM_median_by_model)
@@ -1002,6 +1042,7 @@ print(Stats_RDM_median_by_model)
 # An additional full k-fold added to the total number of models at each step in turn
 # dev.new(width = 11, height = 8)
 
+{ # matplot of Various stats vs nunber of complete Folds
 browsePlot("
 par(mfrow = c(3,2))  
 # Delta <- -0.05  # Reset Delta if recreating this figure as an old Delta may linger.
@@ -1009,7 +1050,7 @@ Stats_RDM_median_by_model_added <- NULL
 for(numRdmModels in 1:Rdm_reps) {
 
    y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[1:numRdmModels, ,drop = FALSE], 2, median)
-   Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta)))))
+   Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(unlist(Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta))))))
 }
 
 print(Stats_RDM_median_by_model_added)
@@ -1017,10 +1058,10 @@ print(Stats_RDM_median_by_model_added)
 min.stats <- apply(Stats_RDM_median_by_model_added[, c(3,5)], 2, min)
 minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.stats)
 max.of.Adj <- apply(minAdj, 2, max)
-print(Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[,1:2], t(t(minAdj)/max.of.Adj)))
+print(Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[, 1:2], t(t(minAdj)/max.of.Adj)))
 
 
-matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
+matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3, 6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
  
 # Add 5 more Randomized order figures
 set.seed(Seed_Main) 
@@ -1033,18 +1074,18 @@ for (i in 1:5) {
    for(numRdmModels in 1:Rdm_reps) {
    
       y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[Rdm_Vec[1:numRdmModels], , drop = FALSE], 2, median)
-      Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta)))))
+      Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(unlist(Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta))))))
    }
      
    min.stats <- apply(Stats_RDM_median_by_model_added[, c(3,5)], 2, min)
    minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.stats)
    max.of.Adj <- apply(minAdj, 2, max)
-   (Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[,1:2], t(t(minAdj)/max.of.Adj)))
+   (Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[, 1:2], t(t(minAdj)/max.of.Adj)))
         
-   matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3,6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Randomized Order')
+   matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3, 6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Randomized Order')
 }
 ", width = 11, height = 8, file = paste0('Figures/Full_k-fold_models_added_sequentially.png'))
-
+}
 
 # --- NN prediction for each otie in the NN model ---
 Pred_median <- r(data.frame(NN_Pred_Median = apply(y.fold.test.pred_RDM, 2, median), 
