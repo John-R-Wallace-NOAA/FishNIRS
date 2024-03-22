@@ -551,10 +551,8 @@ Model_Spectra.sg.iPLS$specimen_id <- NULL  # specimen_id only needed for the mat
 # ---- Metadata only model run----
     # Metadata only with only 15 oties removed - commented out the random selection code below so that the number oties is not reduced
     Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[, (grep('length_prop_max', names(Model_Spectra.sg.iPLS))):ncol(Model_Spectra.sg.iPLS)]
-    headTail(Model_Spectra.sg.iPLS)
-
-
-
+   
+   
 headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5)
 
 # Check for missing data
@@ -595,7 +593,7 @@ if(!is.null(Model_Spectra.sg.iPLS$Days_into_Year)) {
     Model_Spectra.sg.iPLS$Days_into_Year <- NULL
 }   
 
-print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
+headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5)
 
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
@@ -881,7 +879,7 @@ for(j in (length(Rdm_folds_index) + 1):Rdm_reps) {
        if(!file.exists('Run_NN_Model_Flag'))
           break
        
-       Iter_Best_Model <- sort.f(data.frame(SAD, RMSE, CA_diag, Iter = 1:Iter_Num), c(1, 3))[1, 4]  # Best model is when SAD is lowest, with ties broken by CA_diag
+       Iter_Best_Model <- sort.f(data.frame(SAD, RMSE, CA_diag, Iter = 1:Iter_Num), c(1, 2))[1, 4]  # Best model is when SAD is lowest, with ties broken by RMSE
        print(sort.f(data.frame(SAD, RMSE, CA_diag, Iter = 1:Iter_Num), c(1, 3)))
        cat(paste0('\n\nBest_Model Number = ', Iter_Best_Model, '\n\n'))
        
