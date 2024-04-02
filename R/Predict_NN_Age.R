@@ -44,7 +44,7 @@
 
 
 Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, 
-                            Predicted_Ages_Path = NULL, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], verbose = FALSE,  ...) {
+                            Predicted_Ages_Path = NULL, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], verbose = FALSE, Folds_Num = 10, ...) {
    
     sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
            " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -107,7 +107,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     
     # --- Change this path to where your Conda TensorFlow environment is located. ---
     Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) # If this is function is called in the normal way from a species script, then this is line is redundant, otherwise it may be needed.
-    
+    print(Sys.getenv("RETICULATE_PYTHON"))
+	
     # # --- Test TensorFlow environment ---
     # a <- tf$Variable(5.56)
     # b <- tf$Variable(2.7)
@@ -162,28 +163,37 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # all(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
   
     dim(newScans.RAW) # All wavebands
-    length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))])  # Those wavebands selected via SG
-  
-    trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
-    if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
+	
+	if(length(SG_Variables_Selected) > length(metaDataVar)) {  # Wavebands used (vs only metadata model)
+	
+       length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))])  # Those wavebands selected via SG
+       trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
+   
+	  if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
          shell(paste0("echo.  > ", Predicted_Ages_Path, "\\ERROR_READ_ME.txt"))
          shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "\\ERROR.txt"))
          stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
-    }
-    dim(trySgVarSel)
-	
-    # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))), length(metaDataVar))
+      }
+  
+      # dim(trySgVarSel)
+      # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))), length(metaDataVar))
    
-    newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
+      newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
+	  
+	  if(verbose) {
+	     cat("\n\'newScans' data frame with metadata saved to the .GlobalEnv\n\n")
+	     print(newScans[1:3, c(1:4, (ncol(newScans) - length(metaDataVar) - 3):ncol(newScans))])
+	  }
+	}
+	
+	if(length(SG_Variables_Selected) == length(metaDataVar)) 
+	   newScans <- Model_Spectra_Meta[ ,SG_Variables_Selected[metaDataVar]]
+	
 	dim(newScans)
 	headTail(newScans, 3, 3, 3, 5)
 	
  	assign("newScans", newScans , pos = 1) # Save for Correlation_R_squared_RMSE_MAE_SAD_Table for various values of N
 	
-	if(verbose) {
-	   cat("\n\'newScans' data frame with metadata saved to the .GlobalEnv\n\n")
-	   print(newScans[1:3, c(1:4, (ncol(newScans) - length(metaDataVar) - 3):ncol(newScans))])
-	}
     
     if(is.null(NumRdmModels))
         (N <- length(Rdm_models))
@@ -199,11 +209,16 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
       }
     }  
     
+	
     Pred_median <- r(data.frame(NN_Pred_Median = aggregate(list(NN_Pred_Median = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), median, na.rm = TRUE)[,2], 
           Lower_Quantile_0.025 = aggregate(list(Quantile_0.025 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.025, na.rm = TRUE)[,2],
-          Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975, na.rm = TRUE)[,2],
-    	  Num_of_Full_10_Fold_Models = aggregate(list(N = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), function(x) length(x)/10 )[,2]), 4)
+          Upper_Quantile_0.975 = aggregate(list(Quantile_0.975 = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), quantile, probs = 0.975, na.rm = TRUE)[,2]), 4)
 		  
+	Pred_median[paste0('Num_of_Full_', Folds_Num, '_Fold_Models')] <- aggregate(list(N = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), function(x) length(x)/Folds_Num)[,2]
+	
+	
+	
+	
     New_Ages <- data.frame(filenames = fileNames, Pred_median)		  
  
     if(verbose) {	 
