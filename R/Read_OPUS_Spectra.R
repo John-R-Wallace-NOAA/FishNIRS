@@ -16,7 +16,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
  
 # ------------------------------------ Main User Setup ------------------------------------------------------------
    
-    # (1) Hake 2019, BMS
+    # Hake 2019, BMS
     if(Spectra_Set == "Hake_2019") {
        if(interactive())
           setwd("C:/ALL_USR/JRW/SIDT/Predict_NN_Ages")  # Change path to the Spectra Set's .GlobalEnv as needed
@@ -26,7 +26,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
        fineFreqAdj <- 150
     }
      
-    # (2) Sablefish 2017 & 2019, Combo survey
+    # Sablefish 2017 & 2019, Combo survey
     if(Spectra_Set == "Sable_2017_2019") { 
        if(interactive()) 
           setwd("C:/ALL_USR/JRW/SIDT/Predict_NN_Ages")  
@@ -37,13 +37,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
        opusReader <- 'pierreroudier_opusreader'
      }  
     
-    # (3) Sablefish 2022, Combo survey
-    if(Spectra_Set == "Sable_Combo_2022") { 
+    # Sablefish Combo survey
+    if(Spectra_Set == c("Sable_Combo_2017", "Sable_Combo_2018", "Sable_Combo_2019", "Sable_Combo_2021", "Sable_Combo_2022")) { 
        if(is.null(Spectra_Path)) 
           Spectra_Path = 'C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_2022_Scans'
        if(Meta_Add) {
 		    is.null(Meta_Path)
-                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
+                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')
 		    base::load("C:/ALL_USR/JRW/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData")  
 		    metadata_DW <- selectSpAgesFramFeb2024; rm(selectSpAgesFramFeb2024) # 'DW' is NWFSC Data Warehouse
 	    }	  
@@ -53,37 +53,6 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
        fineFreqAdj <- 0
     }  
 	
-	# (4) Sablefish 2021, Combo survey
-    if(Spectra_Set == "Sable_Combo_2021") { 
-        if(is.null(Spectra_Path)) 
-           Spectra_Path <- 'C:/ALL_USR/JRW/SIDT/Sablefish 2021 Combo/Sable_2021_Scans'
-        if(Meta_Add) {
-		    is.null(Meta_Path)
-                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2021 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
-		    base::load("C:/ALL_USR/JRW/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData")  
-		    metadata_DW <- selectSpAgesFramFeb2024; rm(selectSpAgesFramFeb2024) # 'DW' is NWFSC Data Warehouse
-	    }	  
-        shortNameSegments <- c(1,5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
-        shortNameSuffix <- 'Combo'
-        yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
-        fineFreqAdj <- 0
-    }  
-	
-	# (5) Sablefish 2019, Combo survey
-    if(Spectra_Set == "Sable_Combo_2019") { 
-        if(is.null(Spectra_Path)) 
-           Spectra_Path <- 'C:/ALL_USR/JRW/SIDT/Sablefish 2019 Combo/Sable_2021_Scans'
-        if(Meta_Add) {
-		    is.null(Meta_Path)
-                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2019 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
-		    base::load("C:/ALL_USR/JRW/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData")  
-		    metadata_DW <- selectSpAgesFramFeb2024; rm(selectSpAgesFramFeb2024) # 'DW' is NWFSC Data Warehouse
-	    }	  
-        shortNameSegments <- c(1,5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
-        shortNameSuffix <- 'Combo'
-        yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
-        fineFreqAdj <- 0
-    }  
 # -----------------------------------------------------------------------------------------------------------------------------------
  
     if(!any(installed.packages()[, 1] %in% "remotes")) 
@@ -236,13 +205,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
         metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
         Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
-        names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
+		names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
 		Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
         Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
 		Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 'none' # Change NA to 'none' tissue level.
 		Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName) 
 		
-        Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- Model_Spectra_Meta$sex <- NULL   
+        Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
 		
 	    Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Month', 'Days_into_Year'))
 		
@@ -267,7 +236,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         if(!is.null(Model_Spectra_Meta$Days_into_Year))
            Model_Spectra_Meta$Days_into_Year_prop_max <- (Model_Spectra_Meta$Days_into_Year - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))/(max(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE) - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))
 		   
-        # For consistennce, don't use the 'light' (or other level) of tissue level until a study is done
+       	# For consistennce, don't use the 'light' (or other level) of tissue level until a study is done
         # TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_missing_scan <= 10 & !is.na(Model_Spectra_Meta$Month_Scaled) & 
 		#         (Model_Spectra_Meta$tissue_level_scan == "light" | is.na(Model_Spectra_Meta$tissue_level_scan)) & !is.na(Model_Spectra_Meta$Length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
 				  
@@ -275,16 +244,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
 		
         if(TMA_Ages)        
             TF <- TF & !is.na(Model_Spectra_Meta$TMA)
-	    
-        assign('Model_Spectra_Meta_REJECTED', Model_Spectra_Meta[!TF, , drop = FALSE], pos = 1)	
-		
+			
         Model_Spectra_Meta <- renum(Model_Spectra_Meta[TF, ])
-		
+        
         if(verbose) {
-		   cat("\n\nRejected oties based on excess crystallization, excess tissue, or too much of the otolith missing have been saved to the .GlobalEnv as 'Model_Spectra_Meta_REJECTED'\n\n")
 		   print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
-           cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'))
-		   cat("After othe particular metadata are selected for a model run, remove those oties which contain any missing values.\n\n")
+           cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'), quote = FALSE)
+		   cat("After the particular metadata is selected for a model run, remove those oties which contain any missing values.\n\n")
          }
 		 
         invisible(Model_Spectra_Meta)
