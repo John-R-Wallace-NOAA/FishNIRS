@@ -38,12 +38,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
      }  
     
     # Sablefish Combo survey
-    if(Spectra_Set == c("Sable_Combo_2017", "Sable_Combo_2018", "Sable_Combo_2019", "Sable_Combo_2021", "Sable_Combo_2022")) { 
+    if(Spectra_Set %in% c("Sable_Combo_2017", "Sable_Combo_2018", "Sable_Combo_2019", "Sable_Combo_2021", "Sable_Combo_2022")) { 
+	   Year <- get.subs(Spectra_Set, sep = "_")[3]
        if(is.null(Spectra_Path)) 
-          Spectra_Path = 'C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_2022_Scans'
+          Spectra_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish ', Year, ' Combo/Sable_Combo_', Year, '_Scans')
        if(Meta_Add) {
 		    is.null(Meta_Path)
-                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')
+                 Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish ', Year, ' Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')
 		    base::load("C:/ALL_USR/JRW/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData")  
 		    metadata_DW <- selectSpAgesFramFeb2024; rm(selectSpAgesFramFeb2024) # 'DW' is NWFSC Data Warehouse
 	    }	  
@@ -52,6 +53,10 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
        yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
        fineFreqAdj <- 0
     }  
+	
+	cat(paste("\nSpectra_Path =", Spectra_Path, "\n"))
+	cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
+	
 	
 # -----------------------------------------------------------------------------------------------------------------------------------
  
@@ -96,7 +101,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")   	
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
-	sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
     
