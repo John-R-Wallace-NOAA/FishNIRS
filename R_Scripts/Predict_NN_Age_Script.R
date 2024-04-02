@@ -140,7 +140,8 @@ if(Spectra_Set == "Sable_Combo_2022") {
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Mar_2024_17_31_10.RData"  # Sable_Combo_2022_NN_BEST_500N
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_12_Mar_2024_06_30_35.RData"  # Sable_Combo_2022_NN_BEST_500N_SR 
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_14_Mar_2024_16_05_42.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_1  
-	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_18_Mar_2024_09_19_27.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_2  # Last of lower case: length_prop_max
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_18_Mar_2024_09_19_27.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_2  # Last of lower case: length_prop_max
+	  NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_24_Mar_2024_00_37_51.RData"; Folds_Num <- 5  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F5_Run_3  # Last of lower case: length_prop_max
 	lower_case_length_prop_max <- TRUE
 	
 	
@@ -151,12 +152,14 @@ if(Spectra_Set == "Sable_Combo_2022") {
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_12_Mar_2024_11_35_48.RData")  # Sable_Combo_2022_NN_BEST_500N_SR. 
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_6_Mar_2024_13_18_03.RData") # Sable_Combo_2022_NN_BEST_750N_Run_3
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_14_Mar_2024_16_45_50.RData") # Sable_Combo_2022_NN_BEST_750N_Run_1 
-	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_18_Mar_2024_10_45_07.RData") # Sable_Combo_2022_NN_BEST_750N_Run_2 # Last of lower case: length_prop_max
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_18_Mar_2024_10_45_07.RData") # Sable_Combo_2022_NN_BEST_750N_Run_2 
+	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_24_Mar_2024_00_38_29.RData") # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F5_Run_3 # Last of lower case: length_prop_max
+	
 	
 	dim(NN_Pred_Median_TMA)
 	
-    Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')
-    Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+    Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')
+    Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx')			   
     opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
     Seed_Plot <- 707
 }  
@@ -202,6 +205,8 @@ Sys.getenv("RETICULATE_PYTHON")
  
 
 # --- TensorFlow Load and Math Check  ---
+tf_config()
+
 a <- tf$Variable(5.56)
 cat("\n\nTensorFlow Math Check\n\na = "); print(a)
 b <- tf$Variable(2.7)
@@ -253,7 +258,7 @@ headTail(metadata, 2)
 #    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
 
 New_Ages_Pred <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
-                                    Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
+                                    Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose, Folds_Num = ifelse(exists('Folds_Num'), Folds_Num, 10)) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
 
 New_Ages <- New_Ages_Pred[['New_Ages']]
 print(New_Ages[is.na(New_Ages$NN_Pred_Median), ])
