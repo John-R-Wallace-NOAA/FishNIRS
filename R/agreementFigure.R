@@ -26,7 +26,7 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/col.alpha.R") 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
    
    noNA <- na.omit(data.frame(Observed, Predicted))
    Obs <- noNA$Observed
