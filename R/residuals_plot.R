@@ -1,5 +1,7 @@
 residuals_plot <- function(observed_val, predicted_val, model_name = "", ...) {
 
+  require(ggplot2)
+  
   residual_val <- observed_val - predicted_val
   RMSE <- signif(sqrt(mean((observed_val - predicted_val)^2, na.rm = TRUE)), 6)
   MAE <- signif(mean(abs(observed_val - predicted_val), na.rm = TRUE), 6)
