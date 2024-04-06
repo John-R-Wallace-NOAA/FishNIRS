@@ -129,8 +129,16 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     }
     
     # Find the metadata variables that are in the NN Model
+	
+	
+	SG_Variables_Selected[grep("Length_cm", SG_Variables_Selected)] <- "Length_prop_max"
+    SG_Variables_Selected[grep("length_prop_max", SG_Variables_Selected)] <- "Length_prop_max"
+	SG_Variables_Selected[grep("Weight_kg", SG_Variables_Selected)] <- "Weight_prop_max"
+	SG_Variables_Selected[grep("Depth_m", SG_Variables_Selected)] <- "Depth_prop_max"
+	
     metaDataVar <- (1:length(SG_Variables_Selected))[is.na(as.numeric(substring(SG_Variables_Selected, 2)))]
-    print(SG_Variables_Selected[metaDataVar])
+	print(SG_Variables_Selected[metaDataVar])
+	
    
     # Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta
     newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
