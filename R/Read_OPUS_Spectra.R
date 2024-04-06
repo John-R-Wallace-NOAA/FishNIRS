@@ -236,7 +236,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
            Model_Spectra_Meta$Depth_prop_max <- (Model_Spectra_Meta$Depth_m - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))/(max(Model_Spectra_Meta$Depth_m, na.rm = TRUE) - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))
 		   
 		if(!is.null(Model_Spectra_Meta$Latitude_dd))
-           Model_Spectra_Meta$Latitude_prop_max <- (Model_Spectra_Meta$Latitude_dd - 30.5)/49.1
+           Model_Spectra_Meta$Latitude_prop_max <- (Model_Spectra_Meta$Latitude_dd - 30.5)/(49.1 - 30.5)
 		   
 		if(!is.null(Model_Spectra_Meta$Month))   
 		   Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
@@ -257,8 +257,15 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "S
         
         if(verbose) {
 		   print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
-           cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'), quote = FALSE)
-		   cat("After the particular metadata is selected for a model run, remove those oties which contain any missing values.\n\n")
+		   
+		   cat("\n\nRange of standardized metadata variables:\n\n")
+		   print(apply(Model_Spectra_Meta[, grep('prop_max', names(Model_Spectra_Meta))], 2, range, na.rm = T))
+		   
+		   cat("\n\nNumber of missing values in the standardized metadata variables within the final result:\n\n")
+		   print(apply(Model_Spectra_Meta[, grep('prop_max', names(Model_Spectra_Meta))], 2, function(x) sum(is.na(x))))
+		   {
+           cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'))
+		   cat("\nAfter the particular metadata is selected for in a model run, remove those oties which contain any missing values for those applications, like NN modeling, that cannot handle them.\n\n")
          }
 		 
         invisible(Model_Spectra_Meta)
