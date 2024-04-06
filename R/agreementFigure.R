@@ -58,7 +58,7 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
   
    plot(X, Y, main = main,
       xlab = paste0(xlab, ': R^2 = ', format(signif(cor(Predicted.rd, Obs)^2, 4), nsmall = 4), '; RMSE = ', format(signif(sqrt(mean((Predicted.rd - Obs)^2, na.rm = TRUE)), 4), nsmall = 4), '; SAD = ', 
-                    signif(sum(abs(Predicted.rd - Obs)), 4), 'N = ', length(Obs), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
+                    signif(sum(abs(Predicted.rd - Obs)), 4), '; N = ', length(Obs), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
                     
    abline(0, 1, col = col.alpha('grey', ifelse(full, 0.50, 0.35)))
    
