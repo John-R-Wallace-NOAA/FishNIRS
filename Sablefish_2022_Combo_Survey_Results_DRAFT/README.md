@@ -11,6 +11,7 @@ The best [prediction](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Comb
 - SAD/N is the commonly used Mean Absolute Error (MAE)
 - RMSE is the square Root of Mean Squared Error
 - The FCNN model minimized MSE (the square of RMSE) internally and SAD (with ties broken with RMSE) was used in the external loops.
+- The Delta is added to the NN predicted value before rounding; e.g. 4.6 + -0.2 would round to 4 not 5. The Delta is found by searching over the best fit to TMA ages for values of 0 to -0.45 in steps of -0.05. (The TMA is currently only availabe in round years of estimated age.)
 
 ### Models with a smaller number of otoltiths in the training model 
 A FCNN training model using 750 otoliths with 20 random full fold models was conducted. The total number of oties predicted was 1,553.
