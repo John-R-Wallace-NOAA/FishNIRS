@@ -7,7 +7,7 @@ The best [prediction](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Comb
 
 ### Notes on the Agreement Figures
 - SAD is the Sum of Absolute Deviations
-- The weighted sum of the numbers in the figure is equal to SAD. Zero weight for those on the one-to-one line (in red), a weight of one for those numbers one absolute value off the one-to-one line (in gold), and so forth.
+- The weighted sum of the numbers in the figure is equal to SAD. With zero weight for those on the one-to-one line (in red), a weight of one for those numbers one absolute value off the one-to-one line (in gold), and so forth.
 - SAD/N is the commonly used Mean Absolute Error (MAE)
 - RMSE is the square Root of Mean Squared Error
 - The FCNN model minimized MSE (the square of RMSE) internally and SAD (with ties broken with RMSE) was used in the external loops.
