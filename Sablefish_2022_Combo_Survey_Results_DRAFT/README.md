@@ -8,7 +8,7 @@ The best [prediction](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Comb
 ### Models with a smaller number of otoltiths in the training model 
 A Fully Connected Neural Net (FCNN) training model using 750 otoliths with 20 random full fold models was conducted.  Fifteen otoliths were not used for trainning to look for bias. The total number of oties predicted was 1,553.
 
-A [model](), with an R Squared of 0.9476, was found using the NIRS scans with the metadata of otolith weight, fish length, fish weight, depth (a model with latitude has not yet been run).  In comparison, the model identical to the first model above, except without latitude, has an R squared of 0.9526.
+A [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_750N_Agreement_Fig.png), with an R Squared of 0.9476, was found using the NIRS scans with the metadata of otolith weight, fish length, fish weight, depth (a model with latitude has not yet been run).  In comparison, the model identical to the first model above, except without latitude, has an R squared of 0.9526. 
 
 ### Metadata only models
 A Fully Connected Neural Net (FCNN) training model using 1,513 otoliths with 20 random full fold models was executed.  Thirty otoliths were not used for trainning to look for bias. The total number of oties predicted was 1,553.
