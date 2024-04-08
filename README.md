@@ -3,6 +3,8 @@ An extended abstract for the talk given on this work at the 2023 Fourth Research
 
 Proceedings of the Fourth Research Workshop on the Rapid Estimation of Fish Age Using Fourier Transform Near Infrared Spectroscopy. 2024, Editors: Matta, M. E. (editors); Helser, T. E. AFSC processed report; 2024-01. DOI: [https://doi.org/10.25923/g30w-8268)](https://doi.org/10.25923/g30w-8268)
 
+The slide deck for that talk is [here](/Fourth_Research_Workshop_Talk_Slide_Deck_2023/John_Wallace_Sablefish_and_Hake_FCNN_Models%20for%20Prediction%20of%20Fish%20Age.pdf)
+
 ---
 
 <h3> Neural Net Models using the keras R Package with a Custom TensorFlow Conda Environment in Windows</h3>
