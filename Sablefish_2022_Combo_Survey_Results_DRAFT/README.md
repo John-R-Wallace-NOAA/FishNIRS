@@ -20,7 +20,7 @@ A [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie
 
 
 ### Metadata only models
-A FCNN training model using 1,513 otoliths with 20 random full fold models was executed.  Thirty otoliths were not used for training to look for bias. The total number of oties predicted was 1,553.
+A FCNN training model using 1,513 otoliths with 20 random full fold models was executed.  Forty otoliths were not used for training to look for bias. The total number of oties predicted was 1,553.
 
 The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Otie_Wgt_Fish_Len_Weight_Depth_Metadata_Only_Agreement_Fig.png), only using metadata (no scans), had an R squared of 0.8770 using otolith weight, fish length, fish weight, and depth. Adding latitude to the metadata only model did not work well.
 
