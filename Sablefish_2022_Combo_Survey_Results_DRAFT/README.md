@@ -5,5 +5,7 @@ Metadata was added to the scans for a better fit.
 
 The best [fit](https://github.com/John-R-Wallace-NOAA/FishNIRS/blob/main/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_Agreement_Fig.png)  
 
+The best [fit](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_Agreement_Fig.png)  
+
 The best [fit](/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_Agreement_Fig.png) 
 
