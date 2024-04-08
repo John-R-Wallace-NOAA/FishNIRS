@@ -10,7 +10,7 @@ The best [prediction](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Comb
 - The weighted sum of the numbers in the figure is equal to SAD. Zero weight for those on the one-to-one line (in red), a weight of one for those numbers one absolute value off the one-to-one line (in gold), and so forth.
 - SAD/N is the commonly used Mean Absolute Error (MAE)
 - RMSE is the square Root of Mean Squared Error
-- The FCNN model mininmized MSE (the square of RMSE) internally and SAD (with ties broken with RMSE) was used in the external loops.
+- The FCNN model minimized MSE (the square of RMSE) internally and SAD (with ties broken with RMSE) was used in the external loops.
 
 ### Models with a smaller number of otoltiths in the training model 
 A FCNN training model using 750 otoliths with 20 random full fold models was conducted. The total number of oties predicted was 1,553.
