@@ -82,13 +82,14 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
    }
 
 
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/load.R") 
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/load.R") # For interactive use - not currently used below
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R") 
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/switchSlash.R")   # Switch "\" to "/" for copied Windows paths [Copy path and run switchSlash() in R. Utilized by JRWToolBox::setWd()]
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
 
@@ -132,21 +133,26 @@ if(Spectra_Set == "Sable_Combo_2022") {
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_60_Rdm_models_1_3_2.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
     # NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-	
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_6_Mar_2024_13_15_47.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_3 !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_1_Rdm_model_7_Mar_2024_01_02_58.RData"  # Sable_Combo_2022_NN_BEST_250N  !!!! Needs Read_OPUS_Spectra_OLD_NAMES.R !!!!
+	
 	# source("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Read_OPUS_Spectra_OLD_NAMES.R")  # Overwrites above. New version has Sex_prop_max, Depth_prop_max, Weight_prop_max, and Length_prop_max (which was length_prop_max until last of below)
 	
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Mar_2024_17_31_10.RData"  # Sable_Combo_2022_NN_BEST_500N
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_12_Mar_2024_06_30_35.RData"  # Sable_Combo_2022_NN_BEST_500N_SR 
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_14_Mar_2024_16_05_42.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_1  
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_18_Mar_2024_09_19_27.RData"  # Sable_Combo_2022_NN_BEST_750N_Run_2  # Last of lower case: length_prop_max
-	#  NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_24_Mar_2024_00_37_51.RData"; Folds_Num <- 5  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F5_Run_3 
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_24_Mar_2024_00_37_51.RData"; Folds_Num <- 5  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F5_Run_3 
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_30_Mar_2024_00_56_53.RData"; Folds_Num <- 8  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F8_Run_3  
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_2_Apr_2024_15_13_49.RData"; Folds_Num <- 10  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F10_Run_3 
 	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_4_Apr_2024_12_24_32.RData"; Folds_Num <- 10  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F10_Run_1  
-	NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_4_Apr_2024_14_46_27.RData"; Folds_Num <- 10  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F20_Run_3  # Last of lower case: length_prop_max
-	lower_case_length_prop_max <- TRUE
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_4_Apr_2024_14_46_27.RData"; Folds_Num <- 20  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F20_Run_3  
+	# NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_23_Feb_2024_08_20_04.RData"; Folds_Num <- 10  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Run_3 
+	
+	# (NN_Model <- list.files(pattern = "Rdm_model"))
+	# Folds_Num <- 10 
+
+	# lower_case_length_prop_max <- TRUE
 	
 	
     # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
@@ -159,10 +165,17 @@ if(Spectra_Set == "Sable_Combo_2022") {
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_18_Mar_2024_10_45_07.RData") # Sable_Combo_2022_NN_BEST_750N_Run_2 
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_2_Apr_2024_15_14_08.RData") # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F8_Run_3
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_4_Apr_2024_12_24_54.RData") # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F8_Run_1 
-	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_4_Apr_2024_14_46_44.RData") # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F20_Run_3 # Last of lower case: length_prop_max
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_4_Apr_2024_14_46_44.RData") # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Meta_Only_1513_F20_Run_3 
+	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_23_Feb_2024_08_22_51.RData") # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Run_3 # Last of lower case: length_prop_max
 	
 	
+	# New Method - Add train result folder and folds number here
+	Train_Result <- "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len"
+	Folds_Num <- 10 
 	
+	(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, "Rdm_model")))
+	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result, "/", list.files(Train_Result, "Pred_Median_TMA")))
+
 	dim(NN_Pred_Median_TMA)
 	
     Meta_Path <- paste0('C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')
@@ -241,13 +254,16 @@ if(!exists('shortNameSuffix'))
 # Maximum number of wavebands to show in the spectra figure
 N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
 
-Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
-                                Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+# Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
+#                                 Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+
+base::load("C:\\ALL_USR\\JRW\\SIDT\\Predict_NN_Ages\\Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1553N.RData")
 headTail(Model_Spectra_Meta, 2, 2, 3, 46)
 
-# Change 'Length_prop_max' to 'length_prop_max' if flag is set above
-if(lower_case_length_prop_max)
-    names(Model_Spectra_Meta)[grep("Length_prop_max", names(Model_Spectra_Meta))] <- "length_prop_max"
+#   # Change 'Length_prop_max' to 'length_prop_max' if flag is set above
+#   if(lower_case_length_prop_max)
+#       names(Model_Spectra_Meta)[grep("Length_prop_max", names(Model_Spectra_Meta))] <- "length_prop_max"
+#   headTail(Model_Spectra_Meta, 2, 2, 3, 46)
 
 # Extract the metadata
 metadata <- Model_Spectra_Meta[, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))]
@@ -257,6 +273,7 @@ headTail(metadata, 2)
 
 
 ##### This is the MAIN CALL to Predict_NN_Age() function #####
+
 # New_Ages <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, NN_Model, plot = plot, NumRdmModels = 1,  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), spectraInterp = spectraInterp, fineFreqAdj = fineFreqAdj,
 #      Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # One random model for faster testing
 
@@ -359,7 +376,7 @@ if(TMA_Ages) {
         New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
     New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
     headTail(New_Ages)
-	cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2  # R Squared
+	cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "\n\n")  # R Squared)
 	
     
 	if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
