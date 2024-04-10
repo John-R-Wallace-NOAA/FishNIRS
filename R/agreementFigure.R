@@ -26,7 +26,7 @@ agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, main = 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/col.alpha.R") 
-   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
+   sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
    
    noNA <- na.omit(data.frame(Observed, Predicted))
    Obs <- noNA$Observed
@@ -54,13 +54,15 @@ agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, main = 
    }   
 
    cat("\n\n")
-   print(Correlation_R_squared_RMSE_MAE_SAD(Obs, Predicted.rd))
+   Stats <- Cor_R_squared_RMSE_MAE_SAD_APE(Obs, Predicted.rd)  
+   Stats <- signif(Stats, digits = 4) # Less digits for the figure
+   
    if(!is.null(Delta))
-       cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n"))
+       cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n\n"))
    	   
    plot(X, Y, main = main,
-      xlab = paste0(xlab, ': R^2 = ', format(signif(cor(Predicted.rd, Obs)^2, 4), nsmall = 4), '; RMSE = ', format(signif(sqrt(mean((Predicted.rd - Obs)^2, na.rm = TRUE)), 4), nsmall = 4), '; SAD = ', 
-                    signif(sum(abs(Predicted.rd - Obs)), 4), '; N = ', length(Obs), ifelse(is.null(Delta), "", " (Prediction rounded after adding Delta for Stats)")), ylab = ylab, type = 'n', ...)
+      xlab = paste0(xlab, ': R^2 = ', format(Stats$R_squared, nsmall = 4), '; RMSE = ', format(Stats$RMSE, nsmall = 4), '; SAD = ', 
+                    Stats$SAD, '; APE = ', Stats$APE, '; N = ', Stats$N, ifelse(is.null(Delta), "", " (Prediction rounded after adding Delta for Stats)")), ylab = ylab, type = 'n', ...)
                     
    abline(0, 1, col = col.alpha('grey', ifelse(full, 0.50, 0.35)))
    
