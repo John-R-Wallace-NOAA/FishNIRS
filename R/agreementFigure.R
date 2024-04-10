@@ -1,6 +1,6 @@
 
-agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "", xlab = deparse(substitute(Observed)), browserPlot = FALSE, 
-                      ylab = paste0(deparse(substitute(Predicted)), " (rounded after adding Delta)"), full = FALSE, axes_zoomed_limits = 0:15, 
+agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, main = "", xlab = deparse(substitute(Observed)), browserPlot = FALSE, 
+                      ylab = paste0(deparse(substitute(Predicted)), ifelse(is.null(Delta), "", " (rounded after adding Delta)")), full = FALSE, axes_zoomed_limits = 0:15, 
                       cex = ifelse(full, 0.75, 1.25), col_equal = 'red', col_off_1_or_2 = 'gold', col_off_3_or_4 = 'green', col_off_5_or_greater = 'navyblue', ...) {
   
    # --- Download functions from GitHub ---
@@ -30,7 +30,7 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    
    noNA <- na.omit(data.frame(Observed, Predicted))
    Obs <- noNA$Observed
-   Predicted.rd <- round(noNA$Predicted + Delta) 
+   Predicted.rd <- round(noNA$Predicted + ifelse(is.null(Delta), 0, Delta))
     
    Agreement_Agg <- aggregate(list(N = rep(1, length(Obs))), list(Observed = Obs, Predicted = Predicted.rd), length)
    maxAge <- max(c(Obs, Predicted.rd))
@@ -40,10 +40,11 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
    Agreement_Table$N_char <- as.character(Agreement_Table$N)
    Agreement_Table$N_char[Agreement_Table$N_char == "0"] <- " "
    
-   if(Iter == 0)
-        main <- ifelse(main == "", paste0("Delta = ", Delta), paste0(main, "; Delta = ", Delta))
-   else     
-        main <- ifelse(main == "", paste0("Iter = ", Iter), paste0(main, "; Iter = ", Iter))
+   if(Iter == 0) {
+        if(!is.null(Delta))
+            main <- paste0(main, ifelse(main == "", paste0("Delta = ", Delta), paste0(main, "; Delta = ", Delta)))
+    } else     
+        main <- paste(main, ifelse(main == "", paste0("Iter = ", Iter), paste0(main, "; Iter = ", Iter)))
        
    if(full) {
       X <- 0:max(Agreement_Table$Observed)
@@ -54,11 +55,12 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
 
    cat("\n\n")
    print(Correlation_R_squared_RMSE_MAE_SAD(Obs, Predicted.rd))
-   cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n"))
-  
+   if(!is.null(Delta))
+       cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n"))
+   	   
    plot(X, Y, main = main,
       xlab = paste0(xlab, ': R^2 = ', format(signif(cor(Predicted.rd, Obs)^2, 4), nsmall = 4), '; RMSE = ', format(signif(sqrt(mean((Predicted.rd - Obs)^2, na.rm = TRUE)), 4), nsmall = 4), '; SAD = ', 
-                    signif(sum(abs(Predicted.rd - Obs)), 4), '; N = ', length(Obs), " (Prediction rounded after adding Delta for Stats)"), ylab = ylab, type = 'n', ...)
+                    signif(sum(abs(Predicted.rd - Obs)), 4), '; N = ', length(Obs), ifelse(is.null(Delta), "", " (Prediction rounded after adding Delta for Stats)")), ylab = ylab, type = 'n', ...)
                     
    abline(0, 1, col = col.alpha('grey', ifelse(full, 0.50, 0.35)))
    
@@ -69,4 +71,5 @@ agreementFigure <- function(Observed, Predicted, Delta = 0, Iter = 0, main = "",
                       ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 3 | Agreement_Table$Observed == Agreement_Table$Predicted - 3 |
                              Agreement_Table$Observed == Agreement_Table$Predicted + 4 | Agreement_Table$Observed == Agreement_Table$Predicted - 4, 'green', 'navyblue'))))   
 }
+
 
