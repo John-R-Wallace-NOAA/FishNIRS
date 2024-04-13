@@ -40,11 +40,12 @@ agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, main = 
    Agreement_Table$N_char <- as.character(Agreement_Table$N)
    Agreement_Table$N_char[Agreement_Table$N_char == "0"] <- " "
    
-   if(Iter == 0) {
-        if(!is.null(Delta))
-            main <- paste0(main, ifelse(main == "", paste0("Delta = ", Delta), paste0(main, "; Delta = ", Delta)))
-    } else     
-        main <- paste(main, ifelse(main == "", paste0("Iter = ", Iter), paste0(main, "; Iter = ", Iter)))
+   
+   if(!is.null(Delta))
+        main <- paste0(main, "; Delta = ", Delta))
+			
+   if(Iter != 0)    
+        main <- paste0(main, "; Iter = ", Iter))
        
    if(full) {
       X <- 0:max(Agreement_Table$Observed)
