@@ -415,6 +415,14 @@ for(Rdm_reps_Iter in  seq(1, 19, by = 2)) {
    cat("\n\nRdm_reps_Iter =", Rdm_reps_Iter, "\n\n")
    save(Rdm_reps_Iter, file = 'C:/ALL_USR/JRW/SIDT/Train_NN_Model/Rdm_reps_Iter.RData')	
 
+   # Create the local initial file '.Rprofile' which Rgui.exe will run when started
+   # The listed default packages do not immediately load. 
+   #   They are loaded by the time a prompt is given, but that doesn't happen here, so these packages are loaded explictly.
+   shell("echo library(stats); library(graphics); library(grDevices); library(utils); library(datasets) > .Rprofile")
+   shell("echo source('NN_Model_TensorFlow_Loop.R') >> .Rprofile")
+   shell("echo quit('no',,FALSE) >> .Rprofile")
+
+   # Create run.bat and start it with the 'wait' argument (FYI remove the 'wait' argument for parallel  processing.)
    shell("echo cd C:\\ALL_USR\\JRW\\SIDT\\Train_NN_Model > run.bat")
    shell("echo C:\\R\\R\\bin\\x64\\Rgui.exe --no-save --no-restore --no-site-file --no-environ >> run.bat")
    shell("echo exit >> run.bat")
@@ -673,7 +681,3 @@ print(Table(TMA_Vector <= 20)/length(TMA_Vector))
 
 } 
    
-
-
-
-
