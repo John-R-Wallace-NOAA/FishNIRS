@@ -42,10 +42,10 @@ agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, main = 
    
    
    if(!is.null(Delta))
-        main <- paste0(main, "; Delta = ", Delta))
+        main <- paste0(main, "; Delta = ", Delta)
 			
    if(Iter != 0)    
-        main <- paste0(main, "; Iter = ", Iter))
+        main <- paste0(main, "; Iter = ", Iter)
        
    if(full) {
       X <- 0:max(Agreement_Table$Observed)
