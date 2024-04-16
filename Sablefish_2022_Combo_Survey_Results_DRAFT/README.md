@@ -46,7 +46,7 @@ The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Oti
          1553   1553 2     42.82 1.371 15.71 0.9694 11.11
 
 ### Double Reads
-For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1' was the original ager on half of the reads, and the original ager on the other half was 'NWFSC_2'.  Of those double reads, 369 have NN predicted ages. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NWFSC_2.png), with a APE score of 3.704 (R2 = 0.9707), plots the double reads of NWFSC_2 vs NWFSC_1. This (figure)[(/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NN_Pred_Rd.png), with a APE score of 6.378 (R2 = 0.9573), plots the NN predicted age vs NWFSC_1.
+For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1' was the original ager on half of the reads, and the original ager on the other half was 'NWFSC_2'.  Of those double reads, 369 have NN predicted ages. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NWFSC_2.png), with a APE score of 3.704 (R2 = 0.9707), plots the double reads of NWFSC_2 vs NWFSC_1. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NN_Pred_Rd.png), with a APE score of 6.378 (R2 = 0.9573), plots the NN predicted age vs NWFSC_1.
 
 
 
