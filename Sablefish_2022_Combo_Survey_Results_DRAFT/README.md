@@ -21,7 +21,7 @@ Other metadata looked at, but not included due to poor performance in this parti
 - The weighted sum of the numbers in the figure is equal to SAD. With zero weight for those on the one-to-one line (in red), a weight of one for those numbers one absolute value off the one-to-one line (in gold), and so forth.
 - SAD/N is the commonly used Mean Absolute Error (MAE)
 - RMSE is the square Root of Mean Squared Error
-- APE is the average percent agreement
+- APE is the Average Percent Error
 - The FCNN model minimized MSE (the square of RMSE) internally and SAD (with ties broken with RMSE) was used in the external loops.
 - The Delta is added to the NN predicted value before rounding; e.g. 4.6 + -0.2 rounds to 4 not 5. The Delta is found by searching over the best fit to TMA ages for values of 0 to -0.45 in steps of -0.05. (The TMA is currently only availabe in round years of estimated age.)
 
