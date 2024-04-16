@@ -50,7 +50,7 @@ For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1
 
 ### The Final Data
 
-The final data has the NN predicted median, the 0.025 lower quantile, and the 0.975 uppper quantile over the number of full 10 fold models (20 in this caese). The is TMA is also given, if available.
+The final data has the NN predicted median, the 0.025 lower quantile, and the 0.975 upper quantile over the number of full 10 fold models (20 in this caese). The is TMA is also given, if available.
 
 
 
