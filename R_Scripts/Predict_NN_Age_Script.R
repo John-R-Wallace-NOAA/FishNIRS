@@ -98,7 +98,7 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
-
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
 
 getwd()
 Spectra_Set
@@ -169,8 +169,8 @@ if(Spectra_Set == "Sable_Combo_2022") {
 	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', "Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_23_Feb_2024_08_22_51.RData") # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Run_3 # Last of lower case: length_prop_max
 	
 	
-	# New Method - Add train result folder and folds number here
-	Train_Result <- "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len"
+	# === New Method - Add training results folder and folds number here ===
+	Train_Result <- "C:/ALL_USR/JRW/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST"
 	Folds_Num <- 10 
 	
 	(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, "Rdm_model")))
@@ -367,8 +367,9 @@ if(TMA_Ages) {
 	
 	# -- Download functions from GitHub into the working directory to look at and/or edit --
 	# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/rgit/master/R/gitAFile.R")  
-    # gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R", File = "agreementFigure.R")  
-	# gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R", File = "Read_OPUS_Spectra.R")  
+	# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/openwd.R")
+    # gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R", File = "agreementFigure.R"); openwd() 
+	# gitAFile("John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R", File = "Read_OPUS_Spectra.R"); openwd()   
 	
 	  
     New_Ages$TMA <- NULL # Clear old TMA before updating
@@ -384,8 +385,8 @@ if(TMA_Ages) {
         Delta_Table <- NULL
         for (Delta. in seq(0, -0.45, by  = -0.05)) {
           # cat("\n\n")
-          # print(c(Delta = Delta., Correlation_R_squared_RMSE_MAE_SAD(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
-          Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Correlation_R_squared_RMSE_MAE_SAD(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
+          # print(c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
+          Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
         }
 	    
         print(Delta_Table <- data.frame(Delta_Table)) 
@@ -571,14 +572,25 @@ if(TMA_Ages) {
        New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
        browsePlot('
            set.seed(Seed_Plot)
-           gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+           gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                       grid = FALSE, vertLineEachPoint = TRUE, col = "white")
            set.seed(Seed_Plot)
            points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
            points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
                      
        ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
-    } 
+    }
+
+  sink(paste0(Predicted_Ages_Path, "/", Spectra_Set, "_Stats.txt"), split = TRUE)
+  {
+    cat("\n\n")
+    print(Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta)))
+	
+	cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
+    summary(agePrecision(~ TMA + round(NN_Pred_Median + Delta), data = New_Ages), what="precision")
+  }
+  sink()
+	
 }
 
 
