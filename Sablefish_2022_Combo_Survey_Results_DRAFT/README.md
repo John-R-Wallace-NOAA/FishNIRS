@@ -1,5 +1,5 @@
 ## Sablefish 2022 Combo Survey Results ##
-A Fully Connected Neural Net (FCNN) training model using 1,528 otoliths with 20 random full fold models was run to compare Near Infrared Scans (NIRS) to the Traditional Method of Aging (TMA).  Twenty five otoliths were not used for training to look for bias. The total number of oties predicted was 1,553.
+A Fully Connected Neural Net (FCNN) training model using 1,538 otoliths with 20 random full fold models was run to compare Near Infrared Scans (NIRS) to the Traditional Method of Aging (TMA).  Fifteen otoliths were not used for training to look for bias. The total number of oties predicted was 1,553.
 
 Metadata was also added to the scans for a better fit.  
 
