@@ -48,18 +48,17 @@ The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Oti
 ### Double Reads
 For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1' was the original ager on exactly half of the reads, and the original ager on the other half was 'NWFSC_2'.  Of those double reads, 369 had NN predicted ages. NWFSC_1 was the original ager for ~52% and NWFSC_2 was the original ager for ~48% of those 369. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NWFSC_2.png), with a APE score of 3.704% (R2 = 0.9707), plots the double reads of NWFSC_2 vs NWFSC_1. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NN_Pred_Rd.png), with a APE score of 6.378% (R2 = 0.9573), plots the NN predicted age vs NWFSC_1. TMA age readers strive to achieve an APE score of less than 5% for their double reads of rockfish. With sablefish it really varies and can be higher than that. (Patrick McDonald, personal communication).
 
-### The Final Data
+### The Final Predicted Data
 
-The final data has the NN predicted median, the 0.025 lower quantile, and the 0.975 upper quantile over the number of full 10 fold models (20 in this caese). The is TMA is also given, if available.
+The final predicted data has the NN predicted median, the 0.025 lower quantile, and the 0.975 upper quantile over the number of full 10 fold models (20 in this caese). The TMA is also given, if available. The rounded age is the NN predicted median plus the Delta (see above) and then rounded.
 
-
-
-                                          filenames NN_Pred_Median Lower_Quantile_0.025 Upper_Quantile_0.975 Num_of_Full_10_Fold_Models TMA
-     1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1        10.8008               3.9460              13.8160                         20  14
-     2  SABL_COMBO2022_NIR0022A_PRD_10_102157430_O1         5.5932               4.6599               6.8086                         20   6
-     3 SABL_COMBO2022_NIR0022A_PRD_100_102157520_O1         7.3155               5.6351               7.9963                         20   6
-     4  SABL_COMBO2022_NIR0022A_PRD_11_102157431_O1        11.2928               9.1743              12.9363                         20  16
-     5  SABL_COMBO2022_NIR0022A_PRD_12_102157432_O1         4.6883               3.6430               5.3899                         20   6
+                                          filenames NN_Pred_Median Lower_Quantile_0.025 Upper_Quantile_0.975 Num_of_Full_10_Fold_Models TMA Age_Rounded
+     1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1        12.7389               7.6131              15.3572                         20  14          13
+     2  SABL_COMBO2022_NIR0022A_PRD_10_102157430_O1         5.5777               4.4615               6.7766                         20   6           6
+     3 SABL_COMBO2022_NIR0022A_PRD_100_102157520_O1         6.8165               5.4652               8.2063                         20   6           7
+     4  SABL_COMBO2022_NIR0022A_PRD_11_102157431_O1        12.2754               9.6108              15.3800                         20  16          12
+     5  SABL_COMBO2022_NIR0022A_PRD_12_102157432_O1         4.9055               3.5046               6.0811                         20   6           5
+     
      ...
 
 The quantiles are a reflection of the NN models precision based on the 20 full 10-fold randomized models, not the accuracy to the TMA Age (which, after all, may not be available).  This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_TMA_Sorted_Subset.png), based on the best prediction model above, 
