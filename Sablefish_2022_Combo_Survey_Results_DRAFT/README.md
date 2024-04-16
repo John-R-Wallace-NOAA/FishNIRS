@@ -50,7 +50,7 @@ For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1
 
 ### The Final Predicted Data
 
-The final predicted data has the NN predicted median, the 0.025 lower quantile, and the 0.975 upper quantile over the number of full 10 fold models (20 in this caese). The TMA is also given, if available. The rounded age is the NN predicted median with the Delta added and then rounded.
+The final predicted data has the NN predicted median, the 0.025 lower quantile, and the 0.975 upper quantile over the number of full 10 fold models (20 in this caese). The TMA is also given, if available. The rounded age is the NN predicted median with the Delta added and then rounded (see above).
 
                                           filenames NN_Pred_Median Lower_Quantile_0.025 Upper_Quantile_0.975 Num_of_Full_10_Fold_Models TMA Age_Rounded
      1   SABL_COMBO2022_NIR0022A_PRD_1_102157421_O1        12.7389               7.6131              15.3572                         20  14          13
