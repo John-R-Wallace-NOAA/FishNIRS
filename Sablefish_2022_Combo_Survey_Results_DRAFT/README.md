@@ -45,5 +45,23 @@ The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Oti
             n validn R PercAgree   ASD   ACV    AAD   APE
          1553   1553 2     42.82 1.371 15.71 0.9694 11.11
 
+### Double Reads with Two TMA readers and the NIR Ages
+For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1' was the original ager on half of the reads, and for the other half the original ager was 'NWFSC_2'.  Of those double reads, 369 have NN predicted ages. This [figure]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
