@@ -23,12 +23,12 @@ Other metadata looked at, but not included due to poor performance in this parti
 - RMSE is the square Root of Mean Squared Error
 - APE is the Average Percent Error
 - The FCNN model minimized MSE (the square of RMSE) internally and SAD (with ties broken with RMSE) was used in the external loops.
-- The Delta is added to the NN predicted value before rounding; e.g. 4.6 + -0.2 rounds to 4 not 5. The Delta is found by searching over the best fit to TMA ages for values of 0 to -0.45 in steps of -0.05. (The TMA is currently only availabe in round years of estimated age.)
+- The Delta is added to the NN predicted value before rounding; e.g. 4.6 + -0.2 rounds to 4 not 5. The Delta is found by searching over the best fit to TMA ages for values of 0 to -0.45 in steps of -0.05. (The TMA is currently only available in round years of estimated age.)
 
-### Models with a smaller number of otoltiths in the training model 
+### Models with a smaller number of otoliths in the training model 
 A FCNN training model using 750 randomly selected otoliths with 20 random full fold models was conducted. The total number of oties predicted was 1,553.
 
-A [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_750N_Agreement_Fig.png), with an R Squared of 0.9476, was found using the NIRS scans along with the metadata of otolith weight, fish length, fish weight, and depth. The same model including latitude was found to fit slightly less well (R squared = 0.9418). This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered_Left_Out_Oties_Highlighted_750N.png) highlights in red those otoliths that were not part of the training model but were only predicted.  Note that there is no bias. Models with 500 and 250 otiliths in the training model did not perform as well, even when stratified random sampling of otoliths was tried.
+A [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_750N_Agreement_Fig.png), with an R Squared of 0.9476, was found using the NIRS scans along with the metadata of otolith weight, fish length, fish weight, and depth. The same model including latitude was found to fit slightly less well (R squared = 0.9418). This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered_Left_Out_Oties_Highlighted_750N.png) highlights in red those otoliths that were not part of the training model but were only predicted.  Note that there is no bias. Models with 500 and 250 otoliths in the training model did not perform as well, even when stratified random sampling of otoliths was tried.
 
 
 ### Metadata only models
@@ -46,7 +46,7 @@ The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Oti
          1553   1553 2     42.82 1.371 15.71 0.9694 11.11
 
 ### Double Reads
-For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1' was the original ager on exactly half of the reads, and the original ager on the other half was 'NWFSC_2'.  Of those double reads, 369 have NN predicted ages, of those 369 NWFSC_1 was the orginal ager for ~52% and NWFSC_2 was the orginal ager for ~48%. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NWFSC_2.png), with a APE score of 3.704 (R2 = 0.9707), plots the double reads of NWFSC_2 vs NWFSC_1. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NN_Pred_Rd.png), with a APE score of 6.378 (R2 = 0.9573), plots the NN predicted age vs NWFSC_1.
+For 2022 Combo Sablefish there were 396 TMA double reads for which ager 'NWFSC_1' was the original ager on exactly half of the reads, and the original ager on the other half was 'NWFSC_2'.  Of those double reads, 369 had NN predicted ages. NWFSC_1 was the original ager for ~52% and NWFSC_2 was the original ager for ~48% of those 369. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NWFSC_2.png), with a APE score of 3.704% (R2 = 0.9707), plots the double reads of NWFSC_2 vs NWFSC_1. This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Double_Rds_NWFSC_1_vs_NN_Pred_Rd.png), with a APE score of 6.378% (R2 = 0.9573), plots the NN predicted age vs NWFSC_1. TMA age readers strive to achieve an APE score of less than 5% (Patrick McDonald, personal communication).
 
 
 
