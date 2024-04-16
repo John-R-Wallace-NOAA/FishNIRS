@@ -14,7 +14,7 @@ The stats are:
           n validn R PercAgree    ASD   ACV    AAD   APE
        1553   1553 2     54.09 0.7148 8.849 0.5055 6.257
 
-Other metadata looked at, but not included due to poor performance in this particular FCNN model, were sex, month, and days into the year. The same model except without latitude, has an R squared of 0.9526. The scans only model has an R squared of 0.9378, with a predicted N of 1,556 since there is no missing metadata.
+Other metadata looked at, but not included due to poor performance in this particular FCNN model, were sex, month, and days into the year. The same model, except without latitude, has an R squared of 0.9526. The scans only model has an R squared of 0.9378, with a predicted N of 1,556 since there is no missing metadata.
 
 ### Notes on the Agreement Figures and Stats
 - SAD is the Sum of Absolute Deviations
@@ -34,7 +34,7 @@ A [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie
 ### Metadata only models
 A FCNN training model using 1,513 otoliths with 20 random full fold models was executed.  Forty otoliths were not used for training to look for bias. The total number of oties predicted was 1,553.
 
-The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Otie_Wgt_Fish_Len_Weight_Depth_Metadata_Only_Agreement_Fig.png), only using metadata (no scans), had an R squared of 0.8770 using otolith weight, fish length, fish weight, and depth. Adding latitude to the metadata only model did not work well.
+The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Otie_Wgt_Fish_Len_Weight_Depth_Metadata_Only_Agreement_Fig.png), only using metadata (no scans), had an R squared of 0.8770 using otolith weight, fish length, fish weight, and depth. Adding latitude to the metadata only model did not work well. The stats for the metadata only model are:
 
 
          Correlation R_squared    RMSE     MAE  SAD     APE    N
