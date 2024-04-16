@@ -14,7 +14,7 @@ The stats are:
           n validn R PercAgree    ASD   ACV    AAD   APE
        1553   1553 2     54.09 0.7148 8.849 0.5055 6.257
 
-Other metadata looked at, but not included due to poor performance in this particular FCNN model, were sex, month, and days into the year. The same model, except without latitude, has an R squared of 0.9526. The scans only model has an R squared of 0.9378, with a predicted N of 1,556 since there is no missing metadata.
+Other metadata looked at, but not included due to poor performance in this particular FCNN model, were sex, month, and days into the year. The same model, except without latitude, has an R squared of 0.9526. The scans only model (no metadata) has an R squared of 0.9378, with a predicted N of 1,556 since there is no missing metadata.
 
 ### Notes on the Agreement Figures and Stats
 - SAD is the Sum of Absolute Deviations
