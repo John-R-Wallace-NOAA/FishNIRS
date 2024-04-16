@@ -37,3 +37,13 @@ A FCNN training model using 1,513 otoliths with 20 random full fold models was e
 The best [model](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Otie_Wgt_Fish_Len_Weight_Depth_Metadata_Only_Agreement_Fig.png), only using metadata (no scans), had an R squared of 0.8770 using otolith weight, fish length, fish weight, and depth. Adding latitude to the metadata only model did not work well.
 
 
+         Correlation R_squared    RMSE     MAE  SAD     APE    N
+            0.936458  0.876953 3.79319 1.93883 3011 11.1122 1553
+       
+       
+         FSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:       
+            n validn R PercAgree   ASD   ACV    AAD   APE
+         1553   1553 2     42.82 1.371 15.71 0.9694 11.11
+
+
+
