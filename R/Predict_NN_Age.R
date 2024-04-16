@@ -75,7 +75,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
     
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
     
     '%r1%' <- function (e1, e2) 
     {
@@ -200,7 +200,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
 	dim(newScans)
 	headTail(newScans, 3, 3, 3, 5)
 	
- 	assign("newScans", newScans , pos = 1) # Save for Correlation_R_squared_RMSE_MAE_SAD_Table for various values of N
+ 	assign("newScans", newScans , pos = 1) # Save for Cor_R_squared_RMSE_MAE_SAD_APE_Table for various values of N
 	
     
     if(is.null(NumRdmModels))
