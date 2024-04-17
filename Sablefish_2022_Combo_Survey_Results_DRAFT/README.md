@@ -61,7 +61,7 @@ The final predicted data has the NN predicted median, the 0.025 lower quantile, 
      
      ...
 
-The quantiles are a reflection of the NN models precision based on the 20 full 10-fold randomized models, not the accuracy to the TMA Age (which, after all, may not be available).  This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_TMA_Sorted_Subset.png), based on the best prediction model above, 
+The quantiles are a reflection of the NN models precision based on the 20 full 10-fold randomized models, not the accuracy to the TMA Age.  This [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_TMA_Sorted_Subset.png), based on the best prediction model above, 
 shows the quantile range on a subset (for clarity) of the predicted data where TMA ages are sorted and this [figure](/Sablefish_2022_Combo_Survey_Results_DRAFT/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_Predicted_Ages_Sorted_Subset.png) shows the same except the predicted ages are sorted. Note that the median, as is well known, is a robust measure of central tendency. 
 
 Using 40 full 10-fold randomized models is often a small improvement over 20 full 10-fold models, but 60 full 10-fold models has been seen, in limited testing, to not work as well.
