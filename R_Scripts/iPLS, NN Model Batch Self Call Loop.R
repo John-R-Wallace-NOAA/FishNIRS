@@ -435,6 +435,7 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
    
    unlink(c('.Rprofile', 'Rdm_reps_Iter'))
    load("C:/SIDT/Train_NN_Model/Rdm_model_20.RData")
+   Wrap_Up_Flag <- ""
    
 } else {
 
@@ -754,7 +755,7 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
 # --- Find Median over all Rdm_reps Models and create figures ---
 { ###
 
-if(Rdm_reps_Iter == 20) {
+if(exists('Wrap_Up_Flag')) {
    
    # Only 2 loads needed to redo this section with new data - the Model_Spectra.sg.iPLS has to, of course, match the Rdm_model and Rdm_folds_index and the Conda eniv needs to be loaded properly using the code above.
    # base::load("C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_GPU_Machine/Sable_Combo_2022_FCNN_model_ver_1_5_Rdm_model_21_Dec_2023_08_14_19.RData")
