@@ -106,10 +106,10 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
       #   }     
       if(plot)  {  
          if(contColorVar)
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup)))
+             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ggtitle(main)))
          else    
              print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + 
-                    scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha))))
+                    scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha)) + ggtitle(main)))
                     
             # print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + 
             #           scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = c(1, rep(alpha, length(unique(Spec$Color)) - 1))))))           
@@ -155,10 +155,10 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
      
       if(plot) {
           if(contColorVar)
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup))) 
+             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + ggtitle(main))) 
           else 
             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + 
-                       scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha))))            
+                       scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha)) + ggtitle(main)))            
       }                  
                
       # if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
