@@ -160,7 +160,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
       
       abline(v = as.numeric(substring(SG_Variables_Selected, 2)), col = 'grey')
       dev.off()
-      browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'), browser = ifelse(.Platform$OS.type == 'windows', "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe", getOption("browser")))
+      browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'), browser = ifelse(file.exists("C:/Program Files/Google/Chrome/Application/chrome.exe"), 
+		        "C:/Program Files/Google/Chrome/Application/chrome.exe", "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"))
       # browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))  # Try the default browser.  If getOption("browser") is NULL, I get the Windows Photo Viewer.
     }    
   
@@ -178,8 +179,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
        trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
    
 	  if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
-         shell(paste0("echo.  > ", Predicted_Ages_Path, "\\ERROR_READ_ME.txt"))
-         shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "\\ERROR.txt"))
+         shell(paste0("echo.  > ", Predicted_Ages_Path, "/ERROR_READ_ME.txt"))
+         shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "/ERROR.txt"))
          stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
       }
   
