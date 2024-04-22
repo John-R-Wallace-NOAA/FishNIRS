@@ -251,17 +251,7 @@ Spectra_Set
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---  
 
-# Maximum number of wavebands to show in the spectra figure
-N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
-
-# Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
-#                                 Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
-
-# base::load("C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
-headTail(Model_Spectra_Meta, 2, 2, 3, 46)
-
-(fileNames <- Model_Spectra_Meta$filenames)[1:10]
+(fileNames <- dir(path = Spectra_Path))[1:10]
 if(exists('shortNameSuffix') && shortNameSuffix == 'Year')
    shortNameSuffix. <- apply(matrix(fileNames, ncol = 1), 1, function(x) substr(get.subs(x, sep = "_")[shortNameSegments[1] + 1], yearPosition[1], yearPosition[2]))
 
@@ -271,6 +261,15 @@ if(exists('shortNameSuffix') && shortNameSuffix != 'Year')
 if(!exists('shortNameSuffix'))
     shortNameSuffix. <- NULL
 
+# Maximum number of wavebands to show in the spectra figure
+N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
+
+# Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
+#                                 Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+
+# base::load("C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+headTail(Model_Spectra_Meta, 2, 2, 3, 46)
 
 #   # Change 'Length_prop_max' to 'length_prop_max' if flag is set above
 #   if(lower_case_length_prop_max)
