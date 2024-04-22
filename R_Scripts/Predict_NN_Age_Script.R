@@ -171,10 +171,11 @@ if(Spectra_Set == "Sable_Combo_2022") {
 	
 	
 	# === New Method - Add training results folder (use switchSlash() on the folder path if needed) and folds number here ===
-	Train_Result <- "C:/SIDT/Train_NN_Model"
+	# Train_Result <- "C:/SIDT/Train_NN_Model"
+	Train_Result <- "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Sex/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_No_Lat_Male_Run_1"
 	Folds_Num <- 10 
 	
-	(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, ""FCNN_model..........Rdm_model"")))
+	(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, "FCNN_model..........Rdm_model")))
 	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result, "/", list.files(Train_Result, "Pred_Median_TMA")))
 	dim(NN_Pred_Median_TMA)
 	
@@ -193,7 +194,7 @@ if(Spectra_Set == "Sable_Combo_2021") {
 	Train_Result <- "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST"
 	Folds_Num <- 10 
 	
-	(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, ""FCNN_model..........Rdm_model"")))
+	(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, "FCNN_model..........Rdm_model")))
 	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result, "/", list.files(Train_Result, "Pred_Median_TMA")))
 	dim(NN_Pred_Median_TMA)
 	
@@ -249,7 +250,18 @@ Spectra_Set
 # ============= Pause here when interactively submitting code to R =================
 
 # --- Use Predict_NN_Age() to find the NN predicted ages ---  
-(fileNames <- dir(path = Spectra_Path))[1:10]
+
+# Maximum number of wavebands to show in the spectra figure
+N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
+
+# Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
+#                                 Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+
+# base::load("C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+
+(fileNames <- Model_Spectra_Meta$filenames)[1:10]
 if(exists('shortNameSuffix') && shortNameSuffix == 'Year')
    shortNameSuffix. <- apply(matrix(fileNames, ncol = 1), 1, function(x) substr(get.subs(x, sep = "_")[shortNameSegments[1] + 1], yearPosition[1], yearPosition[2]))
 
@@ -259,14 +271,6 @@ if(exists('shortNameSuffix') && shortNameSuffix != 'Year')
 if(!exists('shortNameSuffix'))
     shortNameSuffix. <- NULL
 
-# Maximum number of wavebands to show in the spectra figure
-N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
-
-# Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
-#                                 Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
-
-base::load("C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-headTail(Model_Spectra_Meta, 2, 2, 3, 46)
 
 #   # Change 'Length_prop_max' to 'length_prop_max' if flag is set above
 #   if(lower_case_length_prop_max)
