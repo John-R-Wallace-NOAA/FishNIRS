@@ -1,4 +1,4 @@
-FCNN_model <- function(layer_dropout_rate = NULL, numCol = ncol(x.train)) {
+FCNN_model <- function(layer_dropout_rate = NULL, numCol = ncol(x.train), activation_function = c('relu', 'elu', 'selu')[1]) {
 
    '  # Fully connected model from the grape texture paper:  '
    '  # Use of Artificial Neural Networks and NIR Spectroscopy for Non-Destructive Grape Texture Prediction. Basile et al. Foods 2022, 11, 281  '
@@ -8,28 +8,28 @@ FCNN_model <- function(layer_dropout_rate = NULL, numCol = ncol(x.train)) {
    if(is.null(layer_dropout_rate)) {
    
       # model %>% 
-      #    layer_dense(units = numCol + 1, activation = 'relu', kernel_initializer = initializer_he_normal(), input_shape = numCol,
+      #    layer_dense(units = numCol + 1, activation = activation_function, kernel_initializer = initializer_he_normal(), input_shape = numCol,
       #            kernel_regularizer = regularizer_l1(0.01)) %>%
-      #    layer_dense(units = floor(numCol/2), activation = 'relu', kernel_initializer = initializer_he_normal(),
+      #    layer_dense(units = floor(numCol/2), activation = activation_function, kernel_initializer = initializer_he_normal(),
       #             kernel_regularizer = regularizer_l1(0.01)) %>%
-      #    layer_dense(units = 1, activation = 'relu') 
+      #    layer_dense(units = 1, activation = activation_function) 
          
        model %>% 
-         layer_dense(units = numCol + 1, activation = 'relu', kernel_initializer = initializer_he_normal(), input_shape = numCol,
+         layer_dense(units = numCol + 1, activation = activation_function, kernel_initializer = initializer_he_normal(), input_shape = numCol,
                  kernel_regularizer = regularizer_l1(0.01)) %>%
-         layer_dense(units = floor(numCol/2), activation = 'relu', kernel_initializer = initializer_he_normal(),
+         layer_dense(units = floor(numCol/2), activation = activation_function, kernel_initializer = initializer_he_normal(),
                   kernel_regularizer = regularizer_l1(0.01)) %>%
-         layer_dense(units = 1, activation = 'relu') 
+         layer_dense(units = 1, activation = activation_function) 
          
    }  else  {
    
       model %>% 
-         layer_dense(units = numCol + 1, activation = 'relu', kernel_initializer = initializer_he_normal(), input_shape = numCol,
+         layer_dense(units = numCol + 1, activation = activation_function, kernel_initializer = initializer_he_normal(), input_shape = numCol,
                  kernel_regularizer = regularizer_l1(0.01)) %>%
-         layer_dense(units = floor(numCol/2), activation = 'relu', kernel_initializer = initializer_he_normal(),
+         layer_dense(units = floor(numCol/2), activation = activation_function, kernel_initializer = initializer_he_normal(),
                   kernel_regularizer = regularizer_l1(0.01)) %>%
          layer_dropout(layer_dropout_rate) %>%         
-         layer_dense(units = 1, activation = 'relu') 
+         layer_dense(units = 1, activation = activation_function) 
    } 
    
    print(summary(model))
