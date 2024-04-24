@@ -21,10 +21,16 @@ plot <- c(TRUE, FALSE)[1]
 # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 'All')[[3]] 
+Rdm_Reps_Main <- c(20, 40, 60)[2]
+
+Metadata_Only <- c(TRUE, FALSE)[1]
+
  
 print(getwd())
 print(Spectra_Set)
-
+cat("\nRdm_Reps_Main =", Rdm_Reps_Main, "\n")
+cat("\nMetadata_Only =", Metadata_Only, "\n\n")
+Sys.sleep(4)
 }
 
 # --- Load functions and packages ---
@@ -149,18 +155,26 @@ k_clear_session()
 
 }  ###
 
-# --- If Model_Spectra.sg.iPLS and TMA_Vector are missing for the current spectra set, create them now ---
+# --- If Model_Spectra.sg.iPLS and TMA_Vector are missing for the current spectra set, create them now, unless a metadata only model is being run ---
 { ###
 
-if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
+if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata_Only) {
 
-   Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = 300, Meta_Path = paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"),
-                                               verbose = verbose, plot = plot, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
-											   
-  # For testing Read_OPUS_Spectra(): Meta_Path <- Spectra_Path <- NULL; Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
+   # Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = 300, Meta_Path = paste0(Spectra_Set, "_NIRS_Scanning_Session_Report.xlsx"),
+   #                                           verbose = verbose, plot = plot, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
+                                               
+   # For testing Read_OPUS_Spectra(): Meta_Path <- Spectra_Path <- NULL; Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
 
-	
-   save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
+   base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+   headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+   print(Table(Model_Spectra_Meta$Sex))
+    
+   Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'F', ]
+   headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+   print(Table(Model_Spectra_Meta$Sex))
+      
+   # -- Early save in case there are problems below --
+   # save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
    # load(file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
    
    
@@ -168,9 +182,10 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
    metadata <- Model_Spectra_Meta[, -(2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1))]
    headTail(metadata, 2)
    
+   # Look at missing data
    print(renum(metadata[(is.na(metadata$TMA) | is.na(metadata$structure_weight_dg) | is.na(metadata$Length_prop_max) | is.na(metadata$Weight_prop_max) | is.na(metadata$Depth_prop_max) | is.na(metadata$Latitude_prop_max)), 
                                     c('filenames', 'TMA', 'structure_weight_g', 'Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Month', 'Days_into_Year', 'Latitude_dd')]))
-	
+    
    #  Remove missing values from (Model_Spectra_Meta
    headTail(Model_Spectra_Meta, 2, 2, 3, 45)
    
@@ -187,7 +202,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
    print(dim(Model_Spectra))
    print(dim(na.omit(Model_Spectra)))
 
-   
+   # Create TMA vector
    (TMA_Vector <- Model_Spectra_Meta$TMA)[1:10]
    length(TMA_Vector)
    sum(is.na(Model_Spectra_Meta$TMA))
@@ -237,17 +252,17 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
    
    browsePlot('mdatools::plotRMSE(Model_Spectra.iPLS.F)')
    
-   # RMSE  before and after selection
+   # RMSE before and after selection
    
    # Find the ylim outside limits and apply to both figures 
     par(mfrow = c(2, 1))
     mdatools::plotRMSE(Model_Spectra.iPLS.F$gm)
-	yMin <- par()$usr[3]
-	yMax <- par()$usr[4]
-	
+    yMin <- par()$usr[3]
+    yMax <- par()$usr[4]
+    
     mdatools::plotRMSE(Model_Spectra.iPLS.F$om)
     yMin <- min(par()$usr[3], yMin)
-	yMax <- max(par()$usr[4], yMax)
+    yMax <- max(par()$usr[4], yMax)
    
    # Use the same ylim for both plots
    browsePlot('
@@ -266,8 +281,9 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
    # Commented out the random selection code below so that the number oties is not reduced
    
    # ---- Scans and metadata run----
-   Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max')]) # dg = decigram
-   								   
+   # Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max')]) # dg = decigram
+   Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max')]) # dg = decigram
+                                      
    save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
    # save(TMA_Vector, file = paste0(Spectra_Set, '_TMA_Vector.RData'))    
 } ##
@@ -279,18 +295,19 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))) {
 # --- NN Model ---
 { ###
 
-# Load the data if needed
-base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')); headTail(Model_Spectra.sg.iPLS, 2, 2, 3, 5)
-base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')); headTail(Model_Spectra_Meta, 2, 2, 3, 46)
-
-# base::load(paste0(Spectra_Set, '_SaveOutOties_Seed_727.RData')); print(length(SaveOutOties))
-# Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ]; print(dim(Model_Spectra_Meta))
-
-# print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
-
-TMA_Vector <- Model_Spectra_Meta$TMA; print(length(TMA_Vector))
-fileNames = Model_Spectra_Meta$filenames; print(length(fileNames))
-
+# Load the data if needed - not neededfor Metadata only model run 
+if(!Metadata_Only) {
+    base::load(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')); headTail(Model_Spectra.sg.iPLS, 2, 2, 3, 5)
+    base::load(paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')); headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+	
+   # base::load(paste0(Spectra_Set, '_SaveOutOties_Seed_727.RData')); print(length(SaveOutOties))
+   # Model_Spectra_Meta <- Model_Spectra_Meta[-SaveOutOties, ]; print(dim(Model_Spectra_Meta))
+   
+   # print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
+   
+   TMA_Vector <- Model_Spectra_Meta$TMA; print(length(TMA_Vector))
+   fileNames = Model_Spectra_Meta$filenames; print(length(fileNames))
+}
 
 # ----- Remove both metadata columns for testing  -----
 # Model_Spectra.sg.iPLS$length_prop_max <- Model_Spectra.sg.iPLS$structure_weight_dg <- NULL
@@ -323,12 +340,30 @@ fileNames = Model_Spectra_Meta$filenames; print(length(fileNames))
 
 
 #  ==== Metadata only model run - no need to load Model_Spectra.sg.iPLS above, has it is created below ====
-     # Commented out the random selection code below so that the number oties is not reduced
-#  Model_Spectra.sg.iPLS <- Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max')] # dg = decigram
-#  headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 2)
+     # Not using the random selection code below so that the number oties is not reduced
+if(Metadata_Only) {	 
+    base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+    headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+    
+    Model_Spectra_Meta <- Model_Spectra_Meta[!(is.na(Model_Spectra_Meta$TMA) | is.na(Model_Spectra_Meta$structure_weight_dg) | is.na(Model_Spectra_Meta$Length_prop_max) 
+                               | is.na(Model_Spectra_Meta$Weight_prop_max) | is.na(Model_Spectra_Meta$Depth_prop_max)), ]
+    print(dim(Model_Spectra_Meta))
+	
+	Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'F', ]
+	dim(Model_Spectra_Meta)
+	save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
+    
+    # Model_Spectra.sg.iPLS <- Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max')] # dg = decigram 
+    Model_Spectra.sg.iPLS <- renum(Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max')]) # dg = decigram 
+    headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 1)
+	save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
+    
+    TMA_Vector <- Model_Spectra_Meta$TMA; print(length(TMA_Vector))
+    fileNames = Model_Spectra_Meta$filenames; print(length(fileNames))
+}
 
 
-# Check again for missing data
+# Check one more time for missing data
 print(dim(Model_Spectra.sg.iPLS))
 print(dim(na.omit(Model_Spectra.sg.iPLS)))
 
@@ -371,19 +406,20 @@ print(dim(na.omit(Model_Spectra.sg.iPLS)))
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
 # Special seed setting for model testing   
-Seed_Fold <- 727 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
+Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
                  #      Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
 
 # ------- Reduce model size to see the change in prediction ability -------
 
 # # --- Random selection of a reduced number of oties ---
-# set.seed(Seed_Fold) 
-# Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  
-# 
-# Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
-# print(dim(Model_Spectra.sg.iPLS))
-# headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5)
-
+if(!Metadata_Only) {
+   # set.seed(Seed_Fold) 
+   # Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  
+   # 
+   # Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
+   # print(dim(Model_Spectra.sg.iPLS))
+   # headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5)
+}
 
 # Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
 # print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
@@ -411,8 +447,8 @@ Seed_Fold <- 727 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_W
 #   
 #   print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
-# Two Random Model steps for each call to the R sub-process (Calling Rgui from Rgui)
-if(!file.exists('Rdm_reps_Iter.RData')) {
+# One Random Model step for each call to the R sub-process (Calling Rgui from Rgui)
+if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
 
    # Create the local initial file '.Rprofile' which Rgui.exe will run when started
    # The listed default packages do not immediately load.  They are loaded by the time a prompt is given,
@@ -422,10 +458,10 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
    shell("echo quit('no',,FALSE) >> .Rprofile")
 
    # for(Rdm_reps_Iter in seq(1, 19, by = 2)) {  # Two loops at a time
-   for(Rdm_reps_Iter in 5:20) {  
+   for(Rdm_reps_Iter in 1:Rdm_Reps_Main) {  
       cat("\n\nRdm_reps_Iter =", Rdm_reps_Iter, "\n\n")
-      save(Rdm_reps_Iter, file = 'C:/SIDT/Train_NN_Model/Rdm_reps_Iter.RData')	
-	  
+      save(Rdm_reps_Iter, file = 'C:/SIDT/Train_NN_Model/Rdm_reps_Iter_Flag.RData')    
+      
       shell("echo cd C:/SIDT/Train_NN_Model > run.bat")
       shell("echo C:/R/R/bin/x64/Rgui.exe --no-save --no-restore --no-site-file --no-environ >> run.bat")
       shell("echo exit >> run.bat")
@@ -433,8 +469,8 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
       shell("del run.bat")
    }
    
-   unlink(c('.Rprofile', 'Rdm_reps_Iter'))
-   load("C:/SIDT/Train_NN_Model/Rdm_model_20.RData")
+   on.exit(unlink(c('.Rprofile', 'Rdm_reps_Iter_Flag.RData')))
+   load(paste0("C:/SIDT/Train_NN_Model/Rdm_model_", Rdm_Reps_Main, ".RData"))
    Wrap_Up_Flag <- ""
    
 } else {
@@ -450,12 +486,12 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
    
    # = = = = = = Pick number of random reps (Rdm_reps), number of folds (num_folds), and iteration number (Iter_Num), then run the NN code and expect long run times. = = = = = = = = =
        
-   load('Rdm_reps_Iter.RData')	
+   load('Rdm_reps_Iter_Flag.RData')    
    cat("\n\nRdm_reps_Iter =", Rdm_reps_Iter, "\n\n")
    
    # Rdm_reps <- Rdm_reps_Iter + 1  # j loop - two loops at a time
    Rdm_reps <- Rdm_reps_Iter  # j loop - one loop at a time
-   num_folds <- 10 # i loop    # How many folds work best for metadata only models was checked
+   num_folds <- 2 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
    Iter_Num <- 8  # Iter while() loop
    
    # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
@@ -499,12 +535,13 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
       
       print(lapply(folds_index, length)) # Check the binning result
       print(c(sum(unlist(lapply(folds_index, length))), length(index_org)))
-   
+      Sys.sleep(5)
       
       Fold_models <- list()
       for (i in 1:num_folds) {
       
           Model_Spectra.sg.iPLS.F <- Model_Spectra.sg.iPLS[-folds_index[[i]], ]
+		  print(dim(Model_Spectra.sg.iPLS.F)); Sys.sleep(3)
           TMA_Vector.F <- TMA_Vector[-folds_index[[i]]]
           
           # Split the data into training set (2/3) and test set (1/3)
@@ -524,14 +561,14 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
           layer_dropout_rate <- NULL
           # layer_dropout_rate <- 0.2
           
-          if(model_Name == 'FCNN_model_ver_1')  model <- FCNN_model_ver_1(layer_dropout_rate = layer_dropout_rate)
+          if(model_Name == 'FCNN_model_ver_1')  model <- FCNN_model_ver_1(layer_dropout_rate = layer_dropout_rate, activation_function = c('relu', 'elu', 'selu')[2])
           if(model_Name == 'CNN_model_ver_5')  model <- CNN_model_ver_5()
           if(model_Name == 'CNN_model_2D')  model <- CNN_model_2D()
                 
           # -- Don't reset Iter, Cor, CA_diag, SAD, or .Random.seed when re-starting the same run ---
           tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU); Seed_Model  # Trying to this here and above (see the help for: tensorflow::set_random_seed)
           set.seed(Seed_Data); Seed_Data # Re-setting the 'data' seed here to know where the model starts, also the Keras backend needs to cleared and the model reloaded - see above.
-   	   
+          
           Iter <- 0
           Cor <- RMSE <- CA_diag <- SAD <- saveModels <- NULL
           saveModels_List <- list()
@@ -545,20 +582,25 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
              k_clear_session()
           
              (Iter <- Iter + 1)
-   		  
+             
              cat(paste0("\n\nRandom Replicates = ", j, ": Fold number = ", i, ": Iter = ", Iter,"\n"))
-   		  
-   		  if(Iter > 1) {
-   		      Iter_Loop_Time_Min <- as.numeric(difftime(Sys.time(), Loop_Start_Time, units = "mins"))
-   		      cat("\nThe last 500 epochs took", format(Iter_Loop_Time_Min, digits = 4), "minutes.  ")  # 500 epochs is hardwired - see below
+             
+             if(Iter > 1) {
+                 Iter_Loop_Time_Min <- as.numeric(difftime(Sys.time(), Loop_Start_Time, units = "mins"))
+                 cat("\nThe last 500 epochs took", format(Iter_Loop_Time_Min, digits = 4), "minutes.\n\n")  # 500 epochs is hardwired - see below
                  Time_Left_Min <- ((Rdm_reps - j) * num_folds * Iter_Num + (num_folds - i) * Iter_Num + (Iter_Num - Iter + 1)) * Iter_Loop_Time_Min
-   			  if(Time_Left_Min < 60)  cat("Around", format(Time_Left_Min, digits = 4), "minutes left.\n\n")
-   			  if(Time_Left_Min >= 60 & Time_Left_Min < 60 * 24)  cat("Around", format(Time_Left_Min/60, digits = 4), "hours left.\n\n")
-   		      if(Time_Left_Min >= 60 * 24)  cat("Around", format(Time_Left_Min/60/24, digits = 4), "days left.\n\n")
-   		  } 
-   		  
-   		  Loop_Start_Time <- Sys.time()
-   		  
+                 if(Time_Left_Min < 60)  cat("Approximately", format(Time_Left_Min, digits = 4), "minutes remaining for this loop. ")
+                 if(Time_Left_Min >= 60 & Time_Left_Min < 60 * 24)  cat("Approximately", format(Time_Left_Min/60, digits = 4), "hours remaining for this loop. ")
+                 if(Time_Left_Min >= 60 * 24)  cat("Approximately", format(Time_Left_Min/60/24, digits = 4), "days remaining for this loop. ")
+				 
+				 Time_Left_Min_All <- ((Rdm_Reps_Main - j) * num_folds * Iter_Num + (num_folds - i) * Iter_Num + (Iter_Num - Iter + 1)) * Iter_Loop_Time_Min
+                 if(Time_Left_Min_All < 60)  cat("Around", format(Time_Left_Min_All, digits = 4), "minutes left to finish.\n\n")
+                 if(Time_Left_Min_All >= 60 & Time_Left_Min_All < 60 * 24)  cat("Around", format(Time_Left_Min_All/60, digits = 4), "hours left to finish.\n\n")
+                 if(Time_Left_Min_All >= 60 * 24)  cat("Around", format(Time_Left_Min_All/60/24, digits = 4), "days left to finish.\n\n")
+             } 
+             
+             Loop_Start_Time <- Sys.time()
+             
         
              # config <- tf$compat.v1.ConfigProto(intra_op_parallelism_threads = 2L, inter_op_parallelism_threads = 2L)
              # session <-  tf$Session(config = config)
@@ -570,7 +612,7 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
              # FCNN model
              if(model_Name == 'FCNN_model_ver_1') {
                 x.train.array <- as.matrix(x.train)
-   			 # callback_tensorboard() writes a log for TensorBoard, which allows you to visualize dynamic graphs of your training and test metrics.
+                # callback_tensorboard() writes a log for TensorBoard, which allows you to visualize dynamic graphs of your training and test metrics.
                 history <- fit(model, x.train.array, y.train, epochs = 1, batch_size = 32, validation_split = 0.2, verbose = 2, 
                                 callbacks = if(file.exists('NN_Verbose_Flag.txt')) list(callback_tensorboard(histogram_freq = 1, profile_batch = 2)) else NULL, view_metrics = FALSE)  
                 history <- fit(model, x.train.array, y.train, epochs = 198, batch_size = 32, validation_split = 0.2, verbose = ifelse(file.exists('NN_Verbose_Flag.txt'), 2, 0), view_metrics = ifelse(file.exists('NN_Verbose_Flag.txt'), TRUE, FALSE))
@@ -581,8 +623,8 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
                 x.test.array <- as.matrix(x.test)
              }
              
-   		  viewMetrics <- c(TRUE, FALSE)[2]
-   		  
+             viewMetrics <- c(TRUE, FALSE)[2]
+             
              # CNN_model ver 1,3,4,5
              if(model_Name == 'CNN_model_ver_5') {
                 x.train.array <- array(as.matrix(x.train), c(nrow(x.train), ncol(x.train), 1))
@@ -613,8 +655,8 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
              
              dev.set(3)
              print(plot(history))
-   		  if(file.exists('NN_Verbose_Flag.txt'))
-   		     browsePlot('print(plot(history))', file = paste0("NN_History_Iter_", Iter, ".png")) # Save NN History figures
+             if(file.exists('NN_Verbose_Flag.txt'))
+                browsePlot('print(plot(history))', file = paste0("NN_History_Iter_", Iter, ".png")) # Save NN History figures
                  
              # Predict using the test set; plot, create statistics, and create an agreement table
              y.test.pred <- predict(model, x.test.array)
@@ -664,24 +706,24 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
              
              plot(1:length(RMSE), RMSE, col = 'green', type = 'b', ylab = "RMSE (green)", xlab = "Iteration Number")
              abline(h = 4, lty = 2, col ='grey39', lwd = 1.25)
-   		  
-   		  if(Iter < 5) 
-   		     try(plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
-   		  else
-   		     try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+             
+             if(Iter < 5) 
+                try(plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+             else
+                try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
              abline(h = 0.2, lty = 2, col ='grey39', lwd = 1.25)
             
              # Avoiding high SAD values at the beginning, and rarely, during a run.
              SAD_plot <- SAD
              SAD_plot[SAD_plot > 1400] <- NA  # Extreme model runs can, on a very rare occasion, put the value of SAD above 1,400 beyond the initial runs
-   		  
-   		  if(Iter < 5) 
-   		     try(plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
-   		  else
+             
+             if(Iter < 5) 
+                try(plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
+             else
                 try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
              abline(h = 950, lty = 2, col ='grey39', lwd = 1.25)
              
-   		  # Save all the iteration models until the best one is found
+             # Save all the iteration models until the best one is found
              print(saveName <- paste0(Spectra_Set, '_', paste(get.subs(model_Name, "_")[-2], collapse = "_"), '_SM_', Seed_Model, '_RI_', j, '_LR_', 
                 format(learningRate, sci = FALSE), '_LD_', ifelse(is.null(layer_dropout_rate), 0, layer_dropout_rate), '_It_', length(SAD), 
                 '_SAD_', rev(SAD)[1], '_', timeStamp()))
@@ -735,7 +777,8 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
          y.fold.test.pred.ALL <- c(y.fold.test.pred.ALL, predict(keras::unserialize_model(Fold_models[[k]], custom_objects = NULL, compile = TRUE), x.fold.test))
       }
    
-      browsePlot('agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j))')   
+      # This agreement figure is now quickly lost with the self calling loop.  The same plots in the wrap up code have now been un-commmented.
+      # browsePlot('agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j))')   
       
       
       SG_Variables_Selected <- names(Model_Spectra.sg.iPLS)
@@ -754,6 +797,7 @@ if(!file.exists('Rdm_reps_Iter.RData')) {
 
 # --- Find Median over all Rdm_reps Models and create figures ---
 { ###
+
 
 if(exists('Wrap_Up_Flag')) {
    
@@ -780,7 +824,7 @@ if(exists('Wrap_Up_Flag')) {
             cat(paste0("\nRdm_reps ", j, ": Fold_model ", i, "\n"))
          x.fold.test <- as.matrix(1000 * Model_Spectra.sg.iPLS[folds_index[[i]], ])
          y.fold.test.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test))
-   	  if(verbose)
+         if(verbose)
             print(c(length(folds_index[[i]]), length(y.fold.test.pred)))
          y.fold.test.pred.ALL <- rbind(y.fold.test.pred.ALL, cbind(Index = folds_index[[i]], y.test.fold.pred = y.fold.test.pred))
       }
@@ -798,8 +842,8 @@ if(exists('Wrap_Up_Flag')) {
       # dev.new(width = 11, height = 8)
       # agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))
       
-      # if(verbose)
-      #   browsePlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
+      if(verbose)
+           browsePlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
      
       # Full figure only needed for a long-lived species like Sablefish
       # dev.new(width = 11, height = 8)
@@ -918,11 +962,6 @@ if(exists('Wrap_Up_Flag')) {
    save(list = paste0(Spectra_Set, '_NN_Pred_Median_TMA'), file = paste0(Spectra_Set, '_', model_Name, '_', length(Rdm_folds_index), '_Pred_Median_TMA_', timeStamp(), '.RData'))
    
    
-   # This agreementFigure() already produced above
-   # (y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM, 2, median))[1:10]
-   # browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)')
-   
-   
    # Copy the spectra set prediction to a generic name and add a rounded prediction by adding the best delta found above
    Model_Ages <- get(paste0(Spectra_Set, '_NN_Pred_Median_TMA'))
    Model_Ages$Pred_Age_Rounded <- round(Model_Ages$NN_Pred_Median + Delta)
@@ -999,6 +1038,9 @@ if(exists('Wrap_Up_Flag')) {
 }   
    
 }  ###
+
+if(exists('Wrap_Up_Flag'))
+     source("C:/SIDT/Predict_NN_Ages/Predict_NN_Age_Script.R")
    
 
 
