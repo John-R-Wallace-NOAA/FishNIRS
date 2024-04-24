@@ -1,5 +1,5 @@
 
-agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, main = "", xlab = deparse(substitute(Observed)), browserPlot = FALSE, 
+agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, Folds = NULL, main = "", xlab = deparse(substitute(Observed)), browserPlot = FALSE, 
                       ylab = paste0(deparse(substitute(Predicted)), ifelse(is.null(Delta), "", " (rounded after adding Delta)")), full = TRUE, axes_zoomed_limits = 0:15, 
                       cex = ifelse(full, 0.75, 1.25), col_equal = 'red', col_off_1_or_2 = 'gold', col_off_3_or_4 = 'green', col_off_5_or_greater = 'navyblue', ...) {
   
@@ -40,6 +40,13 @@ agreementFigure <- function(Observed, Predicted, Delta = NULL, Iter = 0, main = 
    Agreement_Table$N_char <- as.character(Agreement_Table$N)
    Agreement_Table$N_char[Agreement_Table$N_char == "0"] <- " "
    
+   if(!is.null(Folds)) {
+   
+        if(Folds == 1) 
+		   main <- ifelse(main == "", paste0("Fold = ", Folds), paste0(main, "; Fold = ", Folds))
+		else
+           main <- ifelse(main == "", paste0("Folds = ", Folds), paste0(main, "; Folds = ", Folds))
+   }
    
    if(!is.null(Delta))
         main <- ifelse(main == "", paste0("Delta = ", Delta), paste0(main, "; Delta = ", Delta))
