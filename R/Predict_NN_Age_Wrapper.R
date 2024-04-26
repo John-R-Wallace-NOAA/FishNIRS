@@ -95,8 +95,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                  fileName <- rev(fileName)[1]
                  write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
                }  
-        }
-     
+     } 
+     ###
      
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/load.R") # For interactive use - not currently used below
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
@@ -265,7 +265,11 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                                          Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose, Folds_Num = ifelse(exists('Folds_Num'), Folds_Num, 10)) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
      
      New_Ages <- New_Ages_Pred[['New_Ages']]
+	 
+	 cat("\n\nNew_Ages  Missing Predictions\n")
      print(New_Ages[is.na(New_Ages$NN_Pred_Median), ])  # Missing predictions
+	 
+	 cat("\n\nNew_Ages\n")
      New_Ages <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]  # Non-missing predictions
      headTail(New_Ages)
      
@@ -296,7 +300,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # --- Save ages ---
          save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
      	
-     	# --- Save metadata to a new NIRS_Scanning_Session_Report
+     	 # --- Save metadata to a new NIRS_Scanning_Session_Report
          # metadata$length_cm <- metadata$weight_kg <- NULL   
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975"))
@@ -356,29 +360,27 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
              New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
          New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
          headTail(New_Ages)
-     	cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "\n\n")  # R Squared)
+     	 cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "\n\n")  # R Squared)
      	
          
-     	if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
-     	    # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds. A new Delta (likely the same) can be found here since the TMA ages are available.
-             Delta_Table <- NULL
-             for (Delta. in seq(0, -0.45, by  = -0.05)) {
-               # cat("\n\n")
-               # print(c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
-               Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
-             }
-     	    
-             print(Delta_Table <- data.frame(Delta_Table)) 
-               
-             # Best Delta from table above
-     		(Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$RMSE))[1]])
-     		cat("\nBest Delta from the table above", Delta, "\n\n")
-         
-     	} else {
+     	 if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
+     	     # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds. A new Delta (likely the same) can be found here since the TMA ages are available.
+              Delta_Table <- NULL
+              for (Delta. in seq(0, -0.45, by  = -0.05)) {
+                # cat("\n\n")
+                # print(c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
+                Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
+              }
+     	     
+              print(Delta_Table <- data.frame(Delta_Table)) 
+                
+              # Best Delta from table above
+     	 	 (Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$RMSE))[1]])
+     	 	 cat("\nBest Delta from the table above", Delta, "\n\n")
+          
+     	 } else {
      	    # ----- Extract the rounding Delta -----
              Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
-             New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
-             cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
          }
      	
          New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
@@ -388,9 +390,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      	
          # --- Save ages ---
          save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
-     	save(newScans.pred.ALL, file = paste0(Predicted_Ages_Path, '/newScans.pred.ALL, ', Date(" "), '.RData'))
+     	 save(newScans.pred.ALL, file = paste0(Predicted_Ages_Path, '/newScans.pred.ALL, ', Date(" "), '.RData'))
      	
-     	# --- Save metadata to a new NIRS_Scanning_Session_Report
+     	 # --- Save metadata to a new NIRS_Scanning_Session_Report
          # metadata$length_cm <- metadata$weight_kg <- NULL   
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975", "TMA"))
@@ -407,6 +409,11 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # --- Add Index to New_ages and set colors and pchs for the figures below ---
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
          headTail(New_Ages, 3)
+		 assign('New_Ages', New_Ages, pos = 1)
+		 assign('Delta', Delta, pos = 1) 
+		 assign('Seed_Plot', Seed_Plot, pos = 1) 
+		 assign('Rdm_Reps_Main', Rdm_Reps_Main, pos = 1)
+		 assign('Folds_Num', Folds_Num, pos = 1)
          cols <- c('green', 'red')
          pchs <- c(16, 1)
      	
@@ -429,6 +436,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
          geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+		 assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'), width = 18, height = 10,)
          
          # New_Ages$Rounded_Age <- factor(" ") # This is needed for ggplotly plotting below
@@ -444,6 +452,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # -- Relative error by TMA age --
          g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
      	     panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+         assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_TMA_age.png'))
          
          # -- Plot of relative error by sorted TMA age --   
@@ -452,6 +461,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          if(verbose) headTail(New_Ages_Sorted, 5)
          g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
      	      panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+         assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_sorted_TMA.png'))
          
          
@@ -466,7 +476,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
          geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
-         scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')  
+         scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
+         assign('g', g, pos = 1)		 
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
          
          # https://r-graphics.org/recipe-scatter-shapes   
@@ -488,6 +499,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
+		 assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
         
      	
@@ -500,6 +512,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, TMA, col = cols[2])) + 
          geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+		 assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
          
          
@@ -515,6 +528,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, TMA, col = cols[2])) + 
          geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
+		 assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted_Subset.png'))
        
        
@@ -548,7 +562,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
-           
+            
+			assign('New_Ages_Good', New_Ages_Good, pos = 1)
             xlim <- c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25)   
             New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
             browsePlot('
