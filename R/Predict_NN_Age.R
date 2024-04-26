@@ -70,6 +70,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")    
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")  
+	sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/ls.RData.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")   
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
@@ -101,15 +102,15 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     if (!any(installed.packages()[, 1] %in% "keras")) 
       install.packages("keras") 
     
-    # --- Setup for TensorFlow and Keras ---
+    # -- Setup for TensorFlow and Keras --
     require(tensorflow)
     require(keras) 
     
-    # --- Change this path to where your Conda TensorFlow environment is located. ---
+    # -- Change this path to where your Conda TensorFlow environment is located. --
     Sys.setenv("RETICULATE_PYTHON" = Conda_TF_Eniv) # If this is function is called in the normal way from a species script, then this is line is redundant, otherwise it may be needed.
     print(Sys.getenv("RETICULATE_PYTHON"))
 	
-    # # --- Test TensorFlow environment ---
+    # # -- Test TensorFlow environment --
     # a <- tf$Variable(5.56)
     # b <- tf$Variable(2.7)
     # cat("\nTensorFlow Math Check (5.56 + 2.70):\n")
@@ -118,19 +119,26 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # k_clear_session()
     
     # --- Load the NN model for SG_Variables_Selected and Rdm_models objects ---
-    if(!verbose)
-       base::load(NN_Model)
-       
-    if(verbose) {
-       '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
-       base::load(NN_Model, envir = parent.frame()) # Save to [[.GlobalEnv]] 
-       print(ll()); cat("\n\n")
-       if(!interactive())  Sys.sleep(3)
-    }
+       #  if(!verbose)
+       #     base::load(NN_Model)
+       #     
+       #  if(verbose) {
+       #  '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
+       #     #base::load(NN_Model, envir = parent.frame(2)) # Save to [[.GlobalEnv]] n = 2 now that the Predict_NN_Age_Wrapper is a function
+       #     print(ll()); cat("\n\n")
+	   #     if(!interactive())  Sys.sleep(3)
+       #  }
+	
+	cat("\n\nNN_Model Path:" , NN_Model, "\n\n")
+	base::load(NN_Model)
+	
+	if(verbose) {
+	   ls.RData(NN_Model)
+	   Sys.sleep(2)
+	}
+	
     
-    # Find the metadata variables that are in the NN Model
-	
-	
+    # -- Find the metadata variables that are in the NN Model --
 	SG_Variables_Selected[grep("Length_cm", SG_Variables_Selected)] <- "Length_prop_max"
     SG_Variables_Selected[grep("length_prop_max", SG_Variables_Selected)] <- "Length_prop_max"
 	SG_Variables_Selected[grep("Weight_kg", SG_Variables_Selected)] <- "Weight_prop_max"
@@ -140,7 +148,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
 	print(SG_Variables_Selected[metaDataVar])
 	
    
-    # Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta
+    # -- Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta --
     newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
     if(verbose) {
 	   print(headTail(newScans.RAW, 5))
@@ -162,6 +170,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
       dev.off()
       browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'), browser = ifelse(file.exists("C:/Program Files/Google/Chrome/Application/chrome.exe"), 
 		        "C:/Program Files/Google/Chrome/Application/chrome.exe", "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"))
+				
       # browseURL(paste0(getwd(), "/", Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))  # Try the default browser.  If getOption("browser") is NULL, I get the Windows Photo Viewer.
     }    
   
