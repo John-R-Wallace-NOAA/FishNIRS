@@ -21,16 +21,16 @@ plot <- c(TRUE, FALSE)[1]
 # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 'All')[[3]] 
-Rdm_Reps_Main <- c(20, 40, 60)[2]
+Rdm_Reps_Main <- c(20, 40, 60)[1]
 
 Metadata_Only <- c(TRUE, FALSE)[1]
 
  
 print(getwd())
 print(Spectra_Set)
-cat("\nRdm_Reps_Main =", Rdm_Reps_Main, "\n")
+cat("\nRdm_Reps_Main =", Rdm_Reps_Main)
 cat("\nMetadata_Only =", Metadata_Only, "\n\n")
-Sys.sleep(4)
+Sys.sleep(3)
 }
 
 # --- Load functions and packages ---
@@ -91,6 +91,7 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/FCNN_Model.R");  FCNN_model_ver_1 <- FCNN_model
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_ver_5.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age_Wrapper.R")
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_2D.R")  # Not working yet
 
 lib(lattice)
@@ -104,6 +105,7 @@ lib(skimr)
 lib(e1071)
 lib(mdatools)
 lib(plotly)
+lib(FSA)
 lib(reticulate)
 lib(tensorflow)
 lib(keras)
@@ -349,7 +351,7 @@ if(Metadata_Only) {
                                | is.na(Model_Spectra_Meta$Weight_prop_max) | is.na(Model_Spectra_Meta$Depth_prop_max)), ]
     print(dim(Model_Spectra_Meta))
 	
-	Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'F', ]
+	Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'M', ]
 	dim(Model_Spectra_Meta)
 	save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
     
@@ -406,7 +408,7 @@ print(dim(na.omit(Model_Spectra.sg.iPLS)))
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
 # Special seed setting for model testing   
-Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
+Seed_Fold <- 727 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
                  #      Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
 
 # ------- Reduce model size to see the change in prediction ability -------
@@ -471,6 +473,7 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
    
    on.exit(unlink(c('.Rprofile', 'Rdm_reps_Iter_Flag.RData')))
    load(paste0("C:/SIDT/Train_NN_Model/Rdm_model_", Rdm_Reps_Main, ".RData"))
+   Folds_Num <- 2
    Wrap_Up_Flag <- ""
    
 } else {
@@ -484,14 +487,14 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
    dev.new(width = 10, height = 10) # 6
    dev.new(width = 10, height = 10) # 7
    
-   # = = = = = = Pick number of random reps (Rdm_reps), number of folds (num_folds), and iteration number (Iter_Num), then run the NN code and expect long run times. = = = = = = = = =
+   # = = = = = = Pick number of random reps (Rdm_reps), number of folds (Folds_Num), and iteration number (Iter_Num), then run the NN code and expect long run times. = = = = = = = = =
        
    load('Rdm_reps_Iter_Flag.RData')    
    cat("\n\nRdm_reps_Iter =", Rdm_reps_Iter, "\n\n")
    
    # Rdm_reps <- Rdm_reps_Iter + 1  # j loop - two loops at a time
    Rdm_reps <- Rdm_reps_Iter  # j loop - one loop at a time
-   num_folds <- 2 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
+   Folds_Num <- 2 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
    Iter_Num <- 8  # Iter while() loop
    
    # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
@@ -522,23 +525,23 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
       #   The split is based on the current seed which is dictated by Seed_Main (see above).
       set.seed(Seed_Data)
       index_org <- 1:nrow(Model_Spectra.sg.iPLS)
-      (fold_size_min <- floor(length(index_org)/num_folds))
-      (num_extra <- num_folds * dec(length(index_org)/num_folds))
+      (fold_size_min <- floor(length(index_org)/Folds_Num))
+      (num_extra <- Folds_Num * dec(length(index_org)/Folds_Num))
       index <- index_org
       folds_index <- list()
-      for(i in 1:(num_folds - 1)) {
+      for(i in 1:(Folds_Num - 1)) {
          print(c(fold_size_min, i, num_extra, i <= num_extra, fold_size_min + ifelse(i <= num_extra, 1, 0), i - num_extra))
          folds_index[[i]] <- sample(index, fold_size_min + ifelse(i < (num_extra + 0.1), 1, 0))  # Finite math - grr!
          index <- index[!index %in% folds_index[[i]]]
       }
-      folds_index[[num_folds]] <- index  # Remainder from the above for() loop goes into the last fold index
+      folds_index[[Folds_Num]] <- index  # Remainder from the above for() loop goes into the last fold index
       
       print(lapply(folds_index, length)) # Check the binning result
       print(c(sum(unlist(lapply(folds_index, length))), length(index_org)))
       Sys.sleep(5)
       
       Fold_models <- list()
-      for (i in 1:num_folds) {
+      for (i in 1:Folds_Num) {
       
           Model_Spectra.sg.iPLS.F <- Model_Spectra.sg.iPLS[-folds_index[[i]], ]
 		  print(dim(Model_Spectra.sg.iPLS.F)); Sys.sleep(3)
@@ -561,7 +564,7 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
           layer_dropout_rate <- NULL
           # layer_dropout_rate <- 0.2
           
-          if(model_Name == 'FCNN_model_ver_1')  model <- FCNN_model_ver_1(layer_dropout_rate = layer_dropout_rate, activation_function = c('relu', 'elu', 'selu')[2])
+          if(model_Name == 'FCNN_model_ver_1')  model <- FCNN_model_ver_1(layer_dropout_rate = layer_dropout_rate, activation_function = c('relu', 'elu', 'selu')[3])
           if(model_Name == 'CNN_model_ver_5')  model <- CNN_model_ver_5()
           if(model_Name == 'CNN_model_2D')  model <- CNN_model_2D()
                 
@@ -588,12 +591,12 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
              if(Iter > 1) {
                  Iter_Loop_Time_Min <- as.numeric(difftime(Sys.time(), Loop_Start_Time, units = "mins"))
                  cat("\nThe last 500 epochs took", format(Iter_Loop_Time_Min, digits = 4), "minutes.\n\n")  # 500 epochs is hardwired - see below
-                 Time_Left_Min <- ((Rdm_reps - j) * num_folds * Iter_Num + (num_folds - i) * Iter_Num + (Iter_Num - Iter + 1)) * Iter_Loop_Time_Min
+                 Time_Left_Min <- ((Rdm_reps - j) * Folds_Num * Iter_Num + (Folds_Num - i) * Iter_Num + (Iter_Num - Iter + 1)) * Iter_Loop_Time_Min
                  if(Time_Left_Min < 60)  cat("Approximately", format(Time_Left_Min, digits = 4), "minutes remaining for this loop. ")
                  if(Time_Left_Min >= 60 & Time_Left_Min < 60 * 24)  cat("Approximately", format(Time_Left_Min/60, digits = 4), "hours remaining for this loop. ")
                  if(Time_Left_Min >= 60 * 24)  cat("Approximately", format(Time_Left_Min/60/24, digits = 4), "days remaining for this loop. ")
 				 
-				 Time_Left_Min_All <- ((Rdm_Reps_Main - j) * num_folds * Iter_Num + (num_folds - i) * Iter_Num + (Iter_Num - Iter + 1)) * Iter_Loop_Time_Min
+				 Time_Left_Min_All <- ((Rdm_Reps_Main - j) * Folds_Num * Iter_Num + (Folds_Num - i) * Iter_Num + (Iter_Num - Iter + 1)) * Iter_Loop_Time_Min
                  if(Time_Left_Min_All < 60)  cat("Around", format(Time_Left_Min_All, digits = 4), "minutes left to finish.\n\n")
                  if(Time_Left_Min_All >= 60 & Time_Left_Min_All < 60 * 24)  cat("Around", format(Time_Left_Min_All/60, digits = 4), "hours left to finish.\n\n")
                  if(Time_Left_Min_All >= 60 * 24)  cat("Around", format(Time_Left_Min_All/60/24, digits = 4), "days left to finish.\n\n")
@@ -695,11 +698,8 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
              #    cat("\nCorrelation between sum of Absolute Differences and the classAgreement Diagonal =", signif(cor(SAD[5:length(SA)], CA_diag[5:length(CA_diag)]), 6), "\n")
                   cat("\nCorrelation between sum of Absolute Differences and the classAgreement Diagonal =", signif(cor(SAD, tail(CA_diag, length(SAD))), 6), "\n")
             
-             # dev.new(width = 14, height = 10)
-             # agreementFigure(y.test, y.test.pred, Delta, full = TRUE)
-            
              dev.set(5)  # agreementFigure() also prints out the Correlation, R_squared, RMSE, MAE, SAD (Sum of Absolute Differences) 
-             agreementFigure(y.test, y.test.pred, Delta, full = FALSE, main = paste0("Random Reps = ", j, ": Fold Num = ", i, ": Iter = ", Iter))
+             agreementFigure(y.test, y.test.pred, Delta = Delta, full = FALSE, main = paste0("Random Reps = ", j, "; Folds = ", i, "; Iter = ", Iter))
             
              dev.set(2)
              par(mfrow = c(3, 1))
@@ -753,10 +753,10 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
           y.fold.test.pred <- predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), x.fold.test)
           
           dev.set(6)
-          agreementFigure(y.fold.test, y.fold.test.pred, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j, ": Fold Num = ", i)) 
+          agreementFigure(y.fold.test, y.fold.test.pred, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j, "; Fold Num = ", i)) 
           
           dev.set(7)
-          agreementFigure(y.fold.test, y.fold.test.pred, Delta = Delta, full = FALSE, main = paste0("Random Rep = ", j, ": Fold Num = ", i)) 
+          agreementFigure(y.fold.test, y.fold.test.pred, Delta = Delta, full = FALSE, main = paste0("Random Rep = ", j, "; Fold Num = ", i)) 
       } # j Fold loop
       
       if(!file.exists('Run_NN_Model_Flag'))
@@ -777,10 +777,6 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
          y.fold.test.pred.ALL <- c(y.fold.test.pred.ALL, predict(keras::unserialize_model(Fold_models[[k]], custom_objects = NULL, compile = TRUE), x.fold.test))
       }
    
-      # This agreement figure is now quickly lost with the self calling loop.  The same plots in the wrap up code have now been un-commmented.
-      # browsePlot('agreementFigure(y.fold.test.ALL, y.fold.test.pred.ALL, Delta = Delta, full = TRUE, main = paste0("Random Rep = ", j))')   
-      
-      
       SG_Variables_Selected <- names(Model_Spectra.sg.iPLS)
       roundingDelta <- Delta  # This Delta is only the previous estimate or guess for now (see above). The best rounding Delta is again tested for in the predict script.
       
@@ -838,16 +834,13 @@ if(exists('Wrap_Up_Flag')) {
       
       cat(paste0("\nRdm_reps ", j, "\n"))
       print(dim(y.fold.test.pred_RDM))
-      
-      # dev.new(width = 11, height = 8)
-      # agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))
-      
+     
       if(verbose)
-           browsePlot('agreementFigure(TMA_Vector, y.test.pred, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
+           browsePlot('agreementFigure(TMA_Vector, y.test.pred, Folds = Folds_Num, Delta = -0.05, full = TRUE, main = paste0("Random Rep = ", j))') # Delta is a previous estimate or guess for now
      
       # Full figure only needed for a long-lived species like Sablefish
       # dev.new(width = 11, height = 8)
-      # agreementFigure(TMA_Vector, y.test.pred, Delta = -0.25, full = FALSE, main = paste0("Random Rep = ", j))
+      # agreementFigure(TMA_Vector, y.test.pred, Folds = Folds_Num,  Delta = -0.05, full = FALSE, main = paste0("Random Rep = ", j))
    }
    
    
@@ -886,11 +879,9 @@ if(exists('Wrap_Up_Flag')) {
    
    
    # Agreement Figures (standard and zoomed) using the best delta from above
-   # dev.new(width = 11, height = 8) # R plot window version
-   # agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, ' Full k-Fold Models'), cex = 1.25) # R plot window version
-   # browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = 'Figures/Sable_2022_Combo_20_Rdm_Final.pdf', pdf = TRUE) # PDF version
-   browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"))', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final.png'))
-   browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Delta = Delta, full = FALSE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"))', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final_Zoomed.png'))
+   # browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"), cex = 1.25)', file = 'Figures/Sable_2022_Combo_20_Rdm_Final.pdf', pdf = TRUE) # PDF version
+   browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"))', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final.png'))
+   browsePlot('agreementFigure(TMA_Vector, y.fold.test.pred_RDM_median,  Folds = Folds_Num, Delta = Delta, full = FALSE, main = paste0("Median over ", Rdm_reps, " Full k-Fold Models"))', file = paste0('Figures/', Spectra_Set, '_', length(Rdm_folds_index), '_Rdm_Final_Zoomed.png'))
                                                                                                                                                   
    
    # Apply that best Delta (from above) to all Rdm_reps models individually
@@ -1040,9 +1031,10 @@ if(exists('Wrap_Up_Flag')) {
 }  ###
 
 if(exists('Wrap_Up_Flag'))
-     source("C:/SIDT/Predict_NN_Ages/Predict_NN_Age_Script.R")
-   
-
+     # Predict_NN_Age_Wrapper(Spectra_Set = "Sable_Combo_2022",  Train_Result = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta = "C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+	 Predict_NN_Age_Wrapper(Spectra_Set = "Sable_Combo_2022", Train_Result = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+     # source("C:/SIDT/Predict_NN_Ages/Predict_NN_Age_Script.R")
+  
 
 
 
