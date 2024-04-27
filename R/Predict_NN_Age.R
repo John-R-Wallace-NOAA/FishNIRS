@@ -119,23 +119,24 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # k_clear_session()
     
     # --- Load the NN model for SG_Variables_Selected and Rdm_models objects ---
-       #  if(!verbose)
-       #     base::load(NN_Model)
-       #     
-       #  if(verbose) {
-       #  '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
-       #     #base::load(NN_Model, envir = parent.frame(2)) # Save to [[.GlobalEnv]] n = 2 now that the Predict_NN_Age_Wrapper is a function
-       #     print(ll()); cat("\n\n")
-	   #     if(!interactive())  Sys.sleep(3)
-       #  }
-	
+    if(!verbose)
+       base::load(NN_Model)
+    
+    if(verbose) {
 	cat("\n\nNN_Model Path:" , NN_Model, "\n\n")
-	base::load(NN_Model)
+     '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
+        base::load(NN_Model, envir = parent.frame(sys.nframe() + 1)) # Save to [[.GlobalEnv]] just soo ll() will work... grr!
+        print(ll()); cat("\n\n")
+	Sys.sleep(2)
+    }
 	
-	if(verbose) {
-	   ls.RData(NN_Model)
-	   Sys.sleep(2)
-	}
+	# cat("\n\nNN_Model Path:" , NN_Model, "\n\n")
+	# base::load(NN_Model)
+	
+	# if(verbose) {
+	#    ls.RData(NN_Model)
+	#    Sys.sleep(2)
+	# }
 	
     
     # -- Find the metadata variables that are in the NN Model --
