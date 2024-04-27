@@ -152,7 +152,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         print(Meta_Path <- paste0('C:/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
         print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
         opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-		Sys.sleep(4)
+		Sys.sleep(2)
      }  
      
      # (4) Sablefish 2021, Combo survey predicted with Sable 2022 Model
@@ -536,8 +536,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA  --
          dim(New_Ages)
          
-         xlim <- c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25)   
+         assign('xlim', c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25), pos = 1)		 
          New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
+		 assign('New_Ages', New_Ages, pos = 1)
          browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                            grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png'))
        					 
@@ -563,9 +564,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
             
-			assign('New_Ages_Good', New_Ages_Good, pos = 1)
-            xlim <- c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25)   
+            assign('xlim', c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25) , pos = 1)			
             New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+			assign('New_Ages_Good', New_Ages_Good, pos = 1)
             browsePlot('
                 set.seed(Seed_Plot)
                 gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
