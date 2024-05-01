@@ -2,7 +2,7 @@
 
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019")[3], 
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = TRUE,
-						   opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
+						   opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
 						   Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
 						   Predicted_Ages_Path = "Predicted_Ages", Meta_Add  = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
 
