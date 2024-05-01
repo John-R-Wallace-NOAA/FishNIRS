@@ -1,9 +1,10 @@
 
 
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019")[3], 
-                           Train_Result = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL,
-                           Rdm_Reps_Main = 20, Folds_Num = 10, Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
-                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add  = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
+                           Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = TRUE,
+						   opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
+						   Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
+						   Predicted_Ages_Path = "Predicted_Ages", Meta_Add  = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
 
     '  ################################################################################################################################################################                             '
     '  #       Need >= R ver 3.0                                                                                                                                      #                             '
@@ -121,74 +122,84 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
      # =================================================================================================================================================================== 
         
-        
-     # (1) Hake 2019, BMS
-     if(Spectra_Set == "Hake_2019") {
-        NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   # Change path to the Spectra Set's NN model as needed - 10-20 random models each with 10-fold complete 'k-fold' models.
-        shortNameSegments <- c(2, 4) # Segments 2 and 4 of the spectra file name, e.g.: (PACIFIC, HAKE, BMS201906206C, 1191, OD1) => (HAKE, 1191)
-        shortNameSuffix <- 'BMS'
-        opusReader <- 'pierreroudier_opusreader'
-        fineFreqAdj <- 150
-     }
+     if(FALSE) {   
+         # (1) Hake 2019, BMS
+         if(Spectra_Set == "Hake_2019") {
+            NN_Model <- 'FCNN Model/Hake_2019_FCNN_20_Rdm_models_1_Apr_2023.RData'   # Change path to the Spectra Set's NN model as needed - 10-20 random models each with 10-fold complete 'k-fold' models.
+            shortNameSegments <- c(2, 4) # Segments 2 and 4 of the spectra file name, e.g.: (PACIFIC, HAKE, BMS201906206C, 1191, OD1) => (HAKE, 1191)
+            shortNameSuffix <- 'BMS'
+            opusReader <- 'pierreroudier_opusreader'
+            fineFreqAdj <- 150
+         }
+          
+         # (2) Sablefish 2017 & 2019, Combo survey
+         if(Spectra_Set == "Sable_2017_2019") { 
+            NN_Model <- 'FCNN Model/Sablefish_2017_2019_Rdm_models_22_Mar_2023_14_57_26.RData'
+            shortNameSegments <- c(1, 3) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
+            shortNameSuffix <- 'Year'
+            yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
+            fineFreqAdj <- 0
+            opusReader <- 'pierreroudier_opusreader'
+            Meta_Path <- "C:/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
+         }  
+         
+         # (3) Sablefish 2022, Combo survey
+         if(Spectra_Set == "Sable_Combo_2022") { 
+	     
+         	print(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
+         	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
+         	print(dim(NN_Pred_Median_TMA))
+         	
+            print(Meta_Path <- paste0('C:/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
+            print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
+            opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
+	     	Sys.sleep(2)
+         }  
+         
+         # (4) Sablefish 2021, Combo survey predicted with Sable 2022 Model
+         if(Spectra_Set == "Sable_Combo_2021") { 
+             # NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Apr_2024_11_06_09.RData"  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST
+         	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
+             #            "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
+         	
+         	Train_Result_Path <- "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST"
+         	     	
+         	(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
+         	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
+         	dim(NN_Pred_Median_TMA)
+         	
+             Meta_Path <- paste0('C:/SIDT/Sablefish 2021 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
+         	# base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+             # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
+             Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+             opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
+             Seed_Plot <- 707
+         }  
+         
+         # (5) Sablefish 2019, Combo survey predicted with Sable 2022 Model
+         if(Spectra_Set == "Sable_Combo_2019") { 
+             NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
+             NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
+                         "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
+             Meta_Path <- paste0('C:/SIDT/Sablefish 2019 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
+         	# base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+             # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
+             Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+             opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
+             Seed_Plot <- 707
+         }  
+	}
+	
+    print(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
+    NN_Pred_Median_TMA <- extractRData(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
+    headTail(NN_Pred_Median_TMA)
+	Sys.sleep(2)
+	
+	if(Meta_Path) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
+	   print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
+       print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
+    }
       
-     # (2) Sablefish 2017 & 2019, Combo survey
-     if(Spectra_Set == "Sable_2017_2019") { 
-        NN_Model <- 'FCNN Model/Sablefish_2017_2019_Rdm_models_22_Mar_2023_14_57_26.RData'
-        shortNameSegments <- c(1, 3) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
-        shortNameSuffix <- 'Year'
-        yearPosition <- c(6, 9) # e.g. COMBO201701203A => 2017 (Segment used (see above) is: shortNameSegments[1] + 1)
-        fineFreqAdj <- 0
-        opusReader <- 'pierreroudier_opusreader'
-        Meta_Path <- "C:/SIDT/Sablefish/Keras_CNN_Models/Sable_2017_2019 21 Nov 2022.RData"  # If used, change path to the main sepectra/metadata save()'d data frame which contains TMA ages.  Matching done via 'filenames'.
-     }  
-     
-     # (3) Sablefish 2022, Combo survey
-     if(Spectra_Set == "Sable_Combo_2022") { 
-	 
-     	print(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, "FCNN_model..........Rdm_model")))
-     	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result, "/", list.files(Train_Result, "Pred_Median_TMA")))
-     	print(dim(NN_Pred_Median_TMA))
-     	
-        print(Meta_Path <- paste0('C:/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
-        print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
-        opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-		Sys.sleep(2)
-     }  
-     
-     # (4) Sablefish 2021, Combo survey predicted with Sable 2022 Model
-     if(Spectra_Set == "Sable_Combo_2021") { 
-         # NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Apr_2024_11_06_09.RData"  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST
-     	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
-         #            "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
-     	
-     	Train_Result <- "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST"
-     	Folds_Num <- 10 
-     	
-     	(NN_Model <- paste0(Train_Result, "/", list.files(Train_Result, "FCNN_model..........Rdm_model")))
-     	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result, "/", list.files(Train_Result, "Pred_Median_TMA")))
-     	dim(NN_Pred_Median_TMA)
-     	
-         Meta_Path <- paste0('C:/SIDT/Sablefish 2021 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
-     	# base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
-         # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
-         Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
-         opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-         Seed_Plot <- 707
-     }  
-     
-     # (5) Sablefish 2019, Combo survey predicted with Sable 2022 Model
-     if(Spectra_Set == "Sable_Combo_2019") { 
-         NN_Model <- "Sable_Combo_2022_FCNN_model_40_Rdm_models_Runs_1_3.RData"  # Combine 20X Rdm Models/Created by Combine 20X Rdm Models.R
-         NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
-                     "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
-         Meta_Path <- paste0('C:/SIDT/Sablefish 2019 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
-     	# base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
-         # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
-         Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
-         opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-         Seed_Plot <- 707
-     }  
-     
       
      #  --- Conda TensorFlow environment ---
      Conda_TF_Eniv <- ifelse(.Platform$OS.type == 'windows', "C:/m3/envs/tf", "/more_home/h_jwallace/Python/tf_cpu_only/bin")  # Change this path as needed
@@ -262,7 +273,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      #    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
      
      New_Ages_Pred <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
-                                         Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose, Folds_Num = ifelse(exists('Folds_Num'), Folds_Num, 10)) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
+                                         Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose, Folds_Num = Folds_Num) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
      
      New_Ages <- New_Ages_Pred[['New_Ages']]
 	 
@@ -305,14 +316,15 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975"))
          
-         metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
-         # metadata.wb # View WorkBook object
-         openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
-         openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
-         # metadata.wb # View WorkBook object
-         # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
-         openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
-     	
+		 if(Meta_Path) {
+            metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
+            # metadata.wb # View WorkBook object
+            openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
+            openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
+            # metadata.wb # View WorkBook object
+            # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
+            openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
+     	}
      	
          # --- Add Index to New_ages and set cols for the figures below ---
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
@@ -397,14 +409,15 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975", "TMA"))
          
-         metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
-         # metadata.wb # View WorkBook object
-         openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
-         openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
-         # metadata.wb # View WorkBook object
-         # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
-         openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
-     	
+		 if(Meta_Path)  {
+            metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
+            # metadata.wb # View WorkBook object
+            openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
+            openxlsx::writeData(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")), metadata)
+            # metadata.wb # View WorkBook object
+            # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
+            openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
+     	 }
      	
          # --- Add Index to New_ages and set colors and pchs for the figures below ---
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
