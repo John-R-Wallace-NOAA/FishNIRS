@@ -1,7 +1,7 @@
 
 
-Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019")[3], 
-                           Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = TRUE,
+Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
+                           Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
 						   opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
 						   Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
 						   Predicted_Ages_Path = "Predicted_Ages", Meta_Add  = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
@@ -195,7 +195,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     headTail(NN_Pred_Median_TMA)
 	Sys.sleep(2)
 	
-	if(Meta_Path) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
+	if(Use_Session_Report_Meta) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
 	   print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
        print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
     }
@@ -316,7 +316,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975"))
          
-		 if(Meta_Path) {
+		 if(Use_Session_Report_Meta) {
             metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
             # metadata.wb # View WorkBook object
             openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
@@ -409,7 +409,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975", "TMA"))
          
-		 if(Meta_Path)  {
+		 if(Use_Session_Report_Meta)  {
             metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
             # metadata.wb # View WorkBook object
             openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
