@@ -13,7 +13,7 @@ Sys.getenv("GITHUB_PAT")
 if(interactive()) 
       setwd(ifelse(.Platform$OS.type == 'windows', "C:/SIDT/Train_NN_Model", "/more_home/h_jwallace/SIDT/Train_NN_Models"))   # Change path to the Spectra Set's .GlobalEnv as needed
 if(!interactive())   options(width = 120)      
-Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", "Sable_Combo_2017", "Sable_Combo_2023")[3] # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.
+Spectra_Set <- c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", "Sable_Combo_2017", "Sable_Combo_2023", "Sable_Combo_Multi_2000", "Sable_Combo_Multi_17_21")[10] # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 dir.create('Figures', showWarnings = FALSE)
 verbose <- c(TRUE, FALSE)[1]
@@ -23,7 +23,7 @@ plot <- c(TRUE, FALSE)[1]
 Max_N_Spectra <- list(50, 200, 'All')[[3]] 
 Rdm_Reps_Main <- c(20, 40, 60)[1]
 
-Metadata_Only <- c(TRUE, FALSE)[1]
+Metadata_Only <- c(TRUE, FALSE)[2]
 
  
 print(getwd())
@@ -167,13 +167,23 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
                                                
    # For testing Read_OPUS_Spectra(): Meta_Path <- Spectra_Path <- NULL; Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
 
-   base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+   if(Spectra_Set == "Sable_Combo_Multi_2000")
+       load("C:/SIDT/Train_NN_Model/Sable_Combo_Rdm_500_2017_18_19_22_Model_Spectra_Meta.Rdata")
+
+   if(Spectra_Set == "Sable_Combo_Multi_17_21")
+        load("C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_21_Model_Spectra_Meta.RData")
+	   
+   if(Spectra_Set %in% c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", "Sable_Combo_2017", "Sable_Combo_2023"))   
+        base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+		
    headTail(Model_Spectra_Meta, 2, 2, 3, 46)
    print(Table(Model_Spectra_Meta$Sex))
     
-   Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'F', ]
-   headTail(Model_Spectra_Meta, 2, 2, 3, 46)
-   print(Table(Model_Spectra_Meta$Sex))
+   # Single sex model	
+   # Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% c('F', ]
+   # headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+   # print(Table(Model_Spectra_Meta$Sex))
+   
       
    # -- Early save in case there are problems below --
    # save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
@@ -188,7 +198,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
    print(renum(metadata[(is.na(metadata$TMA) | is.na(metadata$structure_weight_dg) | is.na(metadata$Length_prop_max) | is.na(metadata$Weight_prop_max) | is.na(metadata$Depth_prop_max) | is.na(metadata$Latitude_prop_max)), 
                                     c('filenames', 'TMA', 'structure_weight_g', 'Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Month', 'Days_into_Year', 'Latitude_dd')]))
     
-   #  Remove missing values from (Model_Spectra_Meta
+   #  Remove missing values from Model_Spectra_Meta
    headTail(Model_Spectra_Meta, 2, 2, 3, 45)
    
    Model_Spectra_Meta <- Model_Spectra_Meta[!(is.na(Model_Spectra_Meta$TMA) | is.na(Model_Spectra_Meta$structure_weight_dg) | is.na(Model_Spectra_Meta$Length_prop_max) 
@@ -231,6 +241,8 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
    
    # Maximum number of components to calculate.
    nComp <- c(10, 15)[2]
+   
+   cat("\nStarting iPLS on Savitzky-Golay smoothed data to find informative wavebands for the NN model\n\n")
    Model_Spectra.iPLS.F <- mdatools::ipls(Model_Spectra.sg, TMA_Vector, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
                      int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
    
@@ -266,6 +278,8 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     yMin <- min(par()$usr[3], yMin)
     yMax <- max(par()$usr[4], yMax)
    
+    dev.off()
+   
    # Use the same ylim for both plots
    browsePlot('
      par(mfrow = c(2, 1))
@@ -283,8 +297,8 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
    # Commented out the random selection code below so that the number oties is not reduced
    
    # ---- Scans and metadata run----
-   # Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max')]) # dg = decigram
-   Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max')]) # dg = decigram
+   Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max')]) # dg = decigram
+   # Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max')]) # dg = decigram
                                       
    save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
    # save(TMA_Vector, file = paste0(Spectra_Set, '_TMA_Vector.RData'))    
@@ -341,21 +355,27 @@ if(!Metadata_Only) {
 # Use the best metadata found with the above testing for the production code is saved in the prior section
 
 
-#  ==== Metadata only model run - no need to load Model_Spectra.sg.iPLS above, has it is created below ====
+#  ==== Metadata only model run - no need to load Model_Spectra.sg.iPLS above, as it is created below ====
      # Not using the random selection code below so that the number oties is not reduced
 if(Metadata_Only) {	 
-    base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+    if(Spectra_Set == "Sable_Combo_Multi_17_21")
+        load("C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_21_Model_Spectra_Meta.RData")
+	   
+    if(Spectra_Set %in% c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", "Sable_Combo_2017", "Sable_Combo_2023"))   
+        base::load("C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+		
     headTail(Model_Spectra_Meta, 2, 2, 3, 46)
     
     Model_Spectra_Meta <- Model_Spectra_Meta[!(is.na(Model_Spectra_Meta$TMA) | is.na(Model_Spectra_Meta$structure_weight_dg) | is.na(Model_Spectra_Meta$Length_prop_max) 
                                | is.na(Model_Spectra_Meta$Weight_prop_max) | is.na(Model_Spectra_Meta$Depth_prop_max)), ]
     print(dim(Model_Spectra_Meta))
 	
-	Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'M', ]
-	dim(Model_Spectra_Meta)
+	# - Single sex model -
+	# Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'M', ]
+	# dim(Model_Spectra_Meta)
+	
 	save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
     
-    # Model_Spectra.sg.iPLS <- Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max')] # dg = decigram 
     Model_Spectra.sg.iPLS <- renum(Model_Spectra_Meta[, c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max')]) # dg = decigram 
     headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 1)
 	save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
@@ -414,40 +434,41 @@ Seed_Fold <- 727 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_W
 # ------- Reduce model size to see the change in prediction ability -------
 
 # # --- Random selection of a reduced number of oties ---
-if(!Metadata_Only) {
-   # set.seed(Seed_Fold) 
-   # Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  
-   # 
-   # Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
-   # print(dim(Model_Spectra.sg.iPLS))
-   # headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5)
-}
-
-# Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
-# print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
-
-
-# TMA_Vector <- TMA_Vector[Rdm_Oties]; print(length(TMA_Vector))
-# fileNames = Model_Spectra_Meta$filenames[Rdm_Oties]; print(length(fileNames))
+    if(!Metadata_Only) {
+       # set.seed(Seed_Fold) 
+       # Rdm_Oties <- sample(1:nrow(Model_Spectra.sg.iPLS), 750)  
+       # 
+       # Model_Spectra.sg.iPLS <- Model_Spectra.sg.iPLS[Rdm_Oties, ]
+       # print(dim(Model_Spectra.sg.iPLS))
+       # headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5)
+    }
+    
+    # Model_Spectra_Meta <- Model_Spectra_Meta[Rdm_Oties, ]
+    # print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
+    
+    
+    # TMA_Vector <- TMA_Vector[Rdm_Oties]; print(length(TMA_Vector))
+    # fileNames = Model_Spectra_Meta$filenames[Rdm_Oties]; print(length(fileNames))
+ 
  
 
-# --- Stratified random selection of a reduced number of oties---
-#   print(Bin_Num <- Table(factor.f(Model_Spectra.sg.iPLS$Length_cm, breaks = c(0, 25, 45, 65, Inf))))
-#   print(Mid_Split <- (500 - Bin_Num[1] - Bin_Num[4])/2)
-#   
-#   Model_Spectra.sg.iPLS <- rbind(Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm <= 25 | Model_Spectra.sg.iPLS$Length_cm > 65, ], 
-#                                  Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 25 & Model_Spectra.sg.iPLS$Length_cm <= 45, ][sample(1:Bin_Num[2], floor(Mid_Split)), ], 
-#                                  Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 45 & Model_Spectra.sg.iPLS$Length_cm <= 65, ][sample(1:Bin_Num[2], ceiling(Mid_Split)), ])
-#   print(dim(Model_Spectra.sg.iPLS))
-#   
-#   TMA_Vector <- Model_Spectra.sg.iPLS$Age
-#   fileNames <- Model_Spectra.sg.iPLS$filenames
-#   
-#   Model_Spectra.sg.iPLS$Length_cm <- NULL
-#   Model_Spectra.sg.iPLS$Age <- NULL
-#   Model_Spectra.sg.iPLS$filenames <- NULL
-#   
-#   print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
+# --- Stratified random selection of a reduced number of oties ---
+    #   print(Bin_Num <- Table(factor.f(Model_Spectra.sg.iPLS$Length_cm, breaks = c(0, 25, 45, 65, Inf))))
+    #   print(Mid_Split <- (500 - Bin_Num[1] - Bin_Num[4])/2)
+    #   
+    #   Model_Spectra.sg.iPLS <- rbind(Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm <= 25 | Model_Spectra.sg.iPLS$Length_cm > 65, ], 
+    #                                  Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 25 & Model_Spectra.sg.iPLS$Length_cm <= 45, ][sample(1:Bin_Num[2], floor(Mid_Split)), ], 
+    #                                  Model_Spectra.sg.iPLS[Model_Spectra.sg.iPLS$Length_cm > 45 & Model_Spectra.sg.iPLS$Length_cm <= 65, ][sample(1:Bin_Num[2], ceiling(Mid_Split)), ])
+    #   print(dim(Model_Spectra.sg.iPLS))
+    #   
+    #   TMA_Vector <- Model_Spectra.sg.iPLS$Age
+    #   fileNames <- Model_Spectra.sg.iPLS$filenames
+    #   
+    #   Model_Spectra.sg.iPLS$Length_cm <- NULL
+    #   Model_Spectra.sg.iPLS$Age <- NULL
+    #   Model_Spectra.sg.iPLS$filenames <- NULL
+    #   
+    #   print(headTail(Model_Spectra.sg.iPLS, 3, 2, 3, 5))
 
 # One Random Model step for each call to the R sub-process (Calling Rgui from Rgui)
 if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
@@ -473,7 +494,7 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
    
    on.exit(unlink(c('.Rprofile', 'Rdm_reps_Iter_Flag.RData')))
    load(paste0("C:/SIDT/Train_NN_Model/Rdm_model_", Rdm_Reps_Main, ".RData"))
-   Folds_Num <- 2
+   Folds_Num <- 10
    Wrap_Up_Flag <- ""
    
 } else {
@@ -494,7 +515,7 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
    
    # Rdm_reps <- Rdm_reps_Iter + 1  # j loop - two loops at a time
    Rdm_reps <- Rdm_reps_Iter  # j loop - one loop at a time
-   Folds_Num <- 2 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
+   Folds_Num <- 10 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
    Iter_Num <- 8  # Iter while() loop
    
    # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
@@ -715,7 +736,7 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
             
              # Avoiding high SAD values at the beginning, and rarely, during a run.
              SAD_plot <- SAD
-             SAD_plot[SAD_plot > 1400] <- NA  # Extreme model runs can, on a very rare occasion, put the value of SAD above 1,400 beyond the initial runs
+             # SAD_plot[SAD_plot > 1400] <- NA  # Need different value for 5k+ oties in model... # Extreme model runs can, on a very rare occasion, put the value of SAD above 1,400 beyond the initial runs
              
              if(Iter < 5) 
                 try(plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
@@ -1031,10 +1052,8 @@ if(exists('Wrap_Up_Flag')) {
 }  ###
 
 if(exists('Wrap_Up_Flag'))
-     # Predict_NN_Age_Wrapper(Spectra_Set = "Sable_Combo_2022",  Train_Result = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta = "C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-	 Predict_NN_Age_Wrapper(Spectra_Set = "Sable_Combo_2022", Train_Result = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
-     # source("C:/SIDT/Predict_NN_Ages/Predict_NN_Age_Script.R")
-  
-
-
-
+     Predict_NN_Age_Wrapper(Spectra_Set = "Sable_Combo_Multi_17_21",  Train_Result = "C:/SIDT/Train_NN_Model", 
+	      Model_Spectra_Meta = "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_21_22_Model_Spectra_Meta.RData", Use_Session_Report_Meta = FALSE)
+			   
+	 # Predict_NN_Age_Wrapper(Spectra_Set = "Sable_Combo_2022", Train_Result = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData")
+ 
