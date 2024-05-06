@@ -30,18 +30,20 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
 	 
      # ------------------------------------ Main User Setup ------------------------------------------------------------
       
-      if(interactive()) {
-            setwd(ifelse(.Platform$OS.type == 'windows', "C:/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
-      getwd()
-      }		 
-      if(!interactive())   
-            options(width = 120)   
+     if(interactive()) {
+	       dir.create("C:/SIDT/Predict_NN_Ages", recursive = TRUE, showWarnings = FALSE)
+           setwd(ifelse(.Platform$OS.type == 'windows', "C:/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
+           getwd()
+     }	
+	 
+     if(!interactive())   
+           options(width = 120)   
 			
      dir.create(Predicted_Ages_Path, showWarnings = FALSE)
      
         
      #  ----------------- Packages ------------------------
-	  if (!any(installed.packages()[, 1] %in% "lattice")) 
+	 if (!any(installed.packages()[, 1] %in% "lattice")) 
           install.packages("lattice") 
 	 
      if (!any(installed.packages()[, 1] %in% "R.utils")) 
@@ -113,7 +115,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
      
@@ -224,8 +226,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
      k_clear_session() 
      
-     getwd()
-     Spectra_Set
+     print(getwd())
+     print(Spectra_Set)
      
      # ============= Pause here when interactively submitting code to R =================
      
@@ -242,7 +244,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          shortNameSuffix. <- NULL
      
      # Maximum number of wavebands to show in the spectra figure
-     N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
+	 if(length(fileNames > 0))
+        N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
+     else
+       N_Samp <- ifelse(is.numeric(Max_N_Spectra), Max_N_Spectra, 'All')
+	 
+	 cat("\n\nN_Samp =", N_Samp, "\n\n")
      
 	 if(is.null(Model_Spectra_Meta_Path))
         Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
@@ -372,7 +379,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
              New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
          New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
          headTail(New_Ages)
-     	 cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "\n\n")  # R Squared)
+     	 cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "with a Delta of zero\n\n")  # R Squared)
      	
          
      	 if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
@@ -602,7 +609,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
        sink()
      	
      }
-     
+     # graphics.off()
 }     
      
      

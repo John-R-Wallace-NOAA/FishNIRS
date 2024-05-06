@@ -185,35 +185,35 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
   
     dim(newScans.RAW) # All wavebands
     
-    if(length(SG_Variables_Selected) > length(metaDataVar)) {  # Wavebands used (vs only metadata model)
+    if(length(SG_Variables_Selected) > length(metaDataVar)) {  # Wavebands used (vs metadata only model)
     
-       length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))])  # Those wavebands selected via SG
-       trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
-   
-      if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
-         shell(paste0("echo.  > ", Predicted_Ages_Path, "/ERROR_READ_ME.txt"))
-         shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "/ERROR.txt"))
-         stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
-      }
-  
-      # dim(trySgVarSel)
-      # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))), length(metaDataVar))
-   
-      newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
-      
-      if(verbose) {
-         cat("\n\'newScans' data frame with metadata saved to the .GlobalEnv\n\n")
-         print(newScans[1:3, c(1:4, (ncol(newScans) - length(metaDataVar) - 3):ncol(newScans))])
-      }
+        length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))])  # Those wavebands selected via SG
+        trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
+	    
+        if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
+           shell(paste0("echo.  > ", Predicted_Ages_Path, "/ERROR_READ_ME.txt"))
+           shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "/ERROR.txt"))
+           stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
+        }
+	    
+        # dim(trySgVarSel)
+        # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))), length(metaDataVar))
+	    
+        newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
+        
+        if(verbose) {
+           cat("\n\'newScans' data frame with metadata saved to the .GlobalEnv\n\n")
+           print(newScans[1:3, c(1:4, (ncol(newScans) - length(metaDataVar) - 3):ncol(newScans))])
+        }
     }
     
-    if(length(SG_Variables_Selected) == length(metaDataVar)) 
+    if(length(SG_Variables_Selected) == length(metaDataVar)) # Metadata only model
        newScans <- Model_Spectra_Meta[ ,SG_Variables_Selected[metaDataVar]]
     
     dim(newScans)
     headTail(newScans, 3, 3, 3, 5)
     
-     assign("newScans", newScans , pos = 1) # Save for Cor_R_squared_RMSE_MAE_SAD_APE_Table for various values of N
+    assign("newScans", newScans , pos = 1) # Save for Cor_R_squared_RMSE_MAE_SAD_APE_Table for various values of N
     
     
     if(is.null(NumRdmModels))
@@ -223,9 +223,19 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
   
     newScans.pred.ALL <- NULL
     for(j in 1:N) {
+	# for(j in c(7, 16:19)) {
        Fold_models <- Rdm_models[[j]]
        for (i in 1:length(Fold_models)) {      
              newScans.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
+			 Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA)
+			 if(Corr < 0.85) {
+			    if(verbose)
+			       cat(paste0("\nRandom Model ", j, "; Fold ", i, " NOT accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
+			    next
+			 } else {
+			     if(verbose)
+			       cat(paste0("\nRandom Model ", j, "; Fold ", i, " accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
+			 }  
              newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
       }
     }  
@@ -237,15 +247,13 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
           
     Pred_median[paste0('Num_of_Full_', Folds_Num, '_Fold_Models')] <- aggregate(list(N = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), function(x) length(x)/Folds_Num)[,2]
     
-    
-    
-    
+	
     New_Ages <- data.frame(filenames = fileNames, Pred_median)          
  
     if(verbose) {     
        cat("\n\nPred_median:\n\n")  
        headTail(Pred_median, 3, 3)
-       cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", nrow(newScans.pred.ALL)/nrow(New_Ages)/10, " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
+       cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", nrow(newScans.pred.ALL)/nrow(New_Ages)/Folds_Num, " full ", Folds_Num, "-fold randomized models, not the accuracy to a TMA Age ---\n\n"))   
     }
     
     list(New_Ages = New_Ages, newScans.pred.ALL = newScans.pred.ALL)
