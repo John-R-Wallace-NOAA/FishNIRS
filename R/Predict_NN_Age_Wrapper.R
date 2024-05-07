@@ -2,9 +2,9 @@
 
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
-						   opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
-						   Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
-						   Predicted_Ages_Path = "Predicted_Ages", Meta_Add  = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
+                           opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
+                           Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
+                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add  = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
 
     '  ################################################################################################################################################################                             '
     '  #       Need >= R ver 3.0                                                                                                                                      #                             '
@@ -14,41 +14,41 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     '  # Sys.getenv("GITHUB_PAT")                                                                                                                                     #                             '
     '  ################################################################################################################################################################                             '
     '                                                                                                                                                                                               '
-	'  #  Spectra_Path  # Put new spectra scans in a separate folder and enter the name of the folder in this argument                                                                              '
-	'  #  Predicted_Ages_Path # The NN predicted ages will go in the path defined by this argument                                                                                                  '
+    '  #  Spectra_Path  # Put new spectra scans in a separate folder and enter the name of the folder in this argument                                                                              '
+    '  #  Predicted_Ages_Path # The NN predicted ages will go in the path defined by this argument                                                                                                  '
     '  #  Meta_Add  #  Will metadata be used                                                                                                                                                        '
-	'  #  TMA_Ages  # Are TMA ages available and are they to be used?                                                                                                                               '
-	'                                                                                                                                                                                               '
-	'  #  Max_N_Spectra  # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below).                                '
+    '  #  TMA_Ages  # Are TMA ages available and are they to be used?                                                                                                                               '
+    '                                                                                                                                                                                               '
+    '  #  Max_N_Spectra  # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below).                                '
     '  #                 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.                                                           '
-	'  		                                                                                                                                                                                        '
-    '  #  Model_Spectra_Meta_Path	# Example paths	                                                                                                                                                    '
-	'  #     "C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData"                                                                                                       '
+    '                                                                                                                                                                                                  '
+    '  #  Model_Spectra_Meta_Path    # Example paths                                                                                                                                                        '
+    '  #     "C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData"                                                                                                       '
     '  #     "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData"                                                                                                '
-    '  #     "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Sex/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_No_Lat_Male_Run_1/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")	'		
+    '  #     "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Sex/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_No_Lat_Male_Run_1/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")    '        
 
-	 
+     
      # ------------------------------------ Main User Setup ------------------------------------------------------------
       
      if(interactive()) {
-	       dir.create("C:/SIDT/Predict_NN_Ages", recursive = TRUE, showWarnings = FALSE)
+           dir.create("C:/SIDT/Predict_NN_Ages", recursive = TRUE, showWarnings = FALSE)
            setwd(ifelse(.Platform$OS.type == 'windows', "C:/SIDT/Predict_NN_Ages", "/more_home/h_jwallace/SIDT/Predict_NN_Ages"))   # Change path to the Spectra Set's .GlobalEnv as needed
            getwd()
-     }	
-	 
+     }    
+     
      if(!interactive())   
            options(width = 120)   
-			
+            
      dir.create(Predicted_Ages_Path, showWarnings = FALSE)
      
         
      #  ----------------- Packages ------------------------
-	 if (!any(installed.packages()[, 1] %in% "lattice")) 
+     if (!any(installed.packages()[, 1] %in% "lattice")) 
           install.packages("lattice") 
-	 
+     
      if (!any(installed.packages()[, 1] %in% "R.utils")) 
           install.packages("R.utils") 
-     	 
+          
      if(!any(installed.packages()[, 1] %in% "openxlsx")) 
             install.packages("openxlsx")     
      
@@ -59,7 +59,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           install.packages("plotly")    
 
      if (!any(installed.packages()[, 1] %in% "FSA")) 
-          install.packages("FSA")    		  
+          install.packages("FSA")              
           
      if (!any(installed.packages()[, 1] %in% "tensorflow")) 
           install.packages("tensorflow")
@@ -74,15 +74,15 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      library(FSA)       
      library(tensorflow)
      library(keras)  
-	 
+     
      
      # --- Download functions from GitHub ---
      sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
                '   # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git()   '
-     		  '   # Example to save a function to the working directory:   '
+               '   # Example to save a function to the working directory:   '
                '   # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/rgit/master/R/gitAFile.R")   '
                '   # gitAFile("John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R", File = "browsePlot.R")   '
-     		  
+               
                if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
                File.ASCII <- tempfile()
                if(type == "function")
@@ -147,33 +147,33 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # (3) Sablefish 2022, Combo survey
          if(Spectra_Set == "Sable_Combo_2022") { 
-	     
-         	print(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
-         	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
-         	print(dim(NN_Pred_Median_TMA))
-         	
+         
+             print(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
+             NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
+             print(dim(NN_Pred_Median_TMA))
+             
             print(Meta_Path <- paste0('C:/SIDT/Sablefish 2022 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
             print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
             opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
-	     	Sys.sleep(2)
+             Sys.sleep(2)
          }  
          
          # (4) Sablefish 2021, Combo survey predicted with Sable 2022 Model
          if(Spectra_Set == "Sable_Combo_2021") { 
              # NN_Model <- "Sable_Combo_2022_FCNN_model_ver_1_20_Rdm_model_8_Apr_2024_11_06_09.RData"  # Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST
-         	# NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
+             # NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
              #            "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
-         	
-         	Train_Result_Path <- "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST"
-         	     	
-         	(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
-         	NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
-         	dim(NN_Pred_Median_TMA)
-         	
+             
+             Train_Result_Path <- "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_FIND_BEST_METADATA/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_Lat_Run_3_BEST"
+                      
+             (NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
+             NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
+             dim(NN_Pred_Median_TMA)
+             
              Meta_Path <- paste0('C:/SIDT/Sablefish 2021 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
-         	# base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+             # base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
              # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
-             Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+             Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')               
              opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
              Seed_Plot <- 707
          }  
@@ -184,21 +184,21 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
              NN_Pred_Median_TMA <- extractRData('Sable_Combo_2022_NN_Pred_Median_TMA', 
                          "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt/Sable_Combo_2022_FCNN_model_ver_1_20_Pred_Median_TMA_15_Dec_2023_12_23_01.RData")
              Meta_Path <- paste0('C:/SIDT/Sablefish 2019 Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report.xlsx')  # !!!!! Change the original name of the Session Report to match this name. !!!!!
-         	# base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
+             # base::load("C:/SIDT/Sablefish/Sable_Combo_Ages_DW.RData")  # 'DW' is NWFSC Data Warehouse
              # metadata_DW <- Sable_Combo_Ages_DW; rm(Sable_Combo_Ages_DW)
-             Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')			   
+             Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages.xlsx')               
              opusReader <- c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]
              Seed_Plot <- 707
          }  
-	}
-	
+    }
+    
     print(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
     NN_Pred_Median_TMA <- extractRData(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
     headTail(NN_Pred_Median_TMA)
-	Sys.sleep(2)
-	
-	if(Use_Session_Report_Meta) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
-	   print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
+    Sys.sleep(2)
+    
+    if(Use_Session_Report_Meta) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
+       print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
        print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
     }
       
@@ -244,18 +244,18 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          shortNameSuffix. <- NULL
      
      # Maximum number of wavebands to show in the spectra figure
-	 if(length(fileNames > 0))
+     if(length(fileNames > 0))
         N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
      else
        N_Samp <- ifelse(is.numeric(Max_N_Spectra), Max_N_Spectra, 'All')
-	 
-	 cat("\n\nN_Samp =", N_Samp, "\n\n")
      
-	 if(is.null(Model_Spectra_Meta_Path))
+     cat("\n\nN_Samp =", N_Samp, "\n\n")
+     
+     if(is.null(Model_Spectra_Meta_Path))
         Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
                                       Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
      else
-       load(Model_Spectra_Meta_Path)	 
+       load(Model_Spectra_Meta_Path)     
      
      headTail(Model_Spectra_Meta, 2, 2, 3, 46)
      
@@ -283,11 +283,11 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                                          Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose, Folds_Num = Folds_Num) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
      
      New_Ages <- New_Ages_Pred[['New_Ages']]
-	 
-	 cat("\n\nNew_Ages  Missing Predictions\n")
+     
+     cat("\n\nNew_Ages  Missing Predictions\n")
      print(New_Ages[is.na(New_Ages$NN_Pred_Median), ])  # Missing predictions
-	 
-	 cat("\n\nNew_Ages\n")
+     
+     cat("\n\nNew_Ages\n")
      New_Ages <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]  # Non-missing predictions
      headTail(New_Ages)
      
@@ -309,7 +309,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      if(!TMA_Ages) {
      
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
-     	
+         
          # ----- Extract the rounding Delta -----
          Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
          New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
@@ -317,13 +317,13 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         
          # --- Save ages ---
          save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
-     	
-     	 # --- Save metadata to a new NIRS_Scanning_Session_Report
+         
+          # --- Save metadata to a new NIRS_Scanning_Session_Report
          # metadata$length_cm <- metadata$weight_kg <- NULL   
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975"))
          
-		 if(Use_Session_Report_Meta) {
+         if(Use_Session_Report_Meta) {
             metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
             # metadata.wb # View WorkBook object
             openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
@@ -331,8 +331,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             # metadata.wb # View WorkBook object
             # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
             openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
-     	}
-     	
+         }
+         
          # --- Add Index to New_ages and set cols for the figures below ---
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
          headTail(New_Ages, 3)
@@ -368,55 +368,55 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
-     	
-     	# -- Download functions from GitHub into the working directory to look at and/or edit --
-     	# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/GitHub_File_Download.R")
-     	# GitHub_File_Download("John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
-     	# GitHub_File_Download("John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
-     	  
+         
+         # -- Download functions from GitHub into the working directory to look at and/or edit --
+         # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/GitHub_File_Download.R")
+         # GitHub_File_Download("John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
+         # GitHub_File_Download("John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+           
          New_Ages$TMA <- NULL # Clear old TMA before updating
          if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
              New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
          New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
          headTail(New_Ages)
-     	 cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "with a Delta of zero\n\n")  # R Squared)
-     	
+          cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "with a Delta of zero\n\n")  # R Squared)
          
-     	 if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
-     	     # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds. A new Delta (likely the same) can be found here since the TMA ages are available.
+         
+          if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
+              # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds. A new Delta (likely the same) can be found here since the TMA ages are available.
               Delta_Table <- NULL
               for (Delta. in seq(0, -0.45, by  = -0.05)) {
                 # cat("\n\n")
                 # print(c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
                 Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
               }
-     	     
+              
               print(Delta_Table <- data.frame(Delta_Table)) 
                 
               # Best Delta from table above
-     	 	 (Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$RMSE))[1]])
-     	 	 cat("\nBest Delta from the table above", Delta, "\n\n")
+               (Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$RMSE))[1]])
+               cat("\nBest Delta from the table above", Delta, "\n\n")
           
-     	 } else {
-     	    # ----- Extract the rounding Delta -----
+          } else {
+             # ----- Extract the rounding Delta -----
              Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
          }
-     	
+         
          New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
          cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
          nrow(newScans.pred.ALL)/max(newScans.pred.ALL$Index)
      
-     	
+         
          # --- Save ages ---
          save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
-     	 save(newScans.pred.ALL, file = paste0(Predicted_Ages_Path, '/newScans.pred.ALL, ', Date(" "), '.RData'))
-     	
-     	 # --- Save metadata to a new NIRS_Scanning_Session_Report
+          save(newScans.pred.ALL, file = paste0(Predicted_Ages_Path, '/newScans.pred.ALL, ', Date(" "), '.RData'))
+         
+          # --- Save metadata to a new NIRS_Scanning_Session_Report
          # metadata$length_cm <- metadata$weight_kg <- NULL   
          # metadata <- match.f(metadata, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg'))
          metadata <- match.f(metadata, New_Ages, "filenames", "filenames", c("NN_Pred_Median", "Lower_Quantile_0.025", "Upper_Quantile_0.975", "TMA"))
          
-		 if(Use_Session_Report_Meta)  {
+         if(Use_Session_Report_Meta)  {
             metadata.wb <- openxlsx::loadWorkbook(Meta_Path) # Load in ancillary data 
             # metadata.wb # View WorkBook object
             openxlsx::addWorksheet(metadata.wb, paste0('Metadata + NN Ages, ', Date(" ")))
@@ -424,20 +424,20 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             # metadata.wb # View WorkBook object
             # Meta_Data_RAW <- read.xlsx(metadata.wb, "Sample_List_Data")
             openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
-     	 }
-     	
+          }
+         
          # --- Add Index to New_ages and set colors and pchs for the figures below ---
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
          headTail(New_Ages, 3)
-		 assign('New_Ages', New_Ages, pos = 1)
-		 assign('Delta', Delta, pos = 1) 
-		 assign('Seed_Plot', Seed_Plot, pos = 1) 
-		 assign('Rdm_Reps_Main', Rdm_Reps_Main, pos = 1)
-		 assign('Folds_Num', Folds_Num, pos = 1)
+         assign('New_Ages', New_Ages, pos = 1)
+         assign('Delta', Delta, pos = 1) 
+         assign('Seed_Plot', Seed_Plot, pos = 1) 
+         assign('Rdm_Reps_Main', Rdm_Reps_Main, pos = 1)
+         assign('Folds_Num', Folds_Num, pos = 1)
          cols <- c('green', 'red')
          pchs <- c(16, 1)
-     	
-     	
+         
+         
          # -- Spectra Figure with TMA for New Ages --
          plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
         
@@ -456,7 +456,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
          geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-		 assign('g', g, pos = 1)
+         assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'), width = 18, height = 10,)
          
          # New_Ages$Rounded_Age <- factor(" ") # This is needed for ggplotly plotting below
@@ -471,7 +471,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         
          # -- Relative error by TMA age --
          g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
-     	     panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+              panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_TMA_age.png'))
          
@@ -480,7 +480,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
          if(verbose) headTail(New_Ages_Sorted, 5)
          g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
-     	      panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+               panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_sorted_TMA.png'))
          
@@ -497,7 +497,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
-         assign('g', g, pos = 1)		 
+         assign('g', g, pos = 1)         
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
          
          # https://r-graphics.org/recipe-scatter-shapes   
@@ -519,10 +519,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
-		 assign('g', g, pos = 1)
+         assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Subset.png'))
         
-     	
+         
          # -- Plot by sorted TMA --
          New_Ages_Sorted <- na.omit(New_Ages_Sorted)
          if(verbose) head(New_Ages_Sorted, 20)
@@ -532,7 +532,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, TMA, col = cols[2])) + 
          geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-		 assign('g', g, pos = 1)
+         assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
          
          
@@ -548,27 +548,27 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point(aes(Index, TMA, col = cols[2])) + 
          geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
-		 assign('g', g, pos = 1)
+         assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted_Subset.png'))
        
        
-       				  
+                         
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA  --
          dim(New_Ages)
          
-         assign('xlim', c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25), pos = 1)		 
+         assign('xlim', c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25), pos = 1)         
          New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
-		 assign('New_Ages', New_Ages, pos = 1)
+         assign('New_Ages', New_Ages, pos = 1)
          browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                            grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png'))
-       					 
+                            
          
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA, highlighting those oties that were left out of the NN model - if any --
-     	
-     	#  Look at the oties the were used in the NN model
-        	headTail(NN_Pred_Median_TMA, 2)
+         
+         #  Look at the oties the were used in the NN model
+            headTail(NN_Pred_Median_TMA, 2)
                
-         # Restrict new ages to those that have predictions from the NN model		 
+         # Restrict new ages to those that have predictions from the NN model         
          New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
          dim(New_Ages_Good)
      
@@ -584,9 +584,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
             
-            assign('xlim', c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25) , pos = 1)			
+            assign('xlim', c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25) , pos = 1)            
             New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
-			assign('New_Ages_Good', New_Ages_Good, pos = 1)
+            assign('New_Ages_Good', New_Ages_Good, pos = 1)
             browsePlot('
                 set.seed(Seed_Plot)
                 gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
@@ -602,14 +602,13 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
        {
          cat("\n\n")
          print(Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta)))
-     	
-     	cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
+         
+         cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
          summary(agePrecision(~ TMA + round(NN_Pred_Median + Delta), data = New_Ages), what="precision")
        }
        sink()
-     	
+         
      }
-     # graphics.off()
 }     
      
      
