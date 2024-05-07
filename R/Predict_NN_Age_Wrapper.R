@@ -379,22 +379,22 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
              New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
          New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
          headTail(New_Ages)
-          cat("\n\nR Squared =", cor(New_Ages$TMA, New_Ages$NN_Pred_Median)^2, "with a Delta of zero\n\n")  # R Squared)
+         cat("\n\nLooking for a Delta that gives an improved fit based on SAD with ties broken by APE:\n")  # R Squared)
          
          
           if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
-              # What is the best Delta (by SAD, with ties broken by RMSE) on the median over all, Rdm_reps, full k-folds. A new Delta (likely the same) can be found here since the TMA ages are available.
+              # What is the best Delta (by SAD, with ties broken by APE) on the median over all, Rdm_reps, full k-folds. A new Delta (perhaps the same value) can be found here since TMA ages are available.
               Delta_Table <- NULL
               for (Delta. in seq(0, -0.45, by  = -0.05)) {
-                # cat("\n\n")
-                # print(c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta.))))
+                cat("\n\n")
+                print(data.frame(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
                 Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
               }
               
               print(Delta_Table <- data.frame(Delta_Table)) 
                 
               # Best Delta from table above
-               (Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$RMSE))[1]])
+               (Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$APE))[1]])
                cat("\nBest Delta from the table above", Delta, "\n\n")
           
           } else {
@@ -427,8 +427,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           }
          
          # --- Add Index to New_ages and set colors and pchs for the figures below ---
-         New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
+         New_Ages <- data.frame(Index = 1:nrow(New_Ages), Year = as.numeric(substring(get.subs(New_Ages$filenames, sep = "_")[2, ], 6)), New_Ages, TMA_Minus_Age_Rounded = New_Ages$TMA - New_Ages$Age_Rounded)  # Add 'Index' as the first column in the data frame and Year the second
          headTail(New_Ages, 3)
+		 Table(New_Ages$Year)
+		  
          assign('New_Ages', New_Ages, pos = 1)
          assign('Delta', Delta, pos = 1) 
          assign('Seed_Plot', Seed_Plot, pos = 1) 
@@ -446,6 +448,15 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.pdf'), pdf = TRUE)   
          browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
          browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
+		 
+		 if(length(unique(New_Ages$Year)) > 1) {
+            for(Year in unique(New_Ages$Year)) {
+			   assign('Year', Year, pos = 1)
+			   assign('New_Ages_Year', New_Ages[New_Ages$Year %in% Year, ], pos = 1)
+	           browsePlot('agreementFigure(New_Ages_Year$TMA, New_Ages_Year$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = Year)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_', Year, '.png'))
+            }
+         }
+		 
          if(verbose & !interactive())  Sys.sleep(5)
         
         
@@ -578,8 +589,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          New_Ages_Good <- match.f(New_Ages_Good, NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
          New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
          Table(New_Ages_Good$Used_NN_Model)
-         # FALSE  TRUE 
-         #    15  1513   # 15 Oties left out of the NN model for testing of the model with untouched oties
+         
          
          # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
@@ -597,16 +607,33 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                           
             ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
          }
+		 
+		 
+         if(length(unique(New_Ages$Year)) > 1) {
+            browsePlot('
+               par(mfrow = c(3, 2))
+               for(Year in unique(New_Ages$Year)) {
+                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
+                         gPlot(New_Ages_Year, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                                    main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+                         points(jitter(New_Ages_Year$TMA[New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[New_Ages_Year$Used_NN_Model])
+                         points(jitter(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
+                              
+              }
+            ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_TMA_Jitter_Left_Out_Oties_Highlight_by_Year.png'), width = 10, height = 10, res = 600)
+         }
+
+
      
-       sink(paste0(Predicted_Ages_Path, "/", Spectra_Set, "_Stats.txt"), split = TRUE)
-       {
-         cat("\n\n")
-         print(Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta)))
-         
-         cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
-         summary(agePrecision(~ TMA + round(NN_Pred_Median + Delta), data = New_Ages), what="precision")
-       }
-       sink()
+         sink(paste0(Predicted_Ages_Path, "/", Spectra_Set, "_Stats.txt"), split = TRUE)
+         {
+           cat("\n\n")
+           print(Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta)))
+           
+           cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
+           summary(agePrecision(~ TMA + round(NN_Pred_Median + Delta), data = New_Ages), what="precision")
+         }
+         sink()
          
      }
 }     
