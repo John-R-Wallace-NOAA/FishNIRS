@@ -126,12 +126,12 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
         cat("\n\nNN_Model Path:" , NN_Model, "\n\n")
         
      '  ###  Just using envir = parent.frame() (the default) adds an environment it seems. Listing an envir arg to save locally is: base::load(file, envir = environment()), or use base::load(file) as done above ###  '
-.... '  ### parent.frame(sys.nframe() + 1) should work to always get back to .GlobalEnv regardless of how deep the frames are!!!   '
+     '  ### parent.frame(sys.nframe() + 1) should work to always get back to .GlobalEnv regardless of how deep the frames are!!!   '
         base::load(NN_Model, envir = parent.frame(sys.nframe() + 1)) # Save to [[.GlobalEnv]] just so ll() will work... grr!
         print(ll()); cat("\n\n")
         Sys.sleep(2)
     }
-    
+ 
     # cat("\n\nNN_Model Path:" , NN_Model, "\n\n")
     # base::load(NN_Model)
     
@@ -189,16 +189,16 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     
         length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))])  # Those wavebands selected via SG
         trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
-....    
+        
         if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
            shell(paste0("echo.  > ", Predicted_Ages_Path, "/ERROR_READ_ME.txt"))
            shell(paste0("echo The wavebands selected using the Savitzky Golay function and used in the current NN model are not the same as in the current spectra nor have the current spectra been interpolated to those wavebands. >> ", Predicted_Ages_Path, "/ERROR.txt"))
            stop(paste0("\nThe wavebands selected using the Savitzky Golay function and used in the current NN model are not\nthe same as in the current spectra nor have the current spectra been interpolated to those wavebands.\n\n"))
         }
-....    
+        
         # dim(trySgVarSel)
         # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))), length(metaDataVar))
-....    
+        
         newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
         
         if(verbose) {
@@ -226,15 +226,15 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
        Fold_models <- Rdm_models[[j]]
        for (i in 1:length(Fold_models)) {      
              newScans.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
-............ Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA)
-............ if(Corr < 0.85) {
-............    if(verbose)
-............       cat(paste0("\nRandom Model ", j, "; Fold ", i, " NOT accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
-............    next
-............ } else {
-............     if(verbose)
-............       cat(paste0("\nRandom Model ", j, "; Fold ", i, " accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
-............ }  
+             Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA)
+             if(Corr < 0.85) {
+                if(verbose)
+                   cat(paste0("\nRandom Model ", j, "; Fold ", i, " NOT accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
+                next
+             } else {
+                 if(verbose)
+                   cat(paste0("\nRandom Model ", j, "; Fold ", i, " accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
+             }  
              newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
       }
     } 
@@ -245,7 +245,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
           
     Pred_median[paste0('Num_of_Full_', Folds_Num, '_Fold_Models')] <- aggregate(list(N = newScans.pred.ALL$newScans.pred), list(Index = newScans.pred.ALL$Index), function(x) length(x)/Folds_Num)[,2]
     
-....
+    
     New_Ages <- data.frame(filenames = fileNames, Pred_median)          
  
     if(verbose) {     
