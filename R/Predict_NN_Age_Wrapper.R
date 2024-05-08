@@ -108,11 +108,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
+	 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lowess.line.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/switchSlash.R")   # Switch "\" to "/" for copied Windows paths [Copy path and run switchSlash() in R. Utilized by JRWToolBox::setWd()]
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
      
-     
+    
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
@@ -570,31 +571,30 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          assign('xlim', c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25), pos = 1)         
          New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
          assign('New_Ages', New_Ages, pos = 1)
-         browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                           grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png'))
+		 # Superceded ny the highlighted version below
+         # browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+         #                 grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png'))
                             
          
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA, highlighting those oties that were left out of the NN model - if any --
          
-         #  Look at the oties the were used in the NN model
-            headTail(NN_Pred_Median_TMA, 2)
+         # Look at the oties the were used in the NN model
+         headTail(NN_Pred_Median_TMA, 2)
                
          # Restrict new ages to those that have predictions from the NN model         
          New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
          dim(New_Ages_Good)
      
-         
          # Find those oties that were left out of the NN model for testing - if any.
          NN_Pred_Median_TMA$Used_NN_Model <- TRUE # Used in the NN model
          New_Ages_Good <- match.f(New_Ages_Good, NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
          New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
          Table(New_Ages_Good$Used_NN_Model)
-         
-         
-         # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
+		 
+		 # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
             
-            assign('xlim', c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25) , pos = 1)            
+            # assign('xlim', c(min(New_Ages_Good$Age_Rounded) - 1.25, max(New_Ages_Good$Age_Rounded) + 1.25) , pos = 1)  # Using TMA xlim for consistence         
             New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
             assign('New_Ages_Good', New_Ages_Good, pos = 1)
             browsePlot('
@@ -605,15 +605,32 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                 points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
                 points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
                           
-            ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
+            ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_Age_Rd_Jitter_Left_Out_Oties_Highlighted.png')) 
+         }
+         
+         # Plot TMA minus rounded age vs the predicted "Age_Rounded" with oties left out of the NN model highlighted (if present)
+         if(!all(New_Ages_Good$Used_NN_Model)) {
+            
+            assign('xlim', c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25) , pos = 1)            
+            New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+            assign('New_Ages_Good', New_Ages_Good, pos = 1)
+            browsePlot('
+                set.seed(Seed_Plot)
+                gPlot(New_Ages_Good, "Age_Rounded", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                           grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+                set.seed(Seed_Plot)
+                points(jitter(New_Ages_Good$Age_Rounded[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
+                points(jitter(New_Ages_Good$Age_Rounded[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
+                          
+            ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_Age_Rounded_Jittered_Left_Out_Oties_Highlighted.png')) 
          }
 		 
-		 
+		 # The same by year, if there is more than one year
          if(length(unique(New_Ages$Year)) > 1) {
             browsePlot('
                par(mfrow = c(3, 2))
                for(Year in unique(New_Ages$Year)) {
-                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
+                         New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
                          gPlot(New_Ages_Year, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                                     main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "white")
                          points(jitter(New_Ages_Year$TMA[New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[New_Ages_Year$Used_NN_Model])
@@ -622,8 +639,23 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
               }
             ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_TMA_Jitter_Left_Out_Oties_Highlight_by_Year.png'), width = 10, height = 10, res = 600)
          }
-
-
+		 
+         # By year, with TMA minus rounded age vs the predicted "Age_Rounded" 
+         if(length(unique(New_Ages$Year)) > 1) {
+            browsePlot('
+               par(mfrow = c(3, 2))
+               for(Year in unique(New_Ages$Year)) {
+                   New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
+                   gPlot(New_Ages_Year, "Age_Rounded", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                              main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+                   points(jitter(New_Ages_Year$Age_Rounded[New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[New_Ages_Year$Used_NN_Model])
+                   points(jitter(New_Ages_Year$Age_Rounded[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
+                   lowess.line(New_Ages_Year$Age_Rounded, New_Ages_Year$TMA_Minus_Age_Rounded, smoothing.param = 0.05, col = "green")
+                   abline(lsfit(New_Ages_Year$Age_Rounded, New_Ages_Year$TMA_Minus_Age_Rounded), col = "blue")
+    
+              }
+            ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_Age_Rd_Jitter_lsfit_lowess.png'), width = 10, height = 10, res = 600)
+         }
      
          sink(paste0(Predicted_Ages_Path, "/", Spectra_Set, "_Stats.txt"), split = TRUE)
          {
