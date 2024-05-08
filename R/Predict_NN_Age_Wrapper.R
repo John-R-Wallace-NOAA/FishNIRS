@@ -594,7 +594,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
 		 # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
             
-            # assign('xlim', c(min(New_Ages_Good$Age_Rounded) - 1.25, max(New_Ages_Good$Age_Rounded) + 1.25) , pos = 1)  # Using TMA xlim for consistence         
+                
             New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
             assign('New_Ages_Good', New_Ages_Good, pos = 1)
             browsePlot('
@@ -610,8 +610,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # Plot TMA minus rounded age vs the predicted "Age_Rounded" with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
-            
-            assign('xlim', c(min(New_Ages_Good$TMA) - 1.25, max(New_Ages_Good$TMA) + 1.25) , pos = 1)            
+                                 
             New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
             assign('New_Ages_Good', New_Ages_Good, pos = 1)
             browsePlot('
