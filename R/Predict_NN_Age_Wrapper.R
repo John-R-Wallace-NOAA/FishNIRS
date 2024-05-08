@@ -568,7 +568,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA  --
          dim(New_Ages)
          
-         assign('xlim', c(min(New_Ages$TMA) - 1.25, max(New_Ages$TMA) + 1.25), pos = 1)         
+         assign('xlim', c(min(c(New_Ages$TMA, New_Ages$Age_Rounded)) - 1.25, max(c(New_Ages$TMA, New_Ages$Age_Rounded)) + 1.25), pos = 1)         
          New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
          assign('New_Ages', New_Ages, pos = 1)
 		 # Superceded ny the highlighted version below
