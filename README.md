@@ -3,6 +3,8 @@ An extended abstract for the talk given on this work at the 2023 Fourth Research
 
 Proceedings of the Fourth Research Workshop on the Rapid Estimation of Fish Age Using Fourier Transform Near Infrared Spectroscopy. 2024, Editors: Matta, M. E. (editors); Helser, T. E. AFSC processed report; 2024-01. DOI: [https://doi.org/10.25923/g30w-8268)](https://doi.org/10.25923/g30w-8268)
 
+Follow this link for the [slide deck.](https://docs.google.com/presentation/d/e/2PACX-1vSQFW9qVyJOABbeKCsdxHjaz9_HRYZpabRwhBh6GgCZFqnMEM5NzKENF7PbNIMnKw/pub?start=true&loop=false&delayms=60000&slide=id.p1)
+
 ---
 
 <h3> Neural Net Models using the keras R Package with a Custom TensorFlow Conda Environment in Windows</h3>
