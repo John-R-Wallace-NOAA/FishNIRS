@@ -200,21 +200,24 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
         # c(length(SG_Variables_Selected), sum(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15)))), length(metaDataVar))
         
         newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
-        
-        if(verbose) {
-           cat("\n\'newScans' data frame with metadata saved to the .GlobalEnv\n\n")
-           print(newScans[1:3, c(1:4, (ncol(newScans) - length(metaDataVar) - 3):ncol(newScans))])
-        }
     }
     
     if(length(SG_Variables_Selected) == length(metaDataVar)) # Metadata only model
        newScans <- Model_Spectra_Meta[ ,SG_Variables_Selected[metaDataVar]]
     
-    dim(newScans)
-    headTail(newScans, 3, 3, 3, 5)
+	TF <- rowSums(is.na(newScans)) == 0  # Remove rows with NA's for legacy models and save which rows were removed for below
+	newScans <- newScans[TF, ]
+	Model_Spectra_Meta <- Model_Spectra_Meta[TF, ]
+	fileNames <- Model_Spectra_Meta$filenames
+		
+    if(verbose) {
+	   cat("\n\'newScans' data frame with metadata (if any) and columns with NA's removed saved to the .GlobalEnv\n\n")
+       dim(newScans)
+       headTail(newScans, 3, 3, 3, 5)
+    }
     
     assign("newScans", newScans , pos = 1) # Save for Cor_R_squared_RMSE_MAE_SAD_APE_Table for various values of N
-    
+    assign("Model_Spectra_Meta", Model_Spectra_Meta , pos = 1)
     
     if(is.null(NumRdmModels))
         (N <- length(Rdm_models))
@@ -227,7 +230,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
        for (i in 1:length(Fold_models)) {      
              newScans.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
              Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA)
-             if(Corr < 0.85) {
+             if(all(newScans.pred == 0) || Corr < 0.85) {
                 if(verbose)
                    cat(paste0("\nRandom Model ", j, "; Fold ", i, " NOT accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
                 next

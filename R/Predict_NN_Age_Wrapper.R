@@ -198,9 +198,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     headTail(NN_Pred_Median_TMA)
     Sys.sleep(2)
     
+	if(is.null(Model_Spectra_Meta_Path))
+	    Use_Session_Report_Meta <- TRUE 
+		
     if(Use_Session_Report_Meta) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
-       print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
-       print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
+        print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
+        print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
     }
       
       
