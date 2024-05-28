@@ -453,11 +453,11 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          plotly.Spec(Model_Spectra_Meta, N_Samp = N_Samp, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure with TMA for New Ages'))
         
          
-         # -- Agreement Figures (FYI, there is a pdf = TRUE) --
-		 Training_N <- length(Rdm_folds_index[[1]][[1]]) * length(Rdm_folds_index[[1]])
-         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Training_N = ", Training_N))',
+         # -- Agreement Figures (FYI, there is a pdf = TRUE option) --
+		 Training_N <- length(unlist(Rdm_folds_index[[1]]))
+         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Training N = ", Training_N))',
 		            file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
-         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, main = paste0("Training_N = ", Training_N))',
+         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, main = paste0("Training N = ", Training_N))',
 		            file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
 		 
 		 if(length(unique(New_Ages$Year)) > 1) {
