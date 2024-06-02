@@ -460,8 +460,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # -- Agreement Figures (FYI, there is a pdf = TRUE option) --
 		 browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Training N = ", Training_N))',
 		            file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
-         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, axes_zoomed_limit = ifelse(grepl('REYE', Spectra_Set), 30, 15), main = paste0("Training N = ", Training_N))',
-		            file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
+         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, 
+		             axes_zoomed_limit = ifelse(grepl("REYE", Spectra_Set), 30, 15), main = paste0("Training N = ", Training_N))', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
 		 
 		 if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             for(Year in unique(New_Ages$Year)) {
