@@ -1,6 +1,6 @@
 
 agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, Delta = NULL, Iter = 0, main = "", xlab = deparse(substitute(Observed)), browserPlot = FALSE, 
-                      ylab = paste0(deparse(substitute(Predicted)), ifelse(is.null(Delta), "", " (rounded after adding Delta)")), full = TRUE, axes_zoomed_limits = 0:15, 
+                      ylab = paste0(deparse(substitute(Predicted)), ifelse(is.null(Delta), "", " (rounded after adding Delta)")), full = TRUE, axes_zoomed_limit = 15, 
                       cex = ifelse(full, 0.75, 1.25), col_equal = 'red', col_off_1_or_2 = 'gold', col_off_3_or_4 = 'green', col_off_5_or_greater = 'navyblue', ...) {
   
    # --- Download functions from GitHub ---
@@ -62,7 +62,7 @@ agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, 
       X <- 0:max(Agreement_Table$Observed)
       Y <- 0:max(Agreement_Table$Predicted)
    } else {
-      X <- Y <- axes_zoomed_limits   
+      X <- Y <- 0::axes_zoomed_limit  
    }   
 
    cat("\n\n")
