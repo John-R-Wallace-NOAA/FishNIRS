@@ -62,7 +62,7 @@ agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, 
       X <- 0:max(Agreement_Table$Observed)
       Y <- 0:max(Agreement_Table$Predicted)
    } else {
-      X <- Y <- 0::axes_zoomed_limit  
+      X <- Y <- 0:axes_zoomed_limit  
    }   
 
    cat("\n\n")
