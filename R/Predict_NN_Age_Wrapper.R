@@ -2,9 +2,9 @@
 
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
-                           opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
+                           Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
                            Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
-                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add  = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
+                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
 
     '  ################################################################################################################################################################                             '
     '  #       Need >= R ver 3.0                                                                                                                                      #                             '
@@ -440,11 +440,15 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          headTail(New_Ages, 3)
 		 Table(New_Ages$Year)
 		  
+		 Training_N <- length(unlist(Rdm_folds_index[[1]])) 
+		 
+		 assign('Spectra_Set', Spectra_Set, pos = 1) 
          assign('New_Ages', New_Ages, pos = 1)
          assign('Delta', Delta, pos = 1) 
          assign('Seed_Plot', Seed_Plot, pos = 1) 
          assign('Rdm_Reps_Main', Rdm_Reps_Main, pos = 1)
          assign('Folds_Num', Folds_Num, pos = 1)
+		 assign('Training_N', Training_N, pos = 1)
          cols <- c('green', 'red')
          pchs <- c(16, 1)
          
@@ -454,13 +458,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         
          
          # -- Agreement Figures (FYI, there is a pdf = TRUE option) --
-		 Training_N <- length(unlist(Rdm_folds_index[[1]]))
-         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Training N = ", Training_N))',
+		 browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Training N = ", Training_N))',
 		            file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
-         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, main = paste0("Training N = ", Training_N))',
+         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, axes_zoomed_limit = ifelse(grepl('REYE', Spectra_Set), 30, 15), main = paste0("Training N = ", Training_N))',
 		            file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
 		 
-		 if(length(unique(New_Ages$Year)) > 1) {
+		 if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             for(Year in unique(New_Ages$Year)) {
 			   assign('Year', Year, pos = 1)
 			   assign('New_Ages_Year', New_Ages[New_Ages$Year %in% Year, ], pos = 1)
@@ -642,7 +645,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          }
 		 
 		 # The same by year, if there is more than one year
-         if(length(unique(New_Ages$Year)) > 1) {
+         if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
                par(mfrow = c(3, 2))
                for(Year in unique(New_Ages$Year)) {
@@ -657,7 +660,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          }
 		 
          # By year, with TMA minus rounded age vs the predicted "Age_Rounded" 
-         if(length(unique(New_Ages$Year)) > 1) {
+         if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
                par(mfrow = c(3, 2))
                for(Year in unique(New_Ages$Year)) {
