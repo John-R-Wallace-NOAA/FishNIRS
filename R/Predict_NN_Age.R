@@ -164,7 +164,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     if(plot) { 
       png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))
       wavebandsToUse <- as.numeric(substring(colnames(newScans.RAW), 2))    
-      plot(wavebandsToUse, newScans.RAW[1, ], type = 'l', ylim = c(0, 1.2), xlim = c(3500, 8000), xlab = 'Wavebands Used (1/cm) (Wavelengths of light from 2,500 - 1,250 nm)', ylab = 'Absorbance')
+      plot(wavebandsToUse, newScans.RAW[1, ], type = 'l', ylim = c(0, ifelse(grepl('REYE', Spectra_Set), 1.6, 1.2)), xlim = c(3500, 8000), xlab = 'Wavebands Used (1/cm) (Wavelengths of light from 2,500 - 1,250 nm)', ylab = 'Absorbance')
       
       for(j in 2:100)  # Just the first 100 wavebands - the point is to look at the variables selected via Savitzky Golay.
           lines(wavebandsToUse, newScans.RAW[j, ], col = j)
