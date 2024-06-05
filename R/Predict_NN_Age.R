@@ -187,7 +187,8 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     
     if(length(SG_Variables_Selected) > length(metaDataVar)) {  # Wavebands used (vs metadata only model)
     
-        length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))])  # Those wavebands selected via SG
+	    if(verbose) 
+            print(length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]))  # Those wavebands selected via SG
         trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
         
         if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
@@ -201,6 +202,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
         
         newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
     }
+	headTail(newScans)
     
     if(length(SG_Variables_Selected) == length(metaDataVar)) # Metadata only model
        newScans <- Model_Spectra_Meta[ ,SG_Variables_Selected[metaDataVar]]
@@ -212,7 +214,6 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
 		
     if(verbose) {
 	   cat("\n\'newScans' data frame with metadata (if any) and columns with NA's removed saved to the .GlobalEnv\n\n")
-       dim(newScans)
        headTail(newScans, 3, 3, 3, 5)
     }
     

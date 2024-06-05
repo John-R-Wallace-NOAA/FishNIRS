@@ -3,7 +3,7 @@
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
                            Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
-                           Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", 
+                           Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15,
                            Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
 
     '  ################################################################################################################################################################                             '
@@ -108,7 +108,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
-	 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lowess.line.R")
+     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lowess.line.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/switchSlash.R")   # Switch "\" to "/" for copied Windows paths [Copy path and run switchSlash() in R. Utilized by JRWToolBox::setWd()]
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R")
@@ -116,7 +116,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
      
@@ -198,9 +198,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     headTail(NN_Pred_Median_TMA)
     Sys.sleep(2)
     
-	if(is.null(Model_Spectra_Meta_Path))
-	    Use_Session_Report_Meta <- TRUE 
-		
+    if(is.null(Model_Spectra_Meta_Path))
+        Use_Session_Report_Meta <- TRUE 
+        
     if(Use_Session_Report_Meta) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
         print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
         print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
@@ -248,20 +248,25 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          shortNameSuffix. <- NULL
      
      # Maximum number of wavebands to show in the spectra figure
-     if(length(fileNames > 0))
+     if(length(fileNames) > 0)
         N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
      else
-       N_Samp <- ifelse(is.numeric(Max_N_Spectra), Max_N_Spectra, 'All')
+        N_Samp <- ifelse(is.numeric(Max_N_Spectra), Max_N_Spectra, 'All')
      
      cat("\n\nN_Samp =", N_Samp, "\n\n")
      
      if(is.null(Model_Spectra_Meta_Path))
         Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
                                       Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
-     else
+     else {
        load(Model_Spectra_Meta_Path)     
-     
-     headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+       if(TMA_Ages)
+          Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$TMA), ]  # Since TMA_Ages = TRUE, make sure there are no missing TMA
+     }    
+     if(verbose) {
+        cat("\n\nIf TMA_Ages = TRUE, then any otie with a missing TMA has been removed\n\n")
+        headTail(Model_Spectra_Meta, 2, 2, 3, 70)
+     }
      
      #   # Change 'Length_prop_max' to 'length_prop_max' if flag is set above
      #   if(lower_case_length_prop_max)
@@ -272,7 +277,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      metadata <- Model_Spectra_Meta[, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))]
      headTail(metadata, 2)
      
-     # For testing Read_OPUS_Spectra():  Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+     # For testing Read_OPUS_Spectra():  plot <- TRUE; Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
      
      
      ##### This is the MAIN CALL to Predict_NN_Age() function #####
@@ -299,7 +304,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      headTail(newScans.pred.ALL, 3, 3)
      
      
-     # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = N_Samp                                    
+     # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = 200                                    
           
      
      #  -- Look length and weight vs TMA and each other -- 
@@ -413,7 +418,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # --- Save ages ---
          save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
-          save(newScans.pred.ALL, file = paste0(Predicted_Ages_Path, '/newScans.pred.ALL, ', Date(" "), '.RData'))
+         save(newScans.pred.ALL, file = paste0(Predicted_Ages_Path, '/newScans.pred.ALL, ', Date(" "), '.RData'))
          
           # --- Save metadata to a new NIRS_Scanning_Session_Report
          # metadata$length_cm <- metadata$weight_kg <- NULL   
@@ -431,24 +436,25 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           }
          
          # --- Add Index to New_ages and set colors and pchs for the figures below ---
-		 if(Spectra_Set == "PWHT_Acoustic2019") 
+         if(Spectra_Set == "PWHT_Acoustic2019") 
             Year <- as.numeric(substring(get.subs(New_Ages$filenames, sep = "_")[2, ], 9))
          else
-            Year <- as.numeric(substring(get.subs(New_Ages$filenames, sep = "_")[2, ], 6))	
-			
+            Year <- as.numeric(substring(get.subs(New_Ages$filenames, sep = "_")[2, ], 6))    
+            
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), Year = Year, New_Ages, TMA_Minus_Age_Rounded = New_Ages$TMA - New_Ages$Age_Rounded)  # Add 'Index' as the first column in the data frame and Year the second
          headTail(New_Ages, 3)
-		 Table(New_Ages$Year)
-		  
-		 Training_N <- length(unlist(Rdm_folds_index[[1]])) 
-		 
-		 assign('Spectra_Set', Spectra_Set, pos = 1) 
+         Table(New_Ages$Year)
+          
+         Training_N <- length(unlist(Rdm_folds_index[[1]])) 
+         
+         assign('Spectra_Set', Spectra_Set, pos = 1) 
          assign('New_Ages', New_Ages, pos = 1)
          assign('Delta', Delta, pos = 1) 
          assign('Seed_Plot', Seed_Plot, pos = 1) 
          assign('Rdm_Reps_Main', Rdm_Reps_Main, pos = 1)
          assign('Folds_Num', Folds_Num, pos = 1)
-		 assign('Training_N', Training_N, pos = 1)
+         assign('Training_N', Training_N, pos = 1)
+         assign('axes_zoomed_limit', axes_zoomed_limit, pos = 1)
          cols <- c('green', 'red')
          pchs <- c(16, 1)
          
@@ -458,20 +464,20 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         
          
          # -- Agreement Figures (FYI, there is a pdf = TRUE option) --
-		 browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Training N = ", Training_N))',
-		            file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
+         browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0("Training N = ", Training_N))',
+                    file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
          browsePlot('agreementFigure(New_Ages$TMA, New_Ages$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, 
-		             axes_zoomed_limit = ifelse(grepl("REYE", Spectra_Set), 30, 15), main = paste0("Training N = ", Training_N))', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
-		 
-		 if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
+                     axes_zoomed_limit = axes_zoomed_limit, main = paste0("Training N = ", Training_N))', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
+         
+         if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             for(Year in unique(New_Ages$Year)) {
-			   assign('Year', Year, pos = 1)
-			   assign('New_Ages_Year', New_Ages[New_Ages$Year %in% Year, ], pos = 1)
-	           browsePlot('agreementFigure(New_Ages_Year$TMA, New_Ages_Year$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = Year)', 
-			              file = paste0(Predicted_Ages_Path, '/Agreement_Figure_', Year, '.png'))
+               assign('Year', Year, pos = 1)
+               assign('New_Ages_Year', New_Ages[New_Ages$Year %in% Year, ], pos = 1)
+               browsePlot('agreementFigure(New_Ages_Year$TMA, New_Ages_Year$NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = Year)', 
+                          file = paste0(Predicted_Ages_Path, '/Agreement_Figure_', Year, '.png'))
             }
          }
-		 
+         
          if(verbose & !interactive())  Sys.sleep(5)
         
         
@@ -505,17 +511,17 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
          if(verbose) headTail(New_Ages_Sorted, 5)
-		 
+         
          g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
                panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_sorted_TMA.png'))
          
-		 
+         
          # -- Plot by sorted TMA --
          New_Ages_Sorted <- na.omit(New_Ages_Sorted)
          # if(verbose) head(New_Ages_Sorted, 20)
-		 
+         
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -532,7 +538,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  
          New_Ages_Sorted <- na.omit(New_Ages_Sorted)
          if(verbose) head(New_Ages_Sorted, 20)
-		 
+         
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -549,9 +555,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             #  New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages_Sorted), 200), ], 'NN_Pred_Median') 
             #  New_Ages_Sorted <- New_Ages_Sorted[New_Ages_Sorted$NN_Pred_Median <= 10, ]
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-		#  New_Ages_Sorted$Age_Rounded_Plus_0.2 <- New_Ages_Sorted$Age_Rounded + 0.2
+        #  New_Ages_Sorted$Age_Rounded_Plus_0.2 <- New_Ages_Sorted$Age_Rounded + 0.2
          if(verbose) head(New_Ages_Sorted, 20)
-		 
+         
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -574,7 +580,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'NN_Pred_Median')  # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
          if(verbose) head(New_Ages_Sorted, 20)
-		 
+         
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
@@ -591,7 +597,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          assign('xlim', c(min(c(New_Ages$TMA, New_Ages$Age_Rounded)) - 1.25, max(c(New_Ages$TMA, New_Ages$Age_Rounded)) + 1.25), pos = 1)         
          New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
          assign('New_Ages', New_Ages, pos = 1)
-		 # Superceded ny the highlighted version below
+         # Superceded ny the highlighted version below
          # browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
          #                 grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png'))
                             
@@ -610,8 +616,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          New_Ages_Good <- match.f(New_Ages_Good, NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
          New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
          Table(New_Ages_Good$Used_NN_Model)
-		 
-		 # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
+         
+         # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
          if(!all(New_Ages_Good$Used_NN_Model)) {
             
                 
@@ -622,8 +628,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                 gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                            grid = FALSE, vertLineEachPoint = TRUE, col = "white")
                 set.seed(Seed_Plot)
-                points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
                 points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
+                points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
                           
             ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_Age_Rd_Jitter_Left_Out_Oties_Highlighted.png')) 
          }
@@ -638,13 +644,13 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                 gPlot(New_Ages_Good, "Age_Rounded", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                            grid = FALSE, vertLineEachPoint = TRUE, col = "white")
                 set.seed(Seed_Plot)
-                points(jitter(New_Ages_Good$Age_Rounded[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
                 points(jitter(New_Ages_Good$Age_Rounded[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
-                          
+                points(jitter(New_Ages_Good$Age_Rounded[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
+                 
             ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_Age_Rounded_Jittered_Left_Out_Oties_Highlighted.png')) 
          }
-		 
-		 # The same by year, if there is more than one year
+         
+         # The same by year, if there is more than one year and Multi_Year is TRUE
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
                par(mfrow = c(3, 2))
@@ -658,7 +664,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
               }
             ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_TMA_Jitter_Left_Out_Oties_Highlight_by_Year.png'), width = 10, height = 10, res = 600)
          }
-		 
+         
          # By year, with TMA minus rounded age vs the predicted "Age_Rounded" 
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
