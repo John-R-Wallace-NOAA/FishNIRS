@@ -6,7 +6,7 @@
 
 
 Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2019", "Sable_Combo_2022")[3], Spectra_Path = NULL, 
-                         shortNameSegments, shortNameSuffix, yearPosition, fineFreqAdj = 0,
+                         shortNameSegments = c(1, 6), shortNameSuffix = 'COMBO', yearPosition = 6, fineFreqAdj = 0,
                          Meta_Path = NULL, Extra_Meta_Path = NULL, TMA_Ages = c(TRUE, FALSE)[2], 
                          excelSheet = 3, Max_N_Spectra = list(50, 200, 'All')[[3]], 
                          verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], htmlPlotFolder = "Figures",
@@ -30,6 +30,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     if(Spectra_Set == "PWHT_Acoustic2019") {
        shortNameSegments <- c(1, 6) # Segments 2 and 4 of the spectra file name, e.g.: (PACIFIC, HAKE, BMS201906206C, 1191, OD1) => (HAKE, 1191)
        shortNameSuffix <- 'Acoustic'
+	   Extra_Meta_Path <- "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Extra_Metadata.Rdata"
     }
      
     # Sablefish 2017 & 2019, Combo survey
@@ -60,36 +61,46 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     if(Spectra_Set %in% c("BLSP_COMBO_2006-2018", "REYE_RougheyeRF_2015-2017")) {
        shortNameSegments <- c(1, 6) # Segments 1 and 6 of the spectra file name, e.g.: REYE_COMBO2015_NIR0033A_PRD_11_102010851_O1.0 => (REYE, 102010851)
        shortNameSuffix <- 'Combo'
-       # yearPosition <- c(6, 9) # Segment used (see above) is: shortNameSegments[1] + 1
-       Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData"	
+       yearPosition <- 6 # Segment used (see above) is: shortNameSegments[1] + 1
+       # Extra_Meta_Path <- 
     }
     
     # REYE_OR_Comm_2008_2011
     if(Spectra_Set %in% "REYE_OR_Comm_2008_2011") {
        shortNameSegments <- c(1, 5) 
        shortNameSuffix <- 'Comm'
-       yearPosition <- c(3, 3 + 3) # Segment used (see above) is: shortNameSegments[1] + 1
-       Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData"	
+       yearPosition <- 3 # Segment used (see above) is: shortNameSegments[1] + 1
+       # Extra_Meta_Path <- 
     }
    
     # REYE_OR_Comm_2023
     if(Spectra_Set %in% "REYE_OR_Comm_2023") {
-       shortNameSegments <- c(1, 6) 
+       shortNameSegments <- c(1, 6, 7) 
        shortNameSuffix <- 'Comm'
-       yearPosition <- c(7, 7 + 3) # Segment used (see above) is: shortNameSegments[1] + 1
-       Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData"	
+       yearPosition <- 7 # Segment used (see above) is: shortNameSegments[1] + 1
+       # Extra_Meta_Path <- 
     }
 	
 	# REYE_WA_Comm_2012_2013
     if(Spectra_Set %in% "REYE_WA_Comm_2012_2013") {
 	   Spectra_Path <- paste0("REYE_Comm_2012-2023/", Spectra_Set, "_Scans")  # dir.create(Spectra_Path, showWarnings = FALSE, recursive = TRUE)
        Meta_Path <- "REYE_Comm_2012-2023/REYE_WACOMM_WAREC_2012_2013_NIRS_Scanning_Session_Report_For_NWFSC.xlsx"
-	   Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData"	
+	   # Extra_Meta_Path <- 
 	   htmlPlotFolder = paste0('Predicted_Ages/', Spectra_Set, '_Spectra_Sample_of_', Max_N_Spectra)
        shortNameSegments <- c(1, 6) 
        shortNameSuffix <- 'Comm'
-       yearPosition <- c(6, 6 + 3) # e.g. WAREC2012 => 2012 (Segment used (see above) is: shortNameSegments[1] + 1)
-       
+       yearPosition <- 6 # e.g. WAREC2012 => 2012 (Segment used (see above) is: shortNameSegments[1] + 1)
+    }
+   
+    # REYE_WA_Comm_2011
+    if(Spectra_Set %in% "REYE_WA_Comm_2011") {
+	   Spectra_Path <- paste0("REYE_Comm_2012-2023/", Spectra_Set, "_Scans")  # dir.create(Spectra_Path, showWarnings = FALSE, recursive = TRUE)
+       Meta_Path <- "REYE_Comm_2012-2023/REYE_WACOMM_2011_NIRS0042_Scanning_Report_For_NWC.xlsx"
+	   # Extra_Meta_Path <- 
+	   htmlPlotFolder = paste0('Predicted_Ages/', Spectra_Set, '_Spectra_Sample_of_', Max_N_Spectra)
+       shortNameSegments <- c(1, 6) 
+       shortNameSuffix <- 'Comm'
+       yearPosition <- 7 # e.g. WACOMM2011 => 2011 (Segment used (see above) is: shortNameSegments[1] + 1)
     }
    
     # -----------------------------------------------------------------------------------------------------------------------------------
@@ -253,7 +264,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     
     fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
     Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
-    names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA"
+    names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
+	names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
     Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
     Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
     Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 'none' # Change NA to 'none' tissue level.
@@ -264,17 +276,23 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     #     CAT("\N\N")
     #  }
     
+	if(!is.null(Model_Spectra_Meta$structure_weight_g))       
+           Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
+	
     if(!is.null(Extra_Meta_Path)) { 	
 	
-	    base::load(Extra_Meta_Path)  
-           metadata_DW <- selectSpAgesFramFeb2024; rm(selectSpAgesFramFeb2024) # 'DW' is NWFSC Data Warehouse
-    
-        Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
-        
-        Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))
-    
-        if(!is.null(Model_Spectra_Meta$structure_weight_g))       
-           Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
+	    base::load(Extra_Meta_Path) 
+
+        if(Spectra_Set == "PWHT_Acoustic2019")
+		
+            Model_Spectra_Meta <- match.f(Model_Spectra_Meta,  PWHT_Acoustic2019_Extra_Metadata, "specimen_id", "Specimen_Number", c('Length_cm', 'Weight_kg', 'Sex'))
+		
+		else  {
+		
+            metadata_DW <- selectSpAgesFramFeb2024; rm(selectSpAgesFramFeb2024) # 'DW' is NWFSC Data Warehouse
+            Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
+            Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))  
+	    }
            
         if(!is.null(Model_Spectra_Meta$Length_cm))        
            Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/max(Model_Spectra_Meta$Length_cm, na.rm = TRUE)
