@@ -455,8 +455,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          assign('Folds_Num', Folds_Num, pos = 1)
          assign('Training_N', Training_N, pos = 1)
          assign('axes_zoomed_limit', axes_zoomed_limit, pos = 1)
-         cols <- c('green', 'red')
-         pchs <- c(16, 1)
+		 assign('cols', c('green', 'red'), pos = 1)
+		 assign('pchs', c(16, 1), pos = 1)
          
          
          # -- Spectra Figure with TMA for New Ages --
@@ -480,13 +480,31 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          if(verbose & !interactive())  Sys.sleep(5)
         
-        
-         # -- Plot by order implied by the spectra file names -  ???? ggplotly() changes how scale_color_manual() works ???? --
+		 
+         # -- Plot of relative error by sorted TMA --   
+         New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
+         New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
+         if(verbose) headTail(New_Ages_Sorted, 10)
+         New_Ages_Sorted <- na.omit(New_Ages_Sorted)
+		
+         # -- Relative error by TMA age --
+         g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
+              panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+         assign('g', g, pos = 1)
+         browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_TMA_age.png'))
+         
+         g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
+               panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
+         assign('g', g, pos = 1)
+         browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_sorted_TMA.png'))
+         
+		 
+		 # -- Plot by order implied by the spectra file names -  ???? ggplotly() changes how scale_color_manual() works ???? --
          g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
-         geom_point(aes(Index + 0.1, TMA, col = cols[2])) + 
+         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index + 0.1, TMA, col = cols[2]), pch = pchs[2]) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'), width = 18, height = 10,)
@@ -500,54 +518,45 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
          # saveHtmlFolder(paste0(Predicted_Ages_Path, '/TMA vs Predicted_Ages'), view = !interactive())
         
-        
-         # -- Relative error by TMA age --
-         g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ TMA, group = TMA, data = New_Ages, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
-              panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
-         assign('g', g, pos = 1)
-         browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_TMA_age.png'))
-         
-         # -- Plot of relative error by sorted TMA age --   
-         New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
-         New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-         if(verbose) headTail(New_Ages_Sorted, 5)
-         
-         g <- xyplot((NN_Pred_Median - TMA)/ifelse(TMA == 0, 1, TMA) ~ Index, group = TMA, data = New_Ages_Sorted, ylab = "(NN_Pred_Median - TMA)/TMA (TMA in denominator set to 1 if TMA = 0)",
-               panel = function(...) { panel.xyplot(...); panel.abline(h = 0, col = 'grey') })
-         assign('g', g, pos = 1)
-         browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Relative_error_by_sorted_TMA.png'))
-         
-         
-         # -- Plot by sorted TMA --
-         New_Ages_Sorted <- na.omit(New_Ages_Sorted)
-         # if(verbose) head(New_Ages_Sorted, 20)
-         
+		
+         # For this sorting of the data, the pch coding is incorrect,
+		 # Age_Rounded can be an open circle and TMA solid, but that is not what I want.
+		 # Also the labels are both solid circles in all these plots unless both Age_Rounded and TMA are both set to open circles (pch = 16)
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, TMA + 0.2, col = cols[2])) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
-         scale_color_manual(labels = c('Rounded Age', 'TMA (+ 0.2)'), values = cols, name = ' ')
+         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) +
+         geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) + 
+         scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
          
-         
+		 # For this sorting of the data, the pch coding is incorrect,
+		 # Age_Rounded can be an open circle and TMA solid, but that is not what I want.
+         g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
+         geom_point() +
+         geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+         geom_point(aes(Index, jitter(TMA + 0.2, 1/6), col = cols[2]), pch = pchs[2]) + 
+         geom_point(aes(Index, jitter(Age_Rounded, 1/6), col = cols[1]), pch = pchs[1]) + 
+         scale_color_manual(labels = c('Rounded Age', 'TMA (+ 0.2)'), values = cols, name = ' ')
+         assign('g', g, pos = 1)
+         browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted_Jittered.png'))
+		 
          # -- Plot SUBSET of data by sorted by TMA --
          set.seed(Seed_Plot)
          New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'TMA') 
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  
          New_Ages_Sorted <- na.omit(New_Ages_Sorted)
-         if(verbose) head(New_Ages_Sorted, 20)
+         if(verbose) headTail(New_Ages_Sorted, 10)
          
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, TMA, col = cols[2])) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+         geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) + 
+         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted_Subset.png'))
-       
        
          
          # -- Plot by sorted NN predicted ages --
@@ -561,11 +570,20 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+		 geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
          geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
-         geom_point(aes(Index, TMA + 0.2, col = cols[2]), pch = pchs[2]) +  
-         scale_color_manual(labels = c('Rounded Age', 'TMA (+ 0.2)'), values = cols, name = ' ') 
+         scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
          assign('g', g, pos = 1)         
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
+         
+         g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
+         geom_point() +
+         geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+         geom_point(aes(Index, jitter(Age_Rounded, 1/6), col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index, jitter(TMA + 0.2, 1/6), col = cols[2]), pch = pchs[2]) +  
+         scale_color_manual(labels = c('Rounded Age', 'TMA (+ 0.2)'), values = cols, name = ' ') 
+         assign('g', g, pos = 1)         
+         browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted_Jittered.png'))
          
          # https://r-graphics.org/recipe-scatter-shapes   
          # scale_color_manual(labels = c('Rounded Age', 'TMA'), values = list(colour = cols, pch = pchs), aesthetics = c('colour', 'shape'), name = ' ') 
