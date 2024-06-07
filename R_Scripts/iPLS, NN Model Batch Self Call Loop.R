@@ -31,10 +31,10 @@ Metadata_Only <- c(TRUE, FALSE)[1]
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 'All')[[3]] 
 Rdm_Reps_Main <- c(20, 40, 60)[1]
-Folds_Num <- 4 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
+Folds_Num <- 10 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
 Iter_Num <- 8  # Iter while() loop
 Num_Oties_Model <- c(NA, 500, 750)[3]
-activation_function <- c('relu', 'elu', 'selu')[2]
+activation_function <- c('relu', 'elu', 'selu')[1]
 
 print(getwd())
 print(Spectra_Set)
@@ -1123,16 +1123,18 @@ if(exists('Wrap_Up_Flag')) {
 }  ###
 
 
-if(exists('Wrap_Up_Flag'))
-     Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = FALSE, axes_zoomed_limit = 30,
-          Model_Spectra_Meta_Path = paste0("C:/SIDT/Train_NN_Model/", Spectra_Set, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"), Use_Session_Report_Meta = FALSE)
 
-          
-if(FALSE) # After moving results to: C:\SIDT\PWHT_Acoustic2019\NN_500N_Otie_Wgt_Fish_Len_FIsh_Wgt
-     Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/PWHT_Acoustic2019/NN_500N_Otie_Wgt_Fish_Len_Fish_Wgt",  Multi_Year = FALSE, axes_zoomed_limit = 17,
-          Model_Spectra_Meta_Path = paste0("C:/SIDT/PWHT_Acoustic2019/NN_500N_Otie_Wgt_Fish_Len_Fish_Wgt/", Spectra_Set, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"), Use_Session_Report_Meta = TRUE)          
-          
- 
+if(exists('Wrap_Up_Flag'))
+     Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = FALSE, axes_zoomed_limit = 17, Folds_Num = Folds_Num, 
+	      Model_Spectra_Meta_Path = paste0("C:/SIDT/Train_NN_Model/", Spectra_Set, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"), Use_Session_Report_Meta = FALSE)
+		  
+		  
+if(FALSE)  {   # After moving results to: C:\SIDT\PWHT_Acoustic2019\NN_500N_Otie_Wgt_Fish_Len_FIsh_Wgt
+     Spectra_Set <- "PWHT_Acoustic2019"
+     Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/PWHT_Acoustic2019/NN_750N_Otie_Wgt_Fish_Len_Fish_Wgt",  Multi_Year = FALSE, axes_zoomed_limit = 17,
+	      Model_Spectra_Meta_Path = paste0("C:/SIDT/PWHT_Acoustic2019/NN_750N_Otie_Wgt_Fish_Len_Fish_Wgt/", Spectra_Set, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"), Use_Session_Report_Meta = TRUE)		
+		  
+}  
  
  
  
