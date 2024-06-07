@@ -141,7 +141,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # }
     
     
-    # -- Find the metadata variables that are in the NN Model --
+    # -- Find the metadata variables that are in the NN Model and fix legacy issues with Length_cm and Weight_kg having incorrect names --
     SG_Variables_Selected[grep("Length_cm", SG_Variables_Selected)] <- "Length_prop_max"
     SG_Variables_Selected[grep("length_prop_max", SG_Variables_Selected)] <- "Length_prop_max"
     SG_Variables_Selected[grep("Weight_kg", SG_Variables_Selected)] <- "Weight_prop_max"
@@ -161,7 +161,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     fileNames <- Model_Spectra_Meta$filenames
     shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
    
-    if(plot) { 
+    if(plot) { # No wavebands will be plotted for a metadata only model
       png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))
       wavebandsToUse <- as.numeric(substring(colnames(newScans.RAW), 2))    
       plot(wavebandsToUse, newScans.RAW[1, ], type = 'l', ylim = c(0, ifelse(grepl('REYE', Spectra_Set), 1.6, 1.2)), xlim = c(3500, 8000), xlab = 'Wavebands Used (1/cm) (Wavelengths of light from 2,500 - 1,250 nm)', ylab = 'Absorbance')
@@ -179,7 +179,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
   
     # -- Estimation of NN ages based the spectra scans provided --   
     if(verbose) 
-        cat("\nStarting the estimation of NN ages based the spectra scans provided:\n\n")
+        cat("\nStarting the estimation of NN ages based the spectra scans and/or metadata provided:\n\n")
     
     # all(SG_Variables_Selected %in% names(data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))))
   
@@ -202,8 +202,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
         
         newScans <- match.f(data.frame(fileNames, newScans), Model_Spectra_Meta, 'fileNames', 'filenames', SG_Variables_Selected[metaDataVar])[, -1]  
     }
-	headTail(newScans)
-    
+	
     if(length(SG_Variables_Selected) == length(metaDataVar)) # Metadata only model
        newScans <- Model_Spectra_Meta[ ,SG_Variables_Selected[metaDataVar]]
     
@@ -214,7 +213,10 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
 		
     if(verbose) {
 	   cat("\n\'newScans' data frame with metadata (if any) and columns with NA's removed saved to the .GlobalEnv\n\n")
-       headTail(newScans, 3, 3, 3, 5)
+	   if(length(SG_Variables_Selected) == length(metaDataVar))
+	      headTail(newScans)
+	   else
+          headTail(newScans, 3, 3, 3, 5)
     }
     
     assign("newScans", newScans , pos = 1) # Save for Cor_R_squared_RMSE_MAE_SAD_APE_Table for various values of N

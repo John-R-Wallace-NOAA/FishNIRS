@@ -116,7 +116,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
      
@@ -194,6 +194,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     }
     
     print(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
+	
     NN_Pred_Median_TMA <- extractRData(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
     headTail(NN_Pred_Median_TMA)
     Sys.sleep(2)
@@ -289,8 +290,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      #    Predicted_Ages_Path = Predicted_Ages_Path,  shortNameSegments = shortNameSegments, shortNameSuffix = shortNameSuffix., N_Samp = N_Samp, verbose = verbose) # Use the max number of random model replicates available
      
      New_Ages_Pred <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),  
-                                         Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose, Folds_Num = Folds_Num) # Use the max number of random model replicates available (the default for arg 'NumRdmModels')
+                                         Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, N_Samp = N_Samp, verbose = verbose, Folds_Num = Folds_Num) # This call uses the max number of random model replicates available (the default for arg 'NumRdmModels')
      
+	 # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = 200    
+	 
      New_Ages <- New_Ages_Pred[['New_Ages']]
      
      cat("\n\nNew_Ages  Missing Predictions\n")
@@ -304,7 +307,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      headTail(newScans.pred.ALL, 3, 3)
      
      
-     # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = 200                                    
+                                     
           
      
      #  -- Look length and weight vs TMA and each other -- 
@@ -627,7 +630,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                
          # Restrict new ages to those that have predictions from the NN model         
          New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
-         dim(New_Ages_Good)
+         print(dim(New_Ages_Good))
      
          # Find those oties that were left out of the NN model for testing - if any.
          NN_Pred_Median_TMA$Used_NN_Model <- TRUE # Used in the NN model
@@ -636,37 +639,31 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          Table(New_Ages_Good$Used_NN_Model)
          
          # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
-         if(!all(New_Ages_Good$Used_NN_Model)) {
-            
-                
-            New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
-            assign('New_Ages_Good', New_Ages_Good, pos = 1)
-            browsePlot('
-                set.seed(Seed_Plot)
-                gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                           grid = FALSE, vertLineEachPoint = TRUE, col = "white")
-                set.seed(Seed_Plot)
-                points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
-                points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
-                          
-            ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_Age_Rd_Jitter_Left_Out_Oties_Highlighted.png')) 
-         }
+        New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+        assign('New_Ages_Good', New_Ages_Good, pos = 1)
+        browsePlot('
+            set.seed(Seed_Plot)
+            gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                       grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+            set.seed(Seed_Plot)
+            points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
+            points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
+                      
+        ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
+        
+        # Plot TMA minus rounded age vs the predicted "Age_Rounded" with oties left out of the NN model highlighted (if present)
+        New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+        assign('New_Ages_Good', New_Ages_Good, pos = 1)
+        browsePlot('
+            set.seed(Seed_Plot)
+            gPlot(New_Ages_Good, "Age_Rounded", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                       grid = FALSE, vertLineEachPoint = TRUE, col = "white")
+            set.seed(Seed_Plot)
+            points(jitter(New_Ages_Good$Age_Rounded[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
+            points(jitter(New_Ages_Good$Age_Rounded[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
+             
+        ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_NN_Age_Rd_Jittered_Left_Out_Oties_Highlighted.png')) 
          
-         # Plot TMA minus rounded age vs the predicted "Age_Rounded" with oties left out of the NN model highlighted (if present)
-         if(!all(New_Ages_Good$Used_NN_Model)) {
-                                 
-            New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
-            assign('New_Ages_Good', New_Ages_Good, pos = 1)
-            browsePlot('
-                set.seed(Seed_Plot)
-                gPlot(New_Ages_Good, "Age_Rounded", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                           grid = FALSE, vertLineEachPoint = TRUE, col = "white")
-                set.seed(Seed_Plot)
-                points(jitter(New_Ages_Good$Age_Rounded[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
-                points(jitter(New_Ages_Good$Age_Rounded[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
-                 
-            ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_Age_Rounded_Jittered_Left_Out_Oties_Highlighted.png')) 
-         }
          
          # The same by year, if there is more than one year and Multi_Year is TRUE
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
