@@ -3,7 +3,7 @@ An extended abstract for the talk given on this work at the 2023 Fourth Research
 
 Proceedings of the Fourth Research Workshop on the Rapid Estimation of Fish Age Using Fourier Transform Near Infrared Spectroscopy. 2024, Editors: Matta, M. E. (editors); Helser, T. E. AFSC processed report; 2024-01. DOI: [https://doi.org/10.25923/g30w-8268)](https://doi.org/10.25923/g30w-8268)
 
-Follow this link for the presentation [slide deck.](https://docs.google.com/presentation/d/e/2PACX-1vSQFW9qVyJOABbeKCsdxHjaz9_HRYZpabRwhBh6GgCZFqnMEM5NzKENF7PbNIMnKw/pub?start=true&loop=false&delayms=60000&slide=id.p1)
+Follow this link for the presentation [slide deck](https://docs.google.com/presentation/d/e/2PACX-1vSQFW9qVyJOABbeKCsdxHjaz9_HRYZpabRwhBh6GgCZFqnMEM5NzKENF7PbNIMnKw/pub?start=true&loop=false&delayms=60000&slide=id.p1) and click here for selected results as of [June 2024](https://docs.google.com/presentation/d/e/2PACX-1vTfisqAPiKjfAj8hXokQH7591fF4nl6PnGw_jKvZdsfC0FuEqZPCJxI3m8Avocujw/pub?start=false&loop=false&delayms=60000)
 
 ---
 
