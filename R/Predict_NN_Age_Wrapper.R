@@ -1,8 +1,8 @@
 
 
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
-                           Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
-                           Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
+                           Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
+                           Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
                            Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15,
                            Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE) {
 
@@ -116,8 +116,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
      
      getwd()
@@ -202,12 +202,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     if(is.null(Model_Spectra_Meta_Path))
         Use_Session_Report_Meta <- TRUE 
         
-    if(Use_Session_Report_Meta) {  #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
+    if(Use_Session_Report_Meta & is.null(Meta_Path))   #  Meta_Path cannot be FALSE if Read_OPUS_Spectra() is used below. Read_OPUS_Spectra() in this function currently only works for single year predictions.
         print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
+		
+	if(!is.null(Meta_Path)) {
         if(!file.exists(Meta_Path))  stop("Meta_path file not found")
-        
         print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
-        
     }
       
       
@@ -241,7 +241,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
      # --- Use Predict_NN_Age() to find the NN predicted ages ---  
      
-     (fileNames <- dir(path = Spectra_Path))[1:10]
+     fileNames <- dir(path = Spectra_Path)
+	 if(verbose)
+	     print(fileNames[1:ifelse(length(fileNames) < 10, length(fileNames), 10)])
+		 
      if(exists('shortNameSuffix') && shortNameSuffix == 'Year')
         shortNameSuffix. <- apply(matrix(fileNames, ncol = 1), 1, function(x) substr(get.subs(x, sep = "_")[shortNameSegments[1] + 1], yearPosition[1], yearPosition[2]))
      
@@ -252,16 +255,18 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          shortNameSuffix. <- NULL
      
      # Maximum number of wavebands to show in the spectra figure
+	 
      if(length(fileNames) > 0)
         N_Samp <- ifelse(is.numeric(Max_N_Spectra), min(c(length(fileNames), Max_N_Spectra)), 'All')
      else
         N_Samp <- ifelse(is.numeric(Max_N_Spectra), Max_N_Spectra, 'All')
      
-     cat("\n\nN_Samp =", N_Samp, "\n\n")
+	 if(verbose)
+        cat("\n\nN_Samp =", N_Samp, "\n\n")
      
      if(is.null(Model_Spectra_Meta_Path))
-        Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Add = Meta_Add,
-                                      Meta_Path = Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
+        Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Path = Meta_Path, 
+                                      Extra_Meta_Path = Extra_Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
      else {
        load(Model_Spectra_Meta_Path)     
        if(TMA_Ages)
@@ -555,7 +560,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # -- Plot SUBSET of data by sorted by TMA --
          set.seed(Seed_Plot)
-         New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'TMA') 
+         New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), ifelse(nrow(New_Ages) < 150, nrow(New_Ages), 150)), ], 'TMA') 
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  
          New_Ages_Sorted <- na.omit(New_Ages_Sorted)
          if(verbose) headTail(New_Ages_Sorted, 10)
@@ -572,7 +577,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # -- Plot by sorted NN predicted ages --
          New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
-            #  New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages_Sorted), 200), ], 'NN_Pred_Median') 
+            #  New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages_Sorted), ifelse(nrow(New_Ages_Sorted) < 200, nrow(New_Ages_Sorted), 200)), ], 'NN_Pred_Median') 
             #  New_Ages_Sorted <- New_Ages_Sorted[New_Ages_Sorted$NN_Pred_Median <= 10, ]
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
         #  New_Ages_Sorted$Age_Rounded_Plus_0.2 <- New_Ages_Sorted$Age_Rounded + 0.2
@@ -606,7 +611,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # -- Plot SUBSET of data by sorted NN predicted ages --
          set.seed(Seed_Plot)
-         New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), 150), ], 'NN_Pred_Median')  # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+         New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), ifelse(nrow(New_Ages) < 150, nrow(New_Ages), 150)), ], 'NN_Pred_Median')  # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
          if(verbose) head(New_Ages_Sorted, 20)
          

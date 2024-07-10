@@ -45,12 +45,15 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     if(Spectra_Set %in% c("Sable_Combo_2017", "Sable_Combo_2018", "Sable_Combo_2019", "Sable_Combo_2021", "Sable_Combo_2022")) { 
         Year <- get.subs(Spectra_Set, sep = "_")[3]
         if(is.null(Spectra_Path)) 
-          Spectra_Path <- paste0('C:/SIDT/Sablefish ', Year, ' Combo/Sable_Combo_', Year, '_Scans')
+          Spectra_Path <- paste0('C:/SIDT/Sable_Combo_', Year, '/Sable_Combo_', Year, '_Scans')
        
         if(is.null(Meta_Path))
-            Meta_Path <- paste0('C:/SIDT/Sablefish ', Year, ' Combo/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')
+            Meta_Path <- paste0('C:/SIDT/Sable_Combo_', Year, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx')
 		
-        Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData"	
+		if(!is.null(Extra_Meta_Path) && Extra_Meta_Path == "No_Default") # Special execption e.g. reference scans 
+		   Extra_Meta_Path <- NULL
+		else   
+           Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData"	
 		
         shortNameSegments <- c(1, 5) # Segments 1 and 3 of the spectra file name, e.g.: (SABLEFISH, COMBO201701203A, 28, OD1) => (SABLEFISH, 28)
         shortNameSuffix <- 'Combo'
@@ -161,7 +164,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
 
   
     # --- Create a character vector of all spectral files within 'Spectra_Path'---   
-    cat(paste("\nSpectra_Path =", Spectra_Path, "\n"))
+	if(verbose)
+       cat(paste("\nSpectra_Path =", Spectra_Path, "\n"))
     
     if(is.null(Spectra_Path))
        fileNames.0 <- dir()
@@ -180,7 +184,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     
     
     # Read in metadata
-    cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
+	if(verbose)
+       cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
     metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
      
        
@@ -260,13 +265,14 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
  
     if(verbose)
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
-       
     
     fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
-    Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
+    # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
+	Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = as.numeric(get.subs(fileNames, '_')[6,])), metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
 	names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
     Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
+	Model_Spectra_Meta$percent_missing_scan <- as.numeric(Model_Spectra_Meta$percent_missing_scan)
     Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
     Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 'none' # Change NA to 'none' tissue level.
     Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName) 
@@ -278,7 +284,10 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     
 	if(!is.null(Model_Spectra_Meta$structure_weight_g))       
            Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
-	
+
+    if(verbose) 
+       cat("\n\n Extra_Meta_Path = ", Extra_Meta_Path, "\n\n")	
+
     if(!is.null(Extra_Meta_Path)) { 	
 	
 	    base::load(Extra_Meta_Path) 
@@ -303,18 +312,26 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
         if(!is.null(Model_Spectra_Meta$Sex))
            Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
            
-        if(!is.null(Model_Spectra_Meta$Depth_m))
-           Model_Spectra_Meta$Depth_prop_max <- (Model_Spectra_Meta$Depth_m - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))/(max(Model_Spectra_Meta$Depth_m, na.rm = TRUE) - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))
-           
+        if(!is.null(Model_Spectra_Meta$Depth_m)) {
+		   if(sum(abs(diff(Model_Spectra_Meta$Depth_m[!is.na(Model_Spectra_Meta$Depth_m)]))) == 0) # Are all the values the same?
+		     Model_Spectra_Meta$Depth_prop_max <- 0.5
+		   else
+             Model_Spectra_Meta$Depth_prop_max <- (Model_Spectra_Meta$Depth_m - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))/(max(Model_Spectra_Meta$Depth_m, na.rm = TRUE) - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))
+		}
+		 
         if(!is.null(Model_Spectra_Meta$Latitude_dd))
            Model_Spectra_Meta$Latitude_prop_max <- (Model_Spectra_Meta$Latitude_dd - 30.5)/(49.1 - 30.5)
            
         if(!is.null(Model_Spectra_Meta$Month))   
            Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
            
-        if(!is.null(Model_Spectra_Meta$Days_into_Year))
-           Model_Spectra_Meta$Days_into_Year_prop_max <- (Model_Spectra_Meta$Days_into_Year - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))/(max(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE) - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))
-           
+        if(!is.null(Model_Spectra_Meta$Days_into_Year)) {
+		   if(sum(abs(diff(Model_Spectra_Meta$Days_into_Year[!is.na(Model_Spectra_Meta$Days_into_Year)]))) == 0)  # Are all the values the same?
+		     Model_Spectra_Meta$Days_into_Year_prop_max <- 0.5
+		   else
+		     Model_Spectra_Meta$Days_into_Year_prop_max <- (Model_Spectra_Meta$Days_into_Year - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))/(max(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE) - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))
+         }  
+		 
            # For consistennce, don't use the 'light' (or other level) of tissue level until a study is done
         # TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_missing_scan <= 10 & !is.na(Model_Spectra_Meta$Month_Scaled) & 
         #         (Model_Spectra_Meta$tissue_level_scan == "light" | is.na(Model_Spectra_Meta$tissue_level_scan)) & !is.na(Model_Spectra_Meta$Length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
@@ -324,11 +341,11 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     } else  
         TF <- rep(TRUE, nrow(Model_Spectra_Meta))
         
-    
+print(Model_Spectra_Meta$TMA)    
     if(TMA_Ages) {     
         TF <- TF & !is.na(Model_Spectra_Meta$TMA)
         if(verbose)
-           cat('Number of oties with TMA age:', sum(!is.na(Model_Spectra_Meta$TMA)))
+           cat('\n\nNumber of oties with TMA age:', sum(!is.na(Model_Spectra_Meta$TMA)), "\n\n")
     }
     
     Model_Spectra_Meta <- renum(Model_Spectra_Meta[TF, ])
@@ -362,4 +379,5 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
       
       
       
+
 

@@ -154,7 +154,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # -- Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta --
     newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
     if(verbose) {
-       print(headTail(newScans.RAW, 5))
+       print(headTail(newScans.RAW, N_Samp, 0))
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")    
     }
     
