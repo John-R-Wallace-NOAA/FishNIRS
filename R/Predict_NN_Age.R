@@ -43,8 +43,8 @@
 
 
 
-Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, 
-                            Predicted_Ages_Path = NULL, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], verbose = FALSE, Folds_Num = 10, ...) {
+Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL,
+                            Predicted_Ages_Path = NULL, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], verbose = FALSE, Folds_Num = 10) {
    
     sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
            " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -154,7 +154,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     # -- Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta --
     newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
     if(verbose) {
-       print(headTail(newScans.RAW, N_Samp, 0))
+       print(headTail(newScans.RAW))
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")    
     }
     
