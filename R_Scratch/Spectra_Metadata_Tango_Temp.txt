@@ -1,0 +1,35 @@
+
+
+
+test <- opusreader2::read_opus_single("W:/ALL_USR/JRW/SIDT/2019 Hake/PACIFIC_HAKE_BMS201906206C SCANS/PACIFIC_HAKE_BMS201906206A_10_OD1.0")
+
+test[["instrument_ref"]]$parameters$TSC
+test[["instrument_ref"]]$parameters$TSC$parameter_value               # C
+test[["instrument_ref"]]$parameters$TSC$parameter_value * 9/5 + 32    # F
+
+
+test[["instrument"]]$parameters$TSC
+test[["instrument"]]$parameters$TSC$parameter_value
+test[["instrument"]]$parameters$TSC$parameter_value * 9/5 + 32
+
+
+test_data_only <- opusreader2::read_opus_single("W:/ALL_USR/JRW/SIDT/2019 Hake/PACIFIC_HAKE_BMS201906206C SCANS/PACIFIC_HAKE_BMS201906206A_10_OD1.0", data_only = TRUE)$data
+
+
+# help for simplerspec::read_opus_bin_univ:
+
+   # atm_comp_minus4offset 
+     # Logical whether spectra after atmospheric compensation are read with an offset of -4 bites from Bruker OPUS files. Default is FALSE.
+
+
+
+
+
+
+
+
+
+
+
+
+
