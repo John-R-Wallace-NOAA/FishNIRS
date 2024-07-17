@@ -181,7 +181,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     shortName <- apply(matrix(fileNames.0, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
     if(!is.null(shortNameSuffix))
         shortName <- paste0(shortName, "_", shortNameSuffix)
-    
+        
+    fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
     
     # Read in metadata
 	if(verbose)
@@ -194,14 +195,24 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     
         # ----------- Re-sampling wavebands using stats::splinefun() with lowess() (inside of the JRWToolBox::predict.lowess() function) or prospectr::resample() --------------
         newScans.ADJ <- list()
+        newScans_meta <- NULL
         for (i in fileNames.0)  {
            print(i)
            if(opusReader == 'pierreroudier_opusreader')
               try(newScans.ADJ[[i]] <- opusreader::opus_read(paste(Spectra_Path, i , sep = "/"), simplify = FALSE, wns_digits = 0)[[2]] )
               
-           if(opusReader == 'philippbaumann_opusreader2')
-              try(newScans.ADJ[[i]] <- opusreader2::read_opus_single(paste(Spectra_Path, i , sep = "/"))[[3]]$data ) 
+           if(opusReader == 'philippbaumann_opusreader2') {
+              try(Opus_Single <- opusreader2::read_opus_single(paste(Spectra_Path, i , sep = "/")))
+              newScans.ADJ[[i]] <- Opus_Single[[3]]$data
+              newScans_meta <- rbind(newScans_meta, data.frame(filenames = fileNames[i], TSC_ref = Opus_Single[["instrument_ref"]]$parameters$TSC$parameter_value,
+                                          TSC = Opus_Single[["instrument"]]$parameters$TSC$parameter_value,      # Scanner Temperature
+                                          TSM = Opus_Single[["instrument_ref"]]$parameters$TSM$parameter_value,  # TBD what TSM stands for
+                                          HUM = Opus_Single[["instrument_ref"]]$parameters$HUM$parameter_value,  # Relative Humidity Interferometer
+                                          DUR = Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value)) # Scan time (sec)
+           }   
         }
+        
+        assign('newScans_meta', newScans_meta, pos = 1)
         
         wavebandsToUse <- as.numeric(colnames(newScans.ADJ[[1]]))
         if(verbose) {
@@ -266,7 +277,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     if(verbose)
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
     
-    fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
+    
     # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
 	Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = as.numeric(get.subs(fileNames, '_')[6,])), metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
