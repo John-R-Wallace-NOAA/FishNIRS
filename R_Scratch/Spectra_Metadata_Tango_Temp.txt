@@ -1,17 +1,49 @@
 
-
+library(opusreader2)
 
 test <- opusreader2::read_opus_single("W:/ALL_USR/JRW/SIDT/2019 Hake/PACIFIC_HAKE_BMS201906206C SCANS/PACIFIC_HAKE_BMS201906206A_10_OD1.0")
 
-test[["instrument_ref"]]$parameters$TSC
+test[["instrument_ref"]]$parameters$TSC  # Scanner Temperature
 test[["instrument_ref"]]$parameters$TSC$parameter_value               # C
 test[["instrument_ref"]]$parameters$TSC$parameter_value * 9/5 + 32    # F
 
 
-test[["instrument"]]$parameters$TSC
+test[["instrument"]]$parameters$TSC  # Scanner Temperature
 test[["instrument"]]$parameters$TSC$parameter_value
 test[["instrument"]]$parameters$TSC$parameter_value * 9/5 + 32
 
+
+test[["instrument_ref"]]$parameters$TSM  # NULL
+test[["instrument_ref"]]$parameters$TSM$parameter_value  
+
+
+test[["instrument_ref"]]$parameters$HUM  # Relative Humidity Interferometer
+test[["instrument_ref"]]$parameters$HUM$parameter_value  
+
+
+test[["instrument_ref"]]$parameters$DUR  # Scan time (sec)
+test[["instrument_ref"]]$parameters$DUR$parameter_value  
+ 
+  
+  
+..$ FC1:List of 4
+  .. ..$ parameter_name     : chr "FC1"
+  .. ..$ parameter_name_long: chr "Product Group"
+  .. ..$ parameter_value    : chr "Otolith"
+  .. ..$ parameter_type     : chr "str"
+  
+..$ FC2:List of 4
+  .. ..$ parameter_name     : chr "FC2"
+  .. ..$ parameter_name_long: chr "Product"
+  .. ..$ parameter_value    : chr "PACIFIC_HAKE"
+  .. ..$ parameter_type     : chr "str"
+  
+..$ I04:List of 4
+  .. ..$ parameter_name     : chr "I04"
+  .. ..$ parameter_name_long: chr "User1"
+  .. ..$ parameter_value    : chr "Morgan"
+  .. ..$ parameter_type     : chr "str"
+  
 
 test_data_only <- opusreader2::read_opus_single("W:/ALL_USR/JRW/SIDT/2019 Hake/PACIFIC_HAKE_BMS201906206C SCANS/PACIFIC_HAKE_BMS201906206A_10_OD1.0", data_only = TRUE)$data
 
