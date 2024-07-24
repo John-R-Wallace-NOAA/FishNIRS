@@ -407,9 +407,16 @@ names(newScans_meta)[c(2, 3, 5, 6)] <- c("Tango Scanner Reference Temp (C)", "Ta
 
 newScans_meta_Stacked <- data.frame(Ref_Scans_Days_From_First_Use_Newport_Tango_A = rep(newScans_meta$Ref_Scans_Days_From_First_Use_Newport_Tango_A, 4), stack(newScans_meta[, -c(1, 4, 7)]))
 
-browsePlot('print(xyplot(values ~ Ref_Scans_Days_From_First_Use_Newport_Tango_A | ind, data = newScans_meta_Stacked, panel = function(...) { panel.abline(h = 30, lty = 2, col = "green"); panel.xyplot(...) }))')
+browsePlot('print(xyplot(values ~ Ref_Scans_Days_From_First_Use_Newport_Tango_A | ind, data = newScans_meta_Stacked, 
+           panel = function(...) { if(current.row() == 1) { panel.abline(h = 30, lty = 2, col = "green"); panel.abline(h = 35, lty = 2, col = "red") };
+		   panel.xyplot(...) }))', file = "C:/SIDT/Sablefish_Reference/Figures/Tange_Metadata_Over_Time.png")
+		   
+ # only red dashed line
+browsePlot('print(xyplot(values ~ Ref_Scans_Days_From_First_Use_Newport_Tango_A | ind, data = newScans_meta_Stacked, 
+           panel = function(...) { if(current.row() == 1) { panel.abline(h = 35, lty = 2, col = "red") };
+		   panel.xyplot(...) }))', file = "C:/SIDT/Sablefish_Reference/Figures/Tange_Metadata_Over_Time.png")
 
-
+max(abs(newScans_meta.VIRGIN$TSC - newScans_meta.VIRGIN$TSC_ref), na.rm = TRUE)
 
 
 
