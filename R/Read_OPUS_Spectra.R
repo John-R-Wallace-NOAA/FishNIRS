@@ -196,19 +196,20 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
         # ----------- Re-sampling wavebands using stats::splinefun() with lowess() (inside of the JRWToolBox::predict.lowess() function) or prospectr::resample() --------------
         newScans.ADJ <- list()
         newScans_meta <- NULL
-        for (i in fileNames.0)  {
-           print(i)
+        for (i in 1:length(fileNames.0))  {
+           print(fileNames.0[i])
            if(opusReader == 'pierreroudier_opusreader')
-              try(newScans.ADJ[[i]] <- opusreader::opus_read(paste(Spectra_Path, i , sep = "/"), simplify = FALSE, wns_digits = 0)[[2]] )
+              try(newScans.ADJ[[i]] <- opusreader::opus_read(paste(Spectra_Path, fileNames.0[i] , sep = "/"), simplify = FALSE, wns_digits = 0)[[2]] )
               
            if(opusReader == 'philippbaumann_opusreader2') {
-              try(Opus_Single <- opusreader2::read_opus_single(paste(Spectra_Path, i , sep = "/")))
+              try(Opus_Single <- opusreader2::read_opus_single(paste(Spectra_Path, fileNames.0[i] , sep = "/")))
               newScans.ADJ[[i]] <- Opus_Single[[3]]$data
-              newScans_meta <- rbind(newScans_meta, data.frame(filenames = fileNames[i], TSC_ref = Opus_Single[["instrument_ref"]]$parameters$TSC$parameter_value,
-                                          TSC = Opus_Single[["instrument"]]$parameters$TSC$parameter_value,      # Scanner Temperature
-                                          TSM = Opus_Single[["instrument_ref"]]$parameters$TSM$parameter_value,  # TBD what TSM stands for
-                                          HUM = Opus_Single[["instrument_ref"]]$parameters$HUM$parameter_value,  # Relative Humidity Interferometer
-                                          DUR = Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value)) # Scan time (sec)
+              newScans_meta <- rbind(newScans_meta, data.frame(filenames = fileNames[i], 
+			                          TSC_ref = ifelse(is.null(Opus_Single[["instrument_ref"]]$parameters$TSC$parameter_value), NA, Opus_Single[["instrument_ref"]]$parameters$TSC$parameter_value), # Scanner Reference Temperature
+                                          TSC = ifelse(is.null(Opus_Single[["instrument"]]$parameters$TSC$parameter_value), NA, Opus_Single[["instrument"]]$parameters$TSC$parameter_value),      # Scanner Temperature
+                                          TSM = ifelse(is.null(Opus_Single[["instrument_ref"]]$parameters$TSM$parameter_value), NA, Opus_Single[["instrument_ref"]]$parameters$TSM$parameter_value),  # TBD what TSM stands for
+                                          HUM = ifelse(is.null(Opus_Single[["instrument_ref"]]$parameters$HUM$parameter_value), NA, Opus_Single[["instrument_ref"]]$parameters$HUM$parameter_value),  # Relative Humidity Interferometer
+                                          DUR = ifelse(is.null(Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value), NA, Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value))) # Scan time (sec)
            }   
         }
         
