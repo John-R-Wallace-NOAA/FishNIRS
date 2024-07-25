@@ -324,7 +324,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
         if(!is.null(Model_Spectra_Meta$Sex)) {
            # Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
 		   Sex_ <- Model_Spectra_Meta$Sex
-		   Model_Spectra_Meta <- cbind(Model_Spectra_Meta,  as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+		   Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Sex), ], as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
 		}   
 		            
         if(!is.null(Model_Spectra_Meta$Depth_m)) {
@@ -340,7 +340,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
         if(!is.null(Model_Spectra_Meta$Month)) {
             # Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
 		    Month_ <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[Model_Spectra_Meta$Month]
-		    Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
+		    Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
         }
            
         if(!is.null(Model_Spectra_Meta$Days_into_Year)) {
@@ -358,8 +358,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
         
     } else  
         TF <- rep(TRUE, nrow(Model_Spectra_Meta))
-        
-print(Model_Spectra_Meta$TMA)    
+
     if(TMA_Ages) {     
         TF <- TF & !is.na(Model_Spectra_Meta$TMA)
         if(verbose)
