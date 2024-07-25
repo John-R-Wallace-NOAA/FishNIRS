@@ -321,9 +321,12 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
         if(!is.null(Model_Spectra_Meta$Weight_kg))
            Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE))/(max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE) - min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE))
            
-        if(!is.null(Model_Spectra_Meta$Sex))
-           Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
-           
+        if(!is.null(Model_Spectra_Meta$Sex)) {
+           # Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
+		   Sex_ <- Model_Spectra_Meta$Sex
+		   Model_Spectra_Meta <- cbind(Model_Spectra_Meta,  as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+		}   
+		            
         if(!is.null(Model_Spectra_Meta$Depth_m)) {
 		   if(sum(abs(diff(Model_Spectra_Meta$Depth_m[!is.na(Model_Spectra_Meta$Depth_m)]))) == 0) # Are all the values the same?
 		     Model_Spectra_Meta$Depth_prop_max <- 0.5
@@ -334,8 +337,11 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
         if(!is.null(Model_Spectra_Meta$Latitude_dd))
            Model_Spectra_Meta$Latitude_prop_max <- (Model_Spectra_Meta$Latitude_dd - 30.5)/(49.1 - 30.5)
            
-        if(!is.null(Model_Spectra_Meta$Month))   
-           Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
+        if(!is.null(Model_Spectra_Meta$Month)) {
+            # Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
+		    Month_ <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[Model_Spectra_Meta$Month]
+		    Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
+        }
            
         if(!is.null(Model_Spectra_Meta$Days_into_Year)) {
 		   if(sum(abs(diff(Model_Spectra_Meta$Days_into_Year[!is.na(Model_Spectra_Meta$Days_into_Year)]))) == 0)  # Are all the values the same?
