@@ -3,7 +3,7 @@ A Fully Connected Neural Net (FCNN) training model using 1,538 otoliths with 20 
 
 Metadata was also added to the scans for a better fit.  
 
-The best [prediction](/Sablefish_2022_Combo_Survey_Results_DRAFT/Figures/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_Agreement_Fig.png), with an impressive R Squared of 0.9669, was found using NIRS scans with the metadata of otolith weight, fish length, fish weight, depth, and latitude. 
+The best [prediction](/Sablefish_2022_Combo_Survey_Results_DRAFT/Figures/Sable_2022_Combo_Scans_Otie_Wgt_Fish_Len_Weight_Depth_Lat_Agreement_Fig.png), with an impressive R-squared of 0.9669, was found using NIRS scans with the metadata of otolith weight, fish length, fish weight, depth, and latitude. 
 The stats are:
 
        Correlation R_squared   RMSE     MAE  SAD     APE    N
@@ -14,7 +14,7 @@ The stats are:
           n validn R PercAgree    ASD   ACV    AAD   APE
        1553   1553 2     54.09 0.7148 8.849 0.5055 6.257
 
-Other metadata looked at, but not included due to poor performance in this particular FCNN model, were sex, month, and days into the year. The same model, except without latitude, has an R squared of 0.9526. The scans only model (no metadata) has an R squared of 0.9378, with a predicted N of 1,556 since there is no missing metadata.
+Other metadata looked at, but not included due to poor performance for this particular FCNN model, were sex, month, and days into the year. The same model, except without latitude, has an R squared of 0.9526. The scans only model (no metadata) has an R squared of 0.9378, with a predicted N of 1,556 since there is no missing metadata.
 
 ### Notes on the Agreement Figures and Stats
 - SAD is the Sum of Absolute Deviations
