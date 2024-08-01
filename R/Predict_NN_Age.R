@@ -43,7 +43,7 @@
 
 
 
-Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL,
+Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, Extra_Meta_Path = Extra_Meta_Path,
                             Predicted_Ages_Path = NULL, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], verbose = FALSE, Folds_Num = 10) {
    
     sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
@@ -148,18 +148,24 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     SG_Variables_Selected[grep("Depth_m", SG_Variables_Selected)] <- "Depth_prop_max"
     
     metaDataVar <- (1:length(SG_Variables_Selected))[is.na(as.numeric(substring(SG_Variables_Selected, 2)))]
-    print(SG_Variables_Selected[metaDataVar])
-    
+	assign('metaDataVar', metaDataVar, pos = 1)
+	
+	if(verbose) {
+	   cat("\nMetadata variables in SG_Variables_Selected\n")
+       print(SG_Variables_Selected[metaDataVar])
+	   cat("\n\n")
+    }
    
-    # -- Extract newScans.RAW, fileNames, and shortName from Model_Spectra_Meta --
-    newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
+    # -- Extract newScans.RAW and fileNames from Model_Spectra_Meta --
+	newScans.RAW <- Model_Spectra_Meta[, 2:(grep('project', names(Model_Spectra_Meta)) - 1)]
+    	
     if(verbose) {
        print(headTail(newScans.RAW))
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")    
     }
     
     fileNames <- Model_Spectra_Meta$filenames
-    shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
+    # shortName <- apply(Model_Spectra_Meta[, 'filenames', drop = FALSE], 1, function(x) paste(get.subs(x, sep = "_")[c(1, 5)], collapse = "_"))
    
     if(plot) { # No wavebands will be plotted for a metadata only model
       png(width = 16, height = 10, units = 'in', res = 600, file = paste0(Predicted_Ages_Path, '/Savitzky_Golay_Variables_Selected.png'))
@@ -188,8 +194,10 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
     if(length(SG_Variables_Selected) > length(metaDataVar)) {  # Wavebands used (vs metadata only model)
     
 	    if(verbose) 
-            print(length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]))  # Those wavebands selected via SG
-        trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   # SG_Variables_Selected is part of the NN_Model .RData file.
+            cat("\nNumber of  wavebands selected via SG:", length(SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]), "\n\n")
+			
+		# SG_Variables_Selected is part of the NN_Model .RData file.
+        trySgVarSel <- try(newScans <- data.frame(prospectr::savitzkyGolay(newScans.RAW, m = 1, p = 2, w = 15))[, SG_Variables_Selected[1:(length(SG_Variables_Selected) - length(metaDataVar))]], silent = TRUE)   
         
         if(inherits(trySgVarSel, "try-error") & !interactive() & .Platform$OS.type == 'windows') {
            shell(paste0("echo.  > ", Predicted_Ages_Path, "/ERROR_READ_ME.txt"))
