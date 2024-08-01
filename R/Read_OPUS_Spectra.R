@@ -281,6 +281,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
     
     # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
 	Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = as.numeric(get.subs(fileNames, '_')[6,])), metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
+	Model_Spectra_Meta$specimen_id <- NULL; Model_Spectra_Meta$specimen_id <- as.numeric(get.subs(fileNames, '_')[6,]) # Code expects 'project' to be the first column in the metadata - so move 'specimen_id' to the back																																																				   
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
 	names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
     Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
