@@ -315,12 +315,15 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
             Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
             Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))  
 	    }
-           
-        if(!is.null(Model_Spectra_Meta$Length_cm))        
-           Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/max(Model_Spectra_Meta$Length_cm, na.rm = TRUE)
-           
+     
+		   
+        if(!is.null(Model_Spectra_Meta$Length_cm
+           Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/ifelse(exists(Sable_Len_cm_Range), Sable_Len_cm_Range[2], max(Model_Spectra_Meta$Length_cm, na.rm = TRUE))
+		
         if(!is.null(Model_Spectra_Meta$Weight_kg))
-           Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE))/(max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE) - min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE))
+           Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - ifelse(exists(Sable_Wght_kg_Range), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))/
+		                    (ifelse(exists(Sable_Wght_kg_Range), Sable_Wght_kg_Range[2], max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)) - 
+							    ifelse(exists(Sable_Wght_kg_Range), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))
            
         if(!is.null(Model_Spectra_Meta$Sex)) {
            # Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
@@ -332,7 +335,9 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
 		   if(sum(abs(diff(Model_Spectra_Meta$Depth_m[!is.na(Model_Spectra_Meta$Depth_m)]))) == 0) # Are all the values the same?
 		     Model_Spectra_Meta$Depth_prop_max <- 0.5
 		   else
-             Model_Spectra_Meta$Depth_prop_max <- (Model_Spectra_Meta$Depth_m - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))/(max(Model_Spectra_Meta$Depth_m, na.rm = TRUE) - min(Model_Spectra_Meta$Depth_m, na.rm = TRUE))
+             Model_Spectra_Meta$Depth_prop_max <- (Model_Spectra_Meta$Depth_m - ifelse(exists(Sable_Depth_m_Range), Sable_Depth_m_Range[1], min(Model_Spectra_Meta$Depth_m, na.rm = TRUE)))/
+		                    (ifelse(exists(Sable_Depth_m_Range), Sable_Depth_m_Range[2], max(Model_Spectra_Meta$Depth_m, na.rm = TRUE)) - 
+							    ifelse(exists(Sable_Depth_m_Range), Sable_Depth_m_Range[1], min(Model_Spectra_Meta$Depth_m, na.rm = TRUE)))
 		}
 		 
         if(!is.null(Model_Spectra_Meta$Latitude_dd))
