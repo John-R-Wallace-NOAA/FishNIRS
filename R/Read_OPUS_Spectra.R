@@ -317,7 +317,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "Sable_2017_2
 	    }
      
 		   
-        if(!is.null(Model_Spectra_Meta$Length_cm
+        if(!is.null(Model_Spectra_Meta$Length_cm))
            Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/ifelse(exists(Sable_Len_cm_Range), Sable_Len_cm_Range[2], max(Model_Spectra_Meta$Length_cm, na.rm = TRUE))
 		
         if(!is.null(Model_Spectra_Meta$Weight_kg))
