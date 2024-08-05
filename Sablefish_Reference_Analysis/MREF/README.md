@@ -1,1 +1,2 @@
-MREF
+
+For quality control, four otoliths from three different species are scanned in the morning before production scanning commences. This is done regardless of species being scanned that day (or session). These are the "MREF" scans. More MREF scans may be done throughout the day to look for issues that need investigating.  Sablefish otoliths, with their naturally small size, is one of the three MREF species and the reference scans are looked at below.
