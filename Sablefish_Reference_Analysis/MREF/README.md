@@ -16,6 +16,6 @@ A number of points can seen in the figures:
 
 -  The '500N_2017_18_19_22_200N' model also shows the Sablefish reference otolith with a TMA of 38 well predicted over time, and again the otoliths with a TMA age of 18 and 2 are consistently off by 2.5 and 1 year(s).
   
--  
+-  The spectra/meta model of 2019 and the spectra only model of 2022 more easily show that the refreence scans settle down around March. This settling can also be in the All_Oties_2017_18_19_21 and 500N_2017_18_19_22_200N models, however the difference that can not be visually seen after January. 
 
  
