@@ -11,3 +11,8 @@ Before the otoltih weights of the MREF Sablefish were obtained, the 2022 (survey
 
 Lastly, since the four Sablefish reference otoliths are from 2019, a spectra/meta [model](/Sablefish_Reference_Analysis/MREF/Figures/Agreement_Figure_Sable_Combo_2019_Model.png) from only 2019 was also applied to the four otoliths. Unfortunately, there are only a limited number of older Sablefish in 2019 for the model to work with, and the total number, with a complete set of metadata, only comes to 750. (The total number of scans is 802.) However, it is instructive to include it [here](\Sablefish_Reference_Analysis/MREF/Figures/Sablefish_Ref_Oties_2019_Spectra_Meta_NN_Pred_Median_by_Days_from_First_Use.png).
 
+A number of points can seen in the figures:
+- For the large 'All_Oties_2017_18_19_21' model the Sablefish reference otoliths with a TMA of 38 and 51 can be seen to be very well predicted. However, the otoliths with a TMA age of 18 and 2 are consistently off by ~2.5 and 1 year(s), respectively. A TMA re-reading of these bones may prove insightful.
+
+-  
+- 
