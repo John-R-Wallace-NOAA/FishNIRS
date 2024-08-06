@@ -18,6 +18,6 @@ A number of points can seen in the figures:
   
 -  The spectra/meta model of 2019 and the spectra only model of 2022 more easily show that the referance scans settle down around March. This settling can also be in the All_Oties_2017_18_19_21 and 500N_2017_18_19_22_200N models, however that difference cannot be visually seen after January.  One idea for the settling is a reduction of shininess, and hence lower reflectivness, of the bottom of the brand new "gold stamp" that is used to cover the otoliths during scanning. The scanners may have better ideas.
 
--  Note also that at the very end of the time series for all the models, except the spectra/meta model of 2019, that the predictions increase. This may be a change in the scans that prompted this analysis and is a product of the Tango being over 35 degrees C as can be seen here.
+-  Note also, that the predictions slightly increase at the very end of the time series for all the models except the spectra/meta model of 2019. This may be a change in the scans that prompted this analysis and is a product of the Tango being over 35 degrees C as can be seen here.
 
  
