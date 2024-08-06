@@ -3,7 +3,7 @@ For quality control, four reference otoliths from three different species are sc
 
 A large Fully Connected Neural Net (FCNN) model with both spectra scans and metadata from 5,235 Sablefish otoliths collected on the 2017, 2018, 2019, and 2021 NWFSC Bottom Trawl Surveys (All_Oties_2017_18_19_21) was used to predict the age of the four Sablefish reference otoliths. The metadata consisted of otolith weight, fish length, fish weight, and depth of capture. This [agreement figure](/Sablefish_Reference_Analysis/MREF/Figures/Agreement_Figure_Sable_Combo_All_Oties_2017_18_19_21.png) shows the prediction of ages vs the traditional method of aging (TMA) for all the otoliths in the model and for the 1,553 otoliths from the 2022 survey, which were not included in the FCNN model (5,235 + 1,553 = 6,788). 
 
-The four Sablefish reference otoliths have TMA ages of 2, 18, 38, and 51. The FCNN model was used to predict ages from each daily scan which, subsequently, were [plotted](/Sablefish_Reference_Analysis/MREF/Figures/Sablefish_Ref_Oties_All_Oties_2017_18_19_21_NN_Pred_Median_by_Days_from_First_Use.png) against a timeline of days since first use of the Bruker Tango in Newport, OR. (Not every day is a scanning day, of course.)
+The four Sablefish reference otoliths have TMA ages of 2, 18, 38, and 51. The FCNN model was used to predict ages from each daily scan which, subsequently, were [plotted](/Sablefish_Reference_Analysis/MREF/Figures/Sablefish_Ref_Oties_All_Oties_2017_18_19_21_NN_Pred_Median_by_Days_from_First_Use.png) against a timeline of days since first use of the Bruker Tango in Newport, OR. (Not every day is a scanning day, of course.) This figure shows the month intervals and also mean and standard deviation of the NN model predicted ages.
 
 Another FCNN [model](/Sablefish_Reference_Analysis/MREF/Figures/Agreement_Figure_Sable_Combo_Rdm_500N_2017_18_19_22_200N.png), utilizing 500 random selected otoliths from each of the 2017, 2018, 2019, and 2021 NWFSC Bottom Trawl Surveys, plus an additional 200 randomly selected from 2022 (500N_2017_18_19_22_200N), were also used to predict the four reference otoliths in the same [manner](/Sablefish_Reference_Analysis/MREF/Figures/Sablefish_Ref_Oties_2200_Multi_17_22_NN_Pred_Median_by_Days_from_First_Use.png).
 
@@ -16,6 +16,8 @@ A number of points can seen in the figures:
 
 -  The '500N_2017_18_19_22_200N' model also shows the Sablefish reference otolith with a TMA of 38 well predicted over time, and again the otoliths with a TMA age of 18 and 2 are consistently off by 2.5 and 1 year(s).
   
--  The spectra/meta model of 2019 and the spectra only model of 2022 more easily show that the refreence scans settle down around March. This settling can also be in the All_Oties_2017_18_19_21 and 500N_2017_18_19_22_200N models, however the difference that can not be visually seen after January. 
+-  The spectra/meta model of 2019 and the spectra only model of 2022 more easily show that the referance scans settle down around March. This settling can also be in the All_Oties_2017_18_19_21 and 500N_2017_18_19_22_200N models, however the difference can not be visually seen after January.  One idea for the settling is reduction of shininess, and hence lower reflectivness, of the bottom of the brand new "gold stamp" that is used to cover the otoliths during scanning. The scanners may have better ideas.
+
+-  Note also that at the very end of the time series for all the models, except the spectra/meta model of 2019, that the predictions increase. This may be change in the scans that was first detected and prompted this analysis. 
 
  
