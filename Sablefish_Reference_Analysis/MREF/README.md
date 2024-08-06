@@ -12,12 +12,12 @@ Before the otoltih weights of the MREF Sablefish were obtained, the 2022 (survey
 Lastly, since the four Sablefish reference otoliths are from 2019, a spectra/meta [model](/Sablefish_Reference_Analysis/MREF/Figures/Agreement_Figure_Sable_Combo_2019_Model.png) from only 2019 was also applied to the four otoliths. Unfortunately, there are only a limited number of older Sablefish in 2019 for the model to work with, and the total number, with a complete set of metadata, only comes to 750. (The total number of scans is 802.) However, it is instructive to include it [here](\Sablefish_Reference_Analysis/MREF/Figures/Sablefish_Ref_Oties_2019_Spectra_Meta_NN_Pred_Median_by_Days_from_First_Use.png).
 
 A number of points can seen in the figures:
-- For the large 'All_Oties_2017_18_19_21' model the Sablefish reference otoliths with a TMA of 38 and 51 are very well predicted over time. However, the otoliths with a TMA age of 18 and 2 are consistently off by ~2.5 and 1 year(s), respectively. A TMA re-reading of these bones may prove insightful.
+- For the large 'All_Oties_2017_18_19_21' model the Sablefish reference otoliths with a TMA of 38 and 51 are very well predicted over time. However, the otoliths with a TMA age of 18 and 2 are consistently off by ~2.5 and 1 year(s), respectively. A TMA re-reading of those bones may prove insightful.
 
 -  The '500N_2017_18_19_22_200N' model also shows the Sablefish reference otolith with a TMA of 38 well predicted over time, and again the otoliths with a TMA age of 18 and 2 are consistently off by 2.5 and 1 year(s).
   
--  The spectra/meta model of 2019 and the spectra only model of 2022 more easily show that the referance scans settle down around March. This settling can also be in the All_Oties_2017_18_19_21 and 500N_2017_18_19_22_200N models, however the difference can not be visually seen after January.  One idea for the settling is reduction of shininess, and hence lower reflectivness, of the bottom of the brand new "gold stamp" that is used to cover the otoliths during scanning. The scanners may have better ideas.
+-  The spectra/meta model of 2019 and the spectra only model of 2022 more easily show that the referance scans settle down around March. This settling can also be in the All_Oties_2017_18_19_21 and 500N_2017_18_19_22_200N models, however that difference cannot be visually seen after January.  One idea for the settling is a reduction of shininess, and hence lower reflectivness, of the bottom of the brand new "gold stamp" that is used to cover the otoliths during scanning. The scanners may have better ideas.
 
--  Note also that at the very end of the time series for all the models, except the spectra/meta model of 2019, that the predictions increase. This may be change in the scans that was first detected and prompted this analysis. 
+-  Note also that at the very end of the time series for all the models, except the spectra/meta model of 2019, that the predictions increase. This may be a change in the scans that prompted this analysis and is a product of the Tango being over 35 degrees C as can be seen here.
 
  
