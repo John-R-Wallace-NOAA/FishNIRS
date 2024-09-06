@@ -1,7 +1,7 @@
 
 agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, Delta = NULL, Iter = 0, main = "", xlab = deparse(substitute(Observed)), browserPlot = FALSE, 
-                      ylab = paste0(deparse(substitute(Predicted)), ifelse(is.null(Delta), "", " (rounded after adding Delta)")), full = TRUE, axes_zoomed_limit = 15, 
-                      cex = ifelse(full, 0.75, 1.25), col_equal = 'red', col_off_1_or_2 = 'gold', col_off_3_or_4 = 'green', col_off_5_or_greater = 'navyblue', ...) {
+                      ylab = paste0(deparse(substitute(Predicted)), ifelse(is.null(Delta), "", " (rounded after adding Delta)")), full = TRUE, Tabulation_Table = full, axes_zoomed_limit = 15, 
+                      cex = ifelse(full, 0.75, 1.25), col_equal = 'red', col_off_1_or_2 = 'gold3', col_off_3_or_4 = 'green', col_off_5_or_greater = 'navyblue', ...) {
   
    # --- Download functions from GitHub ---
    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
@@ -46,14 +46,14 @@ agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, 
    if(!is.null(Folds)) {
    
         if(Folds == 1) 
-		   main <- ifelse(main == "", paste0("Fold = ", Folds), paste0(main, "; Fold = ", Folds))
-		else
+           main <- ifelse(main == "", paste0("Fold = ", Folds), paste0(main, "; Fold = ", Folds))
+        else
            main <- ifelse(main == "", paste0("Folds = ", Folds), paste0(main, "; Folds = ", Folds))
    }
    
    if(!is.null(Delta))
         main <- ifelse(main == "", paste0("Delta = ", Delta), paste0(main, "; Delta = ", Delta))
-			
+            
    if(Iter != 0)    
         main <- ifelse(main == "", paste0("Iter = ", Iter), paste0(main, "; Iter = ", Iter))
         
@@ -71,19 +71,34 @@ agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, 
    
    if(!is.null(Delta))
        cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n\n"))
-   	   
+       
+   par(mar = c(5, 4.75, 4, 2) + 0.1)
+	   
    plot(X, Y, main = main,
       xlab = paste0(xlab, ': R^2 = ', format(Stats$R_squared, nsmall = 4), '; RMSE = ', format(Stats$RMSE, nsmall = 4), '; SAD = ', 
-                    Stats$SAD, '; APE = ', Stats$APE, '; N_Pred = ', Stats$N, ifelse(is.null(Delta), "", " (Prediction rounded after adding Delta for Stats)")), ylab = ylab, type = 'n', ...)
+              Stats$SAD, '; APE = ', Stats$APE, '; N_Pred = ', Stats$N, ifelse(is.null(Delta), "", " (Prediction rounded after adding Delta for Stats)")), ylab = ylab, type = 'n', cex.lab = 1.75, ...)
                     
    abline(0, 1, col = col.alpha('grey', ifelse(full, 0.50, 0.35)))
    
    text(Agreement_Table$Observed, Agreement_Table$Predicted, Agreement_Table$N_char, cex = cex, 
-             col = ifelse(Agreement_Table$Observed == Agreement_Table$Predicted, 'red', 
+             col = ifelse(Agreement_Table$Observed == Agreement_Table$Predicted, col_equal, 
                    ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 1 | Agreement_Table$Observed == Agreement_Table$Predicted - 1 |
-                          Agreement_Table$Observed == Agreement_Table$Predicted + 2 | Agreement_Table$Observed == Agreement_Table$Predicted - 2, 'gold', 
+                          Agreement_Table$Observed == Agreement_Table$Predicted + 2 | Agreement_Table$Observed == Agreement_Table$Predicted - 2, col_off_1_or_2, 
                       ifelse(Agreement_Table$Observed == Agreement_Table$Predicted + 3 | Agreement_Table$Observed == Agreement_Table$Predicted - 3 |
-                             Agreement_Table$Observed == Agreement_Table$Predicted + 4 | Agreement_Table$Observed == Agreement_Table$Predicted - 4, 'green', 'navyblue'))))   
+                             Agreement_Table$Observed == Agreement_Table$Predicted + 4 | Agreement_Table$Observed == Agreement_Table$Predicted - 4, col_off_3_or_4, col_off_5_or_greater))))
+   
+   # if(Tabulation_Table) {
+   # 
+   #    for(i in 0:Table_Col_Max)  {
+   #  
+   #    Col_i <- Agreement_Table$Observed 
+   #  
+   #  
+   #  }
+   # }
+   
+   invisible(Agreement_Table)
 }
+
 
 
