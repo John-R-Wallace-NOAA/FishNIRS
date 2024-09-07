@@ -7,76 +7,6 @@
 Sys.getenv("GITHUB_PAT") 
 ####################################################################
 
-# --- Initial settings setup ---
-{ ### 
-
-if(interactive()) 
-      setwd(ifelse(.Platform$OS.type == 'windows', "C:/SIDT/Train_NN_Model", "/more_home/h_jwallace/SIDT/Train_NN_Models"))   # Change path to the Spectra Set's .GlobalEnv as needed
-if(!interactive())   options(width = 120)      
-Spectra_Set <- c("Hake_2019", "PWHT_Acoustic2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", 
-                 "Sable_Combo_2017", "Sable_Combo_2023", "Sable_Combo_Multi_2000", "Sable_Combo_Multi_17_21", "REYE_Comm_2012_2023")[4] # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.
-Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
-dir.create('Figures', showWarnings = FALSE)
-TMA_Ages = c(TRUE, FALSE)[1]
-verbose <- c(TRUE, FALSE)[1]
-plot <- c(TRUE, FALSE)[1]
-
-Read_In_OPUS_Spectra <- c(TRUE, FALSE)[2]
-
-Extra_Meta_Path <- list("C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData", "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Extra_Metadata.RData", NULL)[[1]] 
-Metadata_Names <- list(c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 1
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max'), # 2 No lat
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max'),  # 3 No lat nor depth
-                       c('structure_weight_dg', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 4 All standard metadata but fish length
-                       c('structure_weight_dg', 'Length_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 5 All standard metadata but fish weight
-                       c('structure_weight_dg', 'Weight_prop_max', 'Depth_prop_max'), # 6 No fish length nor lat
-                       c('structure_weight_dg', 'Length_prop_max'), # 7
-                       c('structure_weight_dg'), # 8
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Sex_F', 'Sex_M'), # 9
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Month_May', 'Month_Jun', 'Month_Jul', 'Month_Aug', 'Month_Sep', 'Month_Oct') # 10
-                      )[[4]]
-Spectra_Only <- c(TRUE, FALSE)[2]  # !is.null(Extra_Meta_Path) = FALSE and Spectra_Only = FALSE gives otie weight as the only metadata used
-Metadata_Only <- c(TRUE, FALSE)[2]
-
-
-if(Spectra_Set == "Sable_Combo_Multi_2000")
-    Model_Spectra_Meta_Path <- "C:/SIDT/Train_NN_Model/Sable_Combo_Rdm_500_2017_18_19_22_Model_Spectra_Meta.Rdata"
-
-else if(Spectra_Set == "Sable_Combo_Multi_17_21")
-     Model_Spectra_Meta_Path <- "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_21_Model_Spectra_Meta.RData"
-     
-# if(Spectra_Set %in% "PWHT_Acoustic2019") 
-#     Model_Spectra_Meta_Path <- "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Model_Spectra_Meta_ALL_GOOD_DATA.RData"
-   
-else if(Spectra_Set %in% c("Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", "Sable_Combo_2017", "Sable_Combo_2023"))   
-     Model_Spectra_Meta_Path <- "C:\\SIDT\\Sable_Combo_2022\\Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData"  # Same data as "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData"
-  
-else if(Spectra_Set %in% "REYE_Comm_2012_2023")   
-    #  Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2012_2023_Model_Spectra_Meta_REYE_ALL_GOOD_DATA.RData"  # Year 2011 NOT included
-       Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2011_2023_Model_Spectra_Meta_Extra_ALL_GOOD_DATA.RData"  # Year 2011 included
-                            
-else     
-# Below works for standard Spectra_Set setups, like "PWHT_Acoustic2019"
-print(Model_Spectra_Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
-print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))     
-     
- 
-# Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
-# All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
-Max_N_Spectra <- list(50, 200, 300, 'All')[[3]] 
-Rdm_Reps_Main <- c(20, 40, 60)[1]
-Folds_Num <- 10 # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
-Iter_Num <- 8  # Iter while() loop
-Num_Oties_Model <- c(NA, 500, 750, 1000)[1]
-activation_function <- c('relu', 'elu', 'selu')[1]
-
-
-print(getwd())
-print(Spectra_Set)
-cat("\nRdm_Reps_Main =", Rdm_Reps_Main)
-cat("\nMetadata_Only =", Metadata_Only, "\n\n")
-Sys.sleep(3)
-}
 
 # --- Load functions and packages ---
 { ###
@@ -137,6 +67,8 @@ sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIR
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_ver_5.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age_Wrapper.R")
+
+
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/CNN_model_2D.R")  # Not working yet
 
 lib(lattice)
@@ -203,6 +135,91 @@ print(a + b)
 k_clear_session()
 
 }  ###
+
+# --- Initial settings setup ---
+{ ### 
+
+if(interactive()) 
+      setwd(ifelse(.Platform$OS.type == 'windows', "C:/SIDT/Train_NN_Model", "/more_home/h_jwallace/SIDT/Train_NN_Models"))   # Change path to the Spectra Set's .GlobalEnv as needed
+if(!interactive())   options(width = 120)      
+Spectra_Set <- c("Hake_2019", "PWHT_Acoustic2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", # 7
+                 "Sable_Combo_2017", "Sable_Combo_2023", "Sable_Combo_Multi_2000", "Sable_Combo_Multi_17_21", "Sable_Combo_Multi_17_22", "Sable_Combo_Multi_17_18_19_22", # 13
+				 "Sable_Combo_Multi_17_22_21_200N", "REYE_Comm_2012_2023")[5] # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.
+Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
+dir.create('Figures', showWarnings = FALSE)
+TMA_Ages = c(TRUE, FALSE)[1]
+verbose <- c(TRUE, FALSE)[1]
+plot <- c(TRUE, FALSE)[1]
+
+Read_In_OPUS_Spectra <- c(TRUE, FALSE)[2]
+
+Extra_Meta_Path <- list("C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData", "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Extra_Metadata.RData", NULL)[[1]] 
+Metadata_Names <- list(c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 1 The main four metadata variables
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max'), # 2 No lat
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max'),  # 3 No lat nor depth
+                       c('structure_weight_dg', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 4 All standard metadata but fish length
+                       c('structure_weight_dg', 'Length_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 5 All standard metadata but fish weight
+                       c('structure_weight_dg', 'Weight_prop_max', 'Depth_prop_max'), # 6 No fish length nor lat
+                       c('structure_weight_dg', 'Length_prop_max'), # 7
+                       c('structure_weight_dg'), # 8
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Sex_F', 'Sex_M'), # 9
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Month_May', 'Month_Jun', 'Month_Jul', 'Month_Aug', 'Month_Sep', 'Month_Oct') # 10
+                      )[[1]]
+Spectra_Only <- c(TRUE, FALSE)[2]  # !is.null(Extra_Meta_Path) = FALSE and Spectra_Only = FALSE gives otie weight as the only metadata used
+Metadata_Only <- c(TRUE, FALSE)[2]
+
+
+if(Spectra_Set == "Sable_Combo_Multi_2000")
+    Model_Spectra_Meta_Path <- "C:/SIDT/Train_NN_Model/Sable_Combo_Rdm_500_2017_18_19_22_Model_Spectra_Meta.Rdata"
+
+else if(Spectra_Set == "Sable_Combo_Multi_17_21")
+     Model_Spectra_Meta_Path <- "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_21_Model_Spectra_Meta.RData"
+	 
+else if(Spectra_Set == "Sable_Combo_Multi_17_22")
+     Model_Spectra_Meta_Path <- "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_21_22_Model_Spectra_Meta.RData"	 
+     
+else if(Spectra_Set == "Sable_Combo_Multi_17_18_19_22")
+     Model_Spectra_Meta_Path <- "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_22_Model_Spectra_Meta.RData"	 
+  	 
+else if(Spectra_Set == "Sable_Combo_Multi_17_22_21_200N")
+     Model_Spectra_Meta_Path <- "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_22_21_200N_Model_Spectra_Meta.RData"	 	 
+	 
+# if(Spectra_Set %in% "PWHT_Acoustic2019") 
+#     Model_Spectra_Meta_Path <- "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Model_Spectra_Meta_ALL_GOOD_DATA.RData"
+   
+else if(Spectra_Set %in% c("Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2018", "Sable_Combo_2017", "Sable_Combo_2023"))   # "Sable_Combo_2019" & "Sable_Combo_2021", Now will predict themselves - with their own model
+    Model_Spectra_Meta_Path <- "C:\\SIDT\\Sable_Combo_2022\\Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData"  # Same data as "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData"
+  
+else if(Spectra_Set %in% "REYE_Comm_2012_2023")   
+    #  Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2012_2023_Model_Spectra_Meta_REYE_ALL_GOOD_DATA.RData"  # Year 2011 NOT included
+       Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2011_2023_Model_Spectra_Meta_Extra_ALL_GOOD_DATA.RData"  # Year 2011 included
+                            
+else    {
+   # Below works for standard Spectra_Set setups, like "PWHT_Acoustic2019", "Sable_Combo_2019", and "Sable_Combo_2021"
+   # print(Model_Spectra_Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
+   Year <- get.subs(Spectra_Set, sep = "_")[3] 
+   print(Model_Spectra_Meta_Path <- paste0('C:/SIDT/Sable_Combo_', Year, '/', Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
+   print(Meta_Path <- paste0('C:/SIDT/Sable_Combo_', Year, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))  # Meta_Path only used if Read_In_OPUS_Spectra is TRUE
+}
+  
+ 
+# Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
+# All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
+Max_N_Spectra <- list(50, 200, 300, 'All')[[3]] 
+Rdm_Reps_Main <- c(20, 40, 60)[1]
+Folds_Num <- c(5, 10)[1] # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
+Iter_Num <- 8  # Iter while() loop
+Num_Oties_Model <- c(NA, 500, 750, 1000)[1]
+activation_function <- c('relu', 'elu', 'selu')[1]
+
+
+print(getwd())
+print(Spectra_Set)
+cat("\nRdm_Reps_Main =", Rdm_Reps_Main)
+cat("\nFolds_Num =", Folds_Num)
+cat("\nMetadata_Only =", Metadata_Only, "\n\n")
+Sys.sleep(3)
+}
 
 # --- If Model_Spectra.sg.iPLS is missing for the current spectra set, create it now, unless a metadata only model is being run ---
 { ###
@@ -334,7 +351,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     summary(Model_Spectra.iPLS.F) 
     
     # plot the newly selected spectra regions 
-    browsePlot('plot(Model_Spectra.iPLS.F)')
+    browsePlot('plot(Model_Spectra.iPLS.F)', file = "iPLS Results, RMSECV vs Variables.png")
     
     Model_Spectra.iPLS.F$int.selected
     sort(Model_Spectra.iPLS.F$var.selected)
@@ -347,9 +364,9 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
       par(mfrow = c(2, 1))
       mdatools::plotPredictions(Model_Spectra.iPLS.F$gm) # gm = global PLS model with all variables included
       mdatools::plotPredictions(Model_Spectra.iPLS.F$om) # om = optimized PLS model with selected variables
-    ')
+    ', file = "iPLS Predictions.png")
     
-    browsePlot('mdatools::plotRMSE(Model_Spectra.iPLS.F)')
+    browsePlot('mdatools::plotRMSE(Model_Spectra.iPLS.F)', file = "iPLS RMSE Development.png")
     
     # RMSE before and after selection
     
@@ -370,7 +387,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
       par(mfrow = c(2, 1))
       mdatools::plotRMSE(Model_Spectra.iPLS.F$gm, ylim = c(yMin, yMax))
       mdatools::plotRMSE(Model_Spectra.iPLS.F$om, ylim = c(yMin, yMax))
-    ')
+    ', file = "iPLS RMSE vs Components, gm_top and om_bottom.png")
     
     # Select iPLS vars and add metadata wanted
     # (p <- length(Model_Spectra.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
@@ -546,7 +563,7 @@ print(dim(na.omit(Model_Spectra.sg.iPLS)))
 
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
-# Special seed setting for model testing 
+# Special seed setting for model testing - not put in intial settings above for now for consistency with past runs
 Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_Wgt_Run_2 .  Using a different seed starting here, to test main run of Sable_2022 with fish length and otie weight (and other metadata runs)
                  #      Seed_Fold = 727 used in the code above and for previous runs (Fish_Len_Otie_Wgt Run 1) of Sable_2022 before 28 Dec 2023
   
@@ -591,7 +608,7 @@ Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_W
 if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
 
    for(i in Metadata_Names)
-       browsePlot('plot(Model_Spectra_Meta$TMA, Model_Spectra_Meta[,i], xlab = "TMA", ylab = Metadata_Names[i])')
+       browsePlot('plot(Model_Spectra_Meta$TMA, Model_Spectra_Meta[,i], xlab = "TMA", ylab = i, main = paste0("Raw Metadata ", i, " vs TMA"))', file = paste0("Raw Metadata ", i, " vs TMA.png"))
 
    # Create the local initial file '.Rprofile' which Rgui.exe will run when started
    # The listed default packages do not immediately load.  They are loaded by the time a prompt is given,
@@ -1041,47 +1058,47 @@ if(exists('Wrap_Up_Flag')) {
    
    { # matplot of Various stats vs nunber of complete Folds
    browsePlot("
-   par(mfrow = c(3,2))  
-   # Delta <- -0.05  # Reset Delta if recreating this figure as an old Delta may linger.
-   Stats_RDM_median_by_model_added <- NULL
-   for(numRdmModels in 1:Rdm_reps) {
-   
-      y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[1:numRdmModels, ,drop = FALSE], 2, median)
-      Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(unlist(Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta))))))
-   }
-   
-   print(Stats_RDM_median_by_model_added)
-   
-   min.stats <- apply(Stats_RDM_median_by_model_added[, c(3,5)], 2, min)
-   minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.stats)
-   max.of.Adj <- apply(minAdj, 2, max)
-   print(Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[, 1:2], t(t(minAdj)/max.of.Adj)))
-   
-   
-   matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3, 6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
-    
-   # Add 5 more Randomized order figures
-   set.seed(Seed_Main) 
-   (Seed_reps <- round(runif(6, 0, 1e8)))
-   
-   for (i in 1:5) { 
-      set.seed(Seed_reps[i])
-      (Rdm_Vec <- sample(1:Rdm_reps)) 
-      Stats_RDM_median_by_model_added <- NULL
-      for(numRdmModels in 1:Rdm_reps) {
+     par(mfrow = c(3,2))  
+     # Delta <- -0.05  # Reset Delta if recreating this figure as an old Delta may linger.
+     Stats_RDM_median_by_model_added <- NULL
+     for(numRdmModels in 1:Rdm_reps) {
+     
+        y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[1:numRdmModels, ,drop = FALSE], 2, median)
+        Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(unlist(Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta))))))
+     }
+     
+     print(Stats_RDM_median_by_model_added)
+     
+     min.stats <- apply(Stats_RDM_median_by_model_added[, c(3,5)], 2, min)
+     minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.stats)
+     max.of.Adj <- apply(minAdj, 2, max)
+     print(Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[, 1:2], t(t(minAdj)/max.of.Adj)))
+     
+     
+     matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3, 6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Original Order')
       
-         y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[Rdm_Vec[1:numRdmModels], , drop = FALSE], 2, median)
-         Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(unlist(Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta))))))
-      }
+     # Add 5 more Randomized order figures
+     set.seed(Seed_Main) 
+     (Seed_reps <- round(runif(6, 0, 1e8)))
+     
+     for (i in 1:5) { 
+        set.seed(Seed_reps[i])
+        (Rdm_Vec <- sample(1:Rdm_reps)) 
+        Stats_RDM_median_by_model_added <- NULL
+        for(numRdmModels in 1:Rdm_reps) {
         
-      min.stats <- apply(Stats_RDM_median_by_model_added[, c(3,5)], 2, min)
-      minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.stats)
-      max.of.Adj <- apply(minAdj, 2, max)
-      (Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[, 1:2], t(t(minAdj)/max.of.Adj)))
-           
-      matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3, 6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Randomized Order')
-   }
-   ", width = 11, height = 8, file = paste0('Figures/Full_k-fold_models_added_sequentially.png'))
+           y.fold.test.pred_RDM_median <- apply(y.fold.test.pred_RDM[Rdm_Vec[1:numRdmModels], , drop = FALSE], 2, median)
+           Stats_RDM_median_by_model_added  <- rbind(Stats_RDM_median_by_model_added, data.frame(t(unlist(Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Vector, round(y.fold.test.pred_RDM_median + Delta))))))
+        }
+          
+        min.stats <- apply(Stats_RDM_median_by_model_added[, c(3,5)], 2, min)
+        minAdj <- sweep(data.matrix(Stats_RDM_median_by_model_added[, c(3,5)]), 2, min.stats)
+        max.of.Adj <- apply(minAdj, 2, max)
+        (Stats_0_1_interval <- cbind(Stats_RDM_median_by_model_added[, 1:2], t(t(minAdj)/max.of.Adj)))
+             
+        matplot(1:Rdm_reps, Stats_0_1_interval, type = 'o', col = c(1:3, 6), xlab = 'Number of Complete Folds', ylab = 'Various Stats', main = 'Randomized Order')
+     }
+     ", width = 11, height = 8, file = paste0('Figures/Full_k-fold_models_added_sequentially.png'))
    }
    
    # --- NN prediction for each otie in the NN model ---
@@ -1174,9 +1191,9 @@ if(exists('Wrap_Up_Flag')) {
 
 
 if(exists('Wrap_Up_Flag'))
-    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = FALSE, axes_zoomed_limit = 30, Folds_Num = Folds_Num, 
-         Model_Spectra_Meta_Path = Model_Spectra_Meta_Path, Use_Session_Report_Meta = FALSE)  # Data from multiple sessions, so Use_Session_Report_Meta needs to be FALSE
-          
+    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = TRUE, axes_zoomed_limit = 30, Folds_Num = Folds_Num, 
+         Model_Spectra_Meta_Path = Model_Spectra_Meta_Path, Use_Session_Report_Meta = FALSE)  # If data is not from multiple sessions, then Use_Session_Report_Meta can be TRUE    
+		 
           
 if(FALSE)  {   # After moving results to: C:\SIDT\PWHT_Acoustic2019\NN_500N_Otie_Wgt_Fish_Len_FIsh_Wgt
 
