@@ -207,7 +207,7 @@ else    {
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 300, 'All')[[3]] 
 Rdm_Reps_Main <- c(20, 40, 60)[1]
-Folds_Num <- c(5, 10)[1] # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
+Folds_Num <- c(5, 10)[2] # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
 Iter_Num <- 8  # Iter while() loop
 Num_Oties_Model <- c(NA, 500, 750, 1000)[1]
 activation_function <- c('relu', 'elu', 'selu')[1]
@@ -351,7 +351,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     summary(Model_Spectra.iPLS.F) 
     
     # plot the newly selected spectra regions 
-    browsePlot('plot(Model_Spectra.iPLS.F)', file = "iPLS Results, RMSECV vs Variables.png")
+    browsePlot('plot(Model_Spectra.iPLS.F)', file = "Figures/iPLS Results, RMSECV vs Variables.png")
     
     Model_Spectra.iPLS.F$int.selected
     sort(Model_Spectra.iPLS.F$var.selected)
@@ -364,9 +364,9 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
       par(mfrow = c(2, 1))
       mdatools::plotPredictions(Model_Spectra.iPLS.F$gm) # gm = global PLS model with all variables included
       mdatools::plotPredictions(Model_Spectra.iPLS.F$om) # om = optimized PLS model with selected variables
-    ', file = "iPLS Predictions.png")
+    ', file = "Figures/iPLS Predictions.png")
     
-    browsePlot('mdatools::plotRMSE(Model_Spectra.iPLS.F)', file = "iPLS RMSE Development.png")
+    browsePlot('mdatools::plotRMSE(Model_Spectra.iPLS.F)', file = "Figures/iPLS RMSE Development.png")
     
     # RMSE before and after selection
     
@@ -387,7 +387,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
       par(mfrow = c(2, 1))
       mdatools::plotRMSE(Model_Spectra.iPLS.F$gm, ylim = c(yMin, yMax))
       mdatools::plotRMSE(Model_Spectra.iPLS.F$om, ylim = c(yMin, yMax))
-    ', file = "iPLS RMSE vs Components, gm_top and om_bottom.png")
+    ', file = "Figures/iPLS RMSE vs Components, gm_top and om_bottom.png")
     
     # Select iPLS vars and add metadata wanted
     # (p <- length(Model_Spectra.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
@@ -608,7 +608,7 @@ Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_W
 if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
 
    for(i in Metadata_Names)
-       browsePlot('plot(Model_Spectra_Meta$TMA, Model_Spectra_Meta[,i], xlab = "TMA", ylab = i, main = paste0("Raw Metadata ", i, " vs TMA"))', file = paste0("Raw Metadata ", i, " vs TMA.png"))
+       browsePlot('plot(Model_Spectra_Meta$TMA, Model_Spectra_Meta[,i], xlab = "TMA", ylab = i, main = paste0("Raw Metadata ", i, " vs TMA"))', file = paste0("Figures/Raw Metadata ", i, " vs TMA.png"))
 
    # Create the local initial file '.Rprofile' which Rgui.exe will run when started
    # The listed default packages do not immediately load.  They are loaded by the time a prompt is given,
@@ -817,7 +817,7 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
              dev.set(3)
              print(plot(history))
              if(file.exists('NN_Verbose_Flag.txt'))
-                browsePlot('print(plot(history))', file = paste0("NN_History_Iter_", Iter, ".png")) # Save NN History figures
+                browsePlot('print(plot(history))', file = paste0("Figures/NN_History_Iter_", Iter, ".png")) # Save NN History figures
                  
              # Predict using the test set; plot, create statistics, and create an agreement table
              y.test.pred <- predict(model, x.test.array)
