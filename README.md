@@ -5,6 +5,8 @@ Proceedings of the Fourth Research Workshop on the Rapid Estimation of Fish Age 
 
 Follow this link for the presentation [slide deck](https://docs.google.com/presentation/d/e/2PACX-1vSQFW9qVyJOABbeKCsdxHjaz9_HRYZpabRwhBh6GgCZFqnMEM5NzKENF7PbNIMnKw/pub?start=true&loop=false&delayms=60000&slide=id.p1) and click here for selected results as of [June 2024](https://docs.google.com/presentation/d/e/2PACX-1vTfisqAPiKjfAj8hXokQH7591fF4nl6PnGw_jKvZdsfC0FuEqZPCJxI3m8Avocujw/pub?start=false&loop=false&delayms=60000)
 
+This [slide deck](https://docs.google.com/presentation/d/1CWaZ3Szq2zO5Rr007N2YUYPOd94pIYjLkIlvYmANNVc/edit?usp=sharing) is a look at the Sablefish reference scan data.
+
 ---
 
 <h3> Neural Net Models using the keras R Package with a Custom TensorFlow Conda Environment in Windows</h3>
