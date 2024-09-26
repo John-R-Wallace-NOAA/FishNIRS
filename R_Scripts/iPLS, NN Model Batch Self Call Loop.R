@@ -144,7 +144,7 @@ if(interactive())
 if(!interactive())   options(width = 120)      
 Spectra_Set <- c("Hake_2019", "PWHT_Acoustic2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", # 7
                  "Sable_Combo_2017", "Sable_Combo_2023", "Sable_Combo_Multi_2000", "Sable_Combo_Multi_17_21", "Sable_Combo_Multi_17_22", "Sable_Combo_Multi_17_18_19_22", # 13
-				 "Sable_Combo_Multi_17_22_21_200N", "REYE_Comm_2012_2023")[5] # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.
+				 "Sable_Combo_Multi_17_22_21_200N", "Sable_Combo_2017_21_22_200N", "REYE_Comm_2012_2023", "REYE_Comm_AShop_2008_2023")[17] # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 dir.create('Figures', showWarnings = FALSE)
 TMA_Ages = c(TRUE, FALSE)[1]
@@ -153,8 +153,11 @@ plot <- c(TRUE, FALSE)[1]
 
 Read_In_OPUS_Spectra <- c(TRUE, FALSE)[2]
 
-Extra_Meta_Path <- list("C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData", "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Extra_Metadata.RData", NULL)[[1]] 
-Metadata_Names <- list(c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 1 The main four metadata variables
+Extra_Meta_Path <- list(NULL, "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData", "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Extra_Metadata.RData")[[1]] 
+
+Spectra_Only <- c(TRUE, FALSE)[2] 
+if(!Spectra_Only)
+    Metadata_Names <- list(c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 1 The main four metadata variables
                        c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max'), # 2 No lat
                        c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max'),  # 3 No lat nor depth
                        c('structure_weight_dg', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max'), # 4 All standard metadata but fish length
@@ -164,8 +167,11 @@ Metadata_Names <- list(c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_
                        c('structure_weight_dg'), # 8
                        c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Sex_F', 'Sex_M'), # 9
                        c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Month_May', 'Month_Jun', 'Month_Jul', 'Month_Aug', 'Month_Sep', 'Month_Oct') # 10
-                      )[[1]]
-Spectra_Only <- c(TRUE, FALSE)[2]  # !is.null(Extra_Meta_Path) = FALSE and Spectra_Only = FALSE gives otie weight as the only metadata used
+                      )[[8]]
+else
+    Metadata_Names <- NULL
+ 
+ # !is.null(Extra_Meta_Path) = FALSE and Spectra_Only = FALSE gives otie weight as the only metadata used
 Metadata_Only <- c(TRUE, FALSE)[2]
 
 
@@ -184,6 +190,9 @@ else if(Spectra_Set == "Sable_Combo_Multi_17_18_19_22")
 else if(Spectra_Set == "Sable_Combo_Multi_17_22_21_200N")
      Model_Spectra_Meta_Path <- "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_18_19_22_21_200N_Model_Spectra_Meta.RData"	 	 
 	 
+else if(Spectra_Set == "Sable_Combo_2017_21_22_200N")
+     Model_Spectra_Meta_Path <- "C:/SIDT/Sablefish Combo Multi Year/Sable_Combo_2017_21_22_200N_Model_Spectra_Meta.RData"	 	 	 
+	 
 # if(Spectra_Set %in% "PWHT_Acoustic2019") 
 #     Model_Spectra_Meta_Path <- "C:/SIDT/PWHT_Acoustic2019/PWHT_Acoustic2019_Model_Spectra_Meta_ALL_GOOD_DATA.RData"
    
@@ -192,8 +201,11 @@ else if(Spectra_Set %in% c("Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2
   
 else if(Spectra_Set %in% "REYE_Comm_2012_2023")   
     #  Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2012_2023_Model_Spectra_Meta_REYE_ALL_GOOD_DATA.RData"  # Year 2011 NOT included
-       Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2011_2023_Model_Spectra_Meta_Extra_ALL_GOOD_DATA.RData"  # Year 2011 included
-                            
+    #   Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2011_2023_Model_Spectra_Meta_Extra_ALL_GOOD_DATA.RData"  # Year 2011 included
+       Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_2012_2023\\REYE_Comm_2011_2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData"  # Year 2011& 2022 included, no Extra. No TMA in 2022 & 2023
+	
+else if(Spectra_Set %in% "REYE_Comm_AShop_2008_2023")   
+	    Model_Spectra_Meta_Path <- "C:\\SIDT\\REYE_Comm_AShop_2008_2023\\REYE_Comm_AShop_2008_2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData" 
 else    {
    # Below works for standard Spectra_Set setups, like "PWHT_Acoustic2019", "Sable_Combo_2019", and "Sable_Combo_2021"
    # print(Model_Spectra_Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
@@ -215,9 +227,19 @@ activation_function <- c('relu', 'elu', 'selu')[1]
 
 print(getwd())
 print(Spectra_Set)
+cat("\nSpectra_Only =", Spectra_Only)
+cat("\nMetadata_Only =", Metadata_Only) 
 cat("\nRdm_Reps_Main =", Rdm_Reps_Main)
 cat("\nFolds_Num =", Folds_Num)
-cat("\nMetadata_Only =", Metadata_Only, "\n\n")
+
+if(!Spectra_Only)
+   cat("\nMetadata_Names =", paste0(Metadata_Names, collpse = c(rep(",", length(Metadata_Names) -1), "")), "\n\n")
+else
+   cat("\nSpectra Only Model\n\n")
+
+
+#  *** NOTE: Around line 282 there is code to edit/add for specific datasets when < !is.null(Extra_Meta_Path) or (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra) > ***
+
 Sys.sleep(3)
 }
 
@@ -259,6 +281,8 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     metadata <- Model_Spectra_Meta[, -(2:((1:ncol(Model_Spectra_Meta))[names(Model_Spectra_Meta) %in% 'project'] - 1))]  # Includes TMA
     headTail(metadata, 2)
     
+	
+	#  *** Code to edit/add for specific datasets when < !is.null(Extra_Meta_Path) or (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra) > ***
     if(!is.null(Extra_Meta_Path) | (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra)) {
     
        if(Spectra_Set %in% "PWHT_Acoustic2019")   {
@@ -281,10 +305,24 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
            headTail(Model_Spectra_Meta, 2, 2, 3, 65)
            
            # Remove missing values from Model_Spectra_Meta for the currently used metadata and TMA
-           # Model_Spectra_Meta <- Model_Spectra_Meta[!(is.na(Model_Spectra_Meta$TMA) | is.na(Model_Spectra_Meta$structure_weight_dg)), ]
-           Model_Spectra_Meta <- Model_Spectra_Meta[!(is.na(Model_Spectra_Meta$TMA) | is.na(Model_Spectra_Meta$structure_weight_dg) | is.na(Model_Spectra_Meta$Length_prop_max)), ]
+		    if(!Spectra_Only)
+		       Model_Spectra_Meta <- Model_Spectra_Meta[!(is.na(Model_Spectra_Meta$TMA) | is.na(Model_Spectra_Meta$structure_weight_dg)), ]
           
            headTail(Model_Spectra_Meta, 2, 2, 3, 45)
+		   
+		   
+		} else if(Spectra_Set %in% "REYE_Comm_AShop_2008_2023")   {
+       
+           # Look at missing data
+           # headTail(metadata[is.na(metadata$TMA) | is.na(metadata$structure_weight_dg), ], 2)
+           headTail(metadata[is.na(metadata$TMA) | is.na(metadata$structure_weight_dg), ], 2)
+           headTail(Model_Spectra_Meta, 2, 2, 3, 65)
+           
+           # Remove missing values from Model_Spectra_Meta for the currently used metadata and TMA
+		    if(!Spectra_Only)
+		       Model_Spectra_Meta <- Model_Spectra_Meta[!(is.na(Model_Spectra_Meta$TMA) | is.na(Model_Spectra_Meta$structure_weight_dg)), ]
+          
+           headTail(Model_Spectra_Meta, 2, 2, 3, 45)   
        
        } else {
     
@@ -318,7 +356,8 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     # Double check for missing data
     print(dim(Model_Spectra))
     print(dim(na.omit(Model_Spectra)))
-    
+    print(Metadata_Names)
+	
     TMA_Vector <- Model_Spectra_Meta$TMA; print(length(TMA_Vector)); print(length(TMA_Vector[!is.na(TMA_Vector)]))
    
     save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
@@ -329,7 +368,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     { ##
     
     ###################################################################################################################
-    ### Perform Savitzky-Golay 1st derivative with 17 point window smoothing 2rd order polynomial fit and visualize ###
+    ### Perform Savitzky-Golay 1st derivative with 17 point window smoothing 2nd order polynomial fit and visualize ###
     ### Intro: http://127.0.0.1:30354/library/prospectr/doc/prospectr.html
     ###################################################################################################################
     ### NOTE ### If there are multiple years of data, all subsequent transformations should be applied to the whole data set, then re-subset  
@@ -401,7 +440,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     # ---- Scans and metadata run ----
     
     if(!is.null(Extra_Meta_Path) | (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra)) 
-        Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, Metadata_Names]) 
+        Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, Metadata_Names, drop = FALSE]) 
     
     #  if(!is.null(Extra_Meta_Path)) {
     #      if(Spectra_Set %in% "PWHT_Acoustic2019")    # No depth for Hake
@@ -428,7 +467,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
         
         Model_Spectra.sg.iPLS <- renum(Model_Spectra.sg.iPLS[!TF, ])
     }
-    
+	
     headTail(Model_Spectra.sg.iPLS)
     
     save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
@@ -607,6 +646,7 @@ Seed_Fold <- 787 # Seed_Fold = 787 for Run 3.  Seed 747 used for Fish_Len_Otie_W
 # One Random Model step for each call to the R sub-process (Calling Rgui from Rgui)
 if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
 
+if(!Spectra_Only)   
    for(i in Metadata_Names)
        browsePlot('plot(Model_Spectra_Meta$TMA, Model_Spectra_Meta[,i], xlab = "TMA", ylab = i, main = paste0("Raw Metadata ", i, " vs TMA"))', file = paste0("Figures/Raw Metadata ", i, " vs TMA.png"))
 
@@ -865,20 +905,22 @@ if(!file.exists('Rdm_reps_Iter_Flag.RData')) {
              plot(1:length(RMSE), RMSE, col = 'green', type = 'b', ylab = "RMSE (green)", xlab = "Iteration Number")
              abline(h = 4, lty = 2, col ='grey39', lwd = 1.25)
              
-             if(Iter < 5) 
-                try(plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
-             else
-                try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+             # if(Iter < 5) 
+             #    try(plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+             # else
+             #    try(plot.loess(1:length(CA_diag), CA_diag, col = 'red', line.col = 'deeppink', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
+			 try(plot(1:length(CA_diag), CA_diag, col = 'red', type = 'b', ylab = "Diagonal of Class Agreement (red)", xlab = "Iteration Number"))
              abline(h = 0.2, lty = 2, col ='grey39', lwd = 1.25)
             
              # Avoiding high SAD values at the beginning, and rarely, during a run.
              SAD_plot <- SAD
              # SAD_plot[SAD_plot > 1400] <- NA  # Need different value for 5k+ oties in model... # Extreme model runs can, on a very rare occasion, put the value of SAD above 1,400 beyond the initial runs
              
-             if(Iter < 5) 
-                try(plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
-             else
-                try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
+             # if(Iter < 5) 
+             #    try(plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
+             # else
+             #    try(plot.loess(1:length(SAD_plot), SAD_plot, col = 'blue', line.col = 'dodgerblue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
+			 try(plot(1:length(SAD_plot), SAD_plot, col = 'blue', type = 'b', ylab = "Sum of Absolute Differences (blue)", xlab = "Iteration Number"))
              abline(h = 950, lty = 2, col ='grey39', lwd = 1.25)
              
              # Save all the iteration models until the best one is found
@@ -1191,13 +1233,13 @@ if(exists('Wrap_Up_Flag')) {
 
 
 if(exists('Wrap_Up_Flag'))
-    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = TRUE, axes_zoomed_limit = 30, Folds_Num = Folds_Num, 
+    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = TRUE, axes_zoomed_limit = 30,
          Model_Spectra_Meta_Path = Model_Spectra_Meta_Path, Use_Session_Report_Meta = FALSE)  # If data is not from multiple sessions, then Use_Session_Report_Meta can be TRUE    
 		 
           
 if(FALSE)  {   # After moving results to: C:\SIDT\PWHT_Acoustic2019\NN_500N_Otie_Wgt_Fish_Len_FIsh_Wgt
 
-    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = FALSE, axes_zoomed_limit = 17, Folds_Num = Folds_Num, 
+    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = FALSE, axes_zoomed_limit = 17,
          Model_Spectra_Meta_Path = paste0("C:/SIDT/Train_NN_Model/", Spectra_Set, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"), Use_Session_Report_Meta = FALSE)
 
     Spectra_Set <- "PWHT_Acoustic2019"
