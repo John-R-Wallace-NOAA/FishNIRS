@@ -75,7 +75,7 @@ agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, 
    par(mar = c(5, 4.5, 4, 2) + 0.1)
 	   
    plot(X, Y, main = main,
-      xlab = paste0('R^2 = ', format(Stats$R_squared, nsmall = 4), '; RMSE = ', format(Stats$RMSE, nsmall = 4), '; SAD = ', 
+      xlab = paste0(xlab, ': R^2 = ', format(Stats$R_squared, nsmall = 4), '; RMSE = ', format(Stats$RMSE, nsmall = 4), '; SAD = ', 
               Stats$SAD, '; APE = ', Stats$APE, '; N_Pred = ', Stats$N, ifelse(is.null(Delta), "", " (Prediction rounded after adding Delta for Stats)")), 
 	      ylab = ylab, type = 'n', cex.lab = 1.5, cex.main = 1.4, ...)
                     
