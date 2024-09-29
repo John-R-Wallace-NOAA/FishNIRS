@@ -2,7 +2,7 @@
 
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
-                           Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20, Folds_Num = 10, 
+                           Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Rdm_Reps_Main = 20,  
                            Max_N_Spectra = list(50, 200, 'All')[[2]], Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15,
                            Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, TMA_Ages = TRUE, verbose = TRUE, plot = TRUE, main = "") {
 
@@ -117,14 +117,14 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
 	 
 	 if(TMA_Ages) {
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
-         sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
+         # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
      }    
      
      getwd()
@@ -201,7 +201,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     }
     
     print(NN_Model <- paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "FCNN_model..........Rdm_model")))
-    
+    Rdm_models <- extractRData("Rdm_models", NN_Model)
+	Folds_Num <- length(Rdm_models[[1]])
+	cat("\nNumber of folds in this model =", Folds_Num, "\n\n")
+	
     NN_Pred_Median_TMA <- extractRData(paste0(Spectra_Set, '_NN_Pred_Median_TMA'), paste0(Train_Result_Path, "/", list.files(Train_Result_Path, "Pred_Median_TMA")))
     headTail(NN_Pred_Median_TMA)
     # Sys.sleep(2)
@@ -214,7 +217,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         print(Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_For_NWFSC.xlsx'))
 		
 	if(!is.null(Meta_Path)) {
-        if(!file.exists(Meta_Path))  stop("Meta_path file not found")
+        if(!file.exists(Meta_Path))  stop(paste0("\nMeta_path file not found: ", Meta_Path, "\n\n"))
         print(Meta_Path_Save <- paste0(Predicted_Ages_Path, '/', Spectra_Set, '_NIRS_Scanning_Session_Report_with_NN_Ages_For_NWFSC.xlsx'))
     }
       
@@ -492,9 +495,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          assign('NN_Pred_Median', New_Ages$NN_Pred_Median, pos = 1)
 		 assign('main', main, pos = 1)
 		 
-         browsePlot('agreementFigure(TMA, NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE,  main = main, xlab = xlab)',
+         browsePlot('agreementFigure(TMA, NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE,  main = main)',
                     file = paste0(Predicted_Ages_Path, '/Agreement_Figure.png'))
-         browsePlot('agreementFigure(TMA, NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, main = main, xlab = xlab, 
+         browsePlot('agreementFigure(TMA, NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = FALSE, main = main, 
                      axes_zoomed_limit = axes_zoomed_limit)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
          
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
@@ -732,8 +735,13 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
            
            cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
            summary(agePrecision(~ TMA + round(NN_Pred_Median + Delta), data = New_Ages), what="precision")
+		   cat("\n\n")
          }
          sink()
+		 
+		 if(verbose) {
+	       cat("\nMetadata variables used:", SG_Variables_Selected[metaDataVar], "\n\n")
+        }
          
      }
 }     
