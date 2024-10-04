@@ -5,7 +5,7 @@ Proceedings of the Fourth Research Workshop on the Rapid Estimation of Fish Age 
 
 Follow this link for the presentation [slide deck](https://docs.google.com/presentation/d/e/2PACX-1vSQFW9qVyJOABbeKCsdxHjaz9_HRYZpabRwhBh6GgCZFqnMEM5NzKENF7PbNIMnKw/pub?start=true&loop=false&delayms=60000&slide=id.p1)  
 
-The Groundfish Subcommittee (a part of the Scientific and Statistical Committee (SSC) of the Pacific Fishery Management Council) reveiwed these methods in [Oct 2024](https://docs.google.com/presentation/d/1fo570JmkbccNnl9Rt7epeqSMe4-L6T-2Ou7eXMs_kzY/edit?usp=sharing]) The slide deck also includes results that were not presented due to limited time.
+The Groundfish Subcommittee (a part of the Scientific and Statistical Committee (SSC) of the Pacific Fishery Management Council) reveiwed these methods in [Oct 2024](https://docs.google.com/presentation/d/1fo570JmkbccNnl9Rt7epeqSMe4-L6T-2Ou7eXMs_kzY/edit?usp=sharing]) . The slide deck also includes a results section that wwas not presented due to lack of time. Information on [Pacific hake](https://docs.google.com/presentation/d/19_nQMLzEmGpiChAYMeOcr2lyXGsVh9NCok1FG56sWvI/edit?usp=sharing) and the [Rougheye/Blackspotted rockfish Complex](https://docs.google.com/presentation/d/15nZqnT1AZPilrg_OI9jS5ATgJYBUhRZBohU57OlT5xA/edit?usp=sharing) was also presented.
 
 This [slide deck](https://docs.google.com/presentation/d/1CWaZ3Szq2zO5Rr007N2YUYPOd94pIYjLkIlvYmANNVc/edit?usp=sharing) is a look at the Sablefish reference scan data.
 
