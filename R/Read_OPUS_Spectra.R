@@ -242,11 +242,12 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                
         colnames(newScans.ADJ[[1]]) <- wavebandsToUse
         wavebandsToUse.8k <- wavebandsToUse[wavebandsToUse <= 8000]
-        newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse.8k)) #make empty matrix for loop
+        newScans.ADJ_int <- matrix(data = NA, nrow = length(newScans.ADJ), ncol = length(wavebandsToUse.8k)) # make empty matrix for loop
         newScans.ADJ_int[1, ] <- newScans.ADJ[[1]][wavebandsToUse <= 8000]
         
         for (j in 2:length(newScans.ADJ)) { 
-          bar(j, length(newScans.ADJ))
+          # bar(j, length(newScans.ADJ))
+		  print(j)
           wavebandsOld <- as.numeric(colnames(newScans.ADJ[[j]]))
           wavebandsOld.8k <- wavebandsOld[wavebandsOld <= 8000]
           if(all(wavebandsOld.8k %in% wavebandsToUse.8k))
