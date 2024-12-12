@@ -449,7 +449,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
 			assign('New_Ages', New_Ages, pos = 1)
             
             browsePlot('
-                plot(New_Ages$TMA, New_Ages$NN_Pred_Median_OLD, xlim = c(0, 19), ylim = c(0, 19), main = "No Bias Correction is Black and Bias Corrected is Green")
+                plot(New_Ages$TMA, New_Ages$NN_Pred_Median_OLD, xlim = c(0, 19), ylim = c(0, 19), main = "Lowess Bias Correction; No Bias Correction is Black & Bias Corrected is Green")
                 lowess.line(New_Ages$TMA, New_Ages$NN_Pred_Median_OLD)
                 points(New_Ages$TMA, New_Ages$NN_Pred_Median, col = "green")
                 lowess.line(New_Ages$TMA, New_Ages$NN_Pred_Median, col = "green")
