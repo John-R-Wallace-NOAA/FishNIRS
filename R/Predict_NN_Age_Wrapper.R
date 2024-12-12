@@ -13,20 +13,21 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     '  # Sys.setenv(GITHUB_PAT = "**************")   # If you set GITHUB_PAT here, uncomment this line. Note, do not share your GITHUB_PAT, nor load it onto GitHib.  #                             '
     '  # Sys.getenv("GITHUB_PAT")                                                                                                                                     #                             '
     '  ################################################################################################################################################################                             '
-    '                                                                                                                                                                                               '
+                                                                                                                                                                                                   
     '  #  Spectra_Path  # Put new spectra scans in a separate folder and enter the name of the folder in this argument                                                                              '
     '  #  Predicted_Ages_Path # The NN predicted ages will go in the path defined by this argument                                                                                                  '
     '  #  Meta_Add  #  Will metadata be used                                                                                                                                                        '
     '  #  TMA_Ages  # Are TMA ages available and are they to be used?                                                                                                                               '
-    '                                                                                                                                                                                               '
+                                                                                                                                                                                                   
     '  #  Max_N_Spectra  # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below).                                '
     '  #                 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.                                                           '
-    '                                                                                                                                                                                                  '
-    '  #  Model_Spectra_Meta_Path    # Example paths                                                                                                                                                        '
+                                                                                                                                                                                                 
+    '  #  Model_Spectra_Meta_Path    # Example paths                                                                                                                                                '
     '  #     "C:/SIDT/Train_NN_Model/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData"                                                                                                       '
     '  #     "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData"                                                                                                '
-    '  #     "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Sex/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_No_Lat_Male_Run_1/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")    '        
-
+    '  #     "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Sex/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_No_Lat_Male_Run_1/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")   '        
+    
+	'  # !!! How year is extracted from the "filenames" column in New_Ages based on different spectra sets is changed under "# --- Add Index to New_ages and set colors... ---" !!!                     '
      
      # ------------------------------------ Main User Setup ------------------------------------------------------------
       
@@ -378,14 +379,15 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # --- Add Index to New_ages and set cols for the figures below ---
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
          headTail(New_Ages, 3)
-         cols <- 'green'
+		 assign('cols', c('green', 'red'), pos = 1)
+         
           
          # -- Plot by order implied by the spectra file names --
          g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
-         geom_point() +
-         geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, Age_Rounded, col = cols)) + 
-         scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
+              geom_point() +
+              geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
+              geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+              scale_color_manual(labels = 'Rounded Age', values = cols[1], name = ' ')
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'))
           
          
@@ -397,8 +399,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, Age_Rounded, col = cols)) + 
-         scale_color_manual(labels = 'Rounded Age', values = cols, name = ' ')
+         geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+         scale_color_manual(labels = 'Rounded Age', values = cols[1], name = ' ')
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
      }
      
@@ -447,7 +449,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
 			assign('New_Ages', New_Ages, pos = 1)
             
             browsePlot('
-                plot(New_Ages$TMA, New_Ages$NN_Pred_Median_OLD, xlim = c(0, 19), ylim = c(0, 19))
+                plot(New_Ages$TMA, New_Ages$NN_Pred_Median_OLD, xlim = c(0, 19), ylim = c(0, 19), main = "No Bias Correction is Black and Bias Corrected is Green")
                 lowess.line(New_Ages$TMA, New_Ages$NN_Pred_Median_OLD)
                 points(New_Ages$TMA, New_Ages$NN_Pred_Median, col = "green")
                 lowess.line(New_Ages$TMA, New_Ages$NN_Pred_Median, col = "green")
@@ -508,7 +510,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           }
          
          # --- Add Index to New_ages and set colors and pchs for the figures below ---
-         if(Spectra_Set == "PWHT_Acoustic2019") 
+         if(Spectra_Set %in% c("PWHT_Acoustic2019", "PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023"))
             Year <- as.numeric(substring(get.subs(New_Ages$filenames, sep = "_")[2, ], 9))
          else
             Year <- as.numeric(substring(get.subs(New_Ages$filenames, sep = "_")[2, ], 6))    
@@ -526,8 +528,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          assign('Rdm_Reps_Main', Rdm_Reps_Main, pos = 1)
          assign('Folds_Num', Folds_Num, pos = 1)
          assign('Training_N', Training_N, pos = 1)
-         assign('axes_zoomed_limit', axes_zoomed_limit, pos = 1)
-         assign('cols', c('green', 'red'), pos = 1)
+         assign('axes_zoomed_limit', axes_zoomed_limit, pos = 1)    
+         assign('cols', c('green', 'red'), pos = 1)		 
          assign('pchs', c(16, 1), pos = 1)
          
          
@@ -552,13 +554,16 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                      axes_zoomed_limit = axes_zoomed_limit)', file = paste0(Predicted_Ages_Path, '/Agreement_Figure_Zoomed.png'))
          
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
+		    
+			main <- ifelse(is.null(Bias_Adj_Factor_Ages), paste0(Year, "; Training N = ", Training_N), main <- paste0(Year, "; Training N = ", Training_N, "; Bias Corr"))
+		 
             for(Year in unique(New_Ages$Year)) {
                assign('Year', Year, pos = 1)
                assign('New_Ages_Year', New_Ages[New_Ages$Year %in% Year, ], pos = 1)
                assign('Training_N', Training_N, pos = 1)
                assign('TMA', New_Ages_Year$TMA, pos = 1)
                assign('NN_Pred_Median', New_Ages_Year$NN_Pred_Median, pos = 1)
-               browsePlot('agreementFigure(TMA, NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = paste0(Year, "; Training N = ", Training_N))', 
+               browsePlot('agreementFigure(TMA, NN_Pred_Median, Rdm_Reps = Rdm_Reps_Main, Folds = Folds_Num, Delta = Delta, full = TRUE, main = main)', 
                           file = paste0(Predicted_Ages_Path, '/Agreement_Figure_', Year, '.png'))
             }
          }
