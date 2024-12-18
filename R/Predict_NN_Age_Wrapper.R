@@ -448,11 +448,11 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
 			
 			
 			Ages_Diff <- Bias_Adj_Factor_Ages - apply(matrix(Bias_Adj_Factor_Ages, ncol = 1), 1, function(x) mean(New_Ages$NN_Pred_Median[New_Ages$TMA == x]))
-	        Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], f = Lowess_smooth_para), newdata = Bias_Adj_Factor_Ages))
+	        Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - 
+			                             New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], f = Lowess_smooth_para), newdata = Bias_Adj_Factor_Ages))
 			
 			New_Ages$Bias_Adj <- Bias_Increase_Factor * predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)]), newdata = New_Ages$NN_Pred_Median)
-		    TF <- New_Ages$NN_Pred_Median >= 5
-			New_Ages$NN_Pred_Median[TF] <- New_Ages$NN_Pred_Median_OLD[TF] + New_Ages$Bias_Adj[TF]   # Writing over those values in New_Ages$NN_Pred_Median which are greater than or equal to Bias_Adj_Factor_Ages[1]
+		    New_Ages$NN_Pred_Median <- New_Ages$NN_Pred_Median_OLD + New_Ages$Bias_Adj  # NOT writing over those values in New_Ages$NN_Pred_Median which are greater than or equal to Bias_Adj_Factor_Ages[1]
 			
             assign('New_Ages', New_Ages, pos = 1)
 			
