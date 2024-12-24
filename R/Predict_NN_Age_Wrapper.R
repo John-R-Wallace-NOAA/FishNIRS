@@ -525,7 +525,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           }
          
          # --- Add Index to New_ages and set colors and pchs for the figures below ---
-         if(Spectra_Set %in% c("PWHT_Acoustic2019", "PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023")) {
+         if(Spectra_Set %in% c("PWHT_Acoustic2019", "PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023", "PWHT_Acoustic_2019_2023_Half_2024")) {
 			Sub_str <- get.subs(New_Ages$filenames, sep = "_")[2, ]
 			Year <- ifelse(grepl('Net', Sub_str), as.numeric(substring(Sub_str, 21)) , as.numeric(substring(Sub_str, 9)))
          } else
