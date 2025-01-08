@@ -85,9 +85,20 @@ lib(e1071)
 lib(mdatools)
 lib(plotly)
 lib(FSA)
-lib(reticulate)
+
+# lib(reticulate) # Need to test if the latest version of reticulate, works or not, with the working versions of tensorflow and keras below 
+# lib(tensorflow) # Latest versions of tensorflow and keras don't work as of 1/6/2025. At least not with my current Condo environment below - but I don't beleive that's the issue.
+# lib(keras)
+
+if(!any(installed.packages()[, 1] %in% "reticulate")) remotes::install_version('reticulate', '1.32.0', repos = "http://cran.us.r-project.org", upgrade = "never")  
+if(!any(installed.packages()[, 1] %in% "tensorflow")) remotes::install_version('tensorflow', '2.13.0', repos = "http://cran.us.r-project.org", upgrade = "never")
+if(!any(installed.packages()[, 1] %in% "keras")) remotes::install_version('keras', '2.13.0', repos = "http://cran.us.r-project.org", upgrade = "never")
+
+lib(reticulate) # Now just using lib() as library(), not the install feature
 lib(tensorflow)
 lib(keras)
+
+
 lib(prospectr)
 lib(openxlsx)
 # install.packages('RcppArmadillo')  # Need to use 4.0 version
@@ -170,13 +181,14 @@ if(!Spectra_Only)
                        c('structure_weight_dg', 'Weight_prop_max', 'Depth_prop_max'), # 6 No fish length nor lat
                        c('structure_weight_dg', 'Length_prop_max'), # 7
                        c('structure_weight_dg'), # 8 
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 9 
-					   c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Year_2019', 'Year_2023', 'Year_2024'), # 10 
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U', 'Year_2019', 'Year_2023', 'Year_2024'), # 11 
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M'), # 12
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 13
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Month_May', 'Month_Jun', 'Month_Jul', 'Month_Aug', 'Month_Sep', 'Month_Oct') # 14
-                      )[[9]]
+					   c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F'), # 9 
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 10 
+					   c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Year_2019', 'Year_2023', 'Year_2024'), # 11 
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U', 'Year_2019', 'Year_2023', 'Year_2024'), # 12 
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M'), # 13
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 14
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Month_May', 'Month_Jun', 'Month_Jul', 'Month_Aug', 'Month_Sep', 'Month_Oct') # 15
+                      )[[7]]
 else
     Metadata_Names <- NULL
  
@@ -238,7 +250,7 @@ else    {
 # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 300, 'All')[[3]] 
-Rdm_Reps_Main <- c(3, 20, 40, 60)[1]
+Rdm_Reps_Main <- c(3, 20, 40, 60)[2]
 Folds_Num <- c(5, 10)[2] # i loop    # How many folds work best for metadata only models was checked. Trying 2 for single sex models
 Iter_Num <- 8  # Iter while() loop
 Num_Oties_Model <- c(NA, 500, 750, 1000)[1] # NA => use all available
@@ -715,7 +727,7 @@ if(!Spectra_Only)
 
    # for(Rdm_reps_Iter in seq(1, 19, by = 2)) {  # Two loops at a time
    # If restarting the loops, replace '1' below with the next random model wanted, so if x model is already finished, replace 1 with x + 1. !!! Don't forget to reset back to 1 when done. !!!
-   for(Rdm_reps_Iter in 1:Rdm_Reps_Main) {    
+   for(Rdm_reps_Iter in 13:Rdm_Reps_Main) {    
       cat("\n\nRdm_reps_Iter =", Rdm_reps_Iter, "\n\n")
       save(Rdm_reps_Iter, file = 'C:/SIDT/Train_NN_Model/Rdm_reps_Iter_Flag.RData')    
       
@@ -755,7 +767,7 @@ if(!Spectra_Only)
    # (Rdm_reps <- ifelse(model_Name == 'FCNN_model_ver_1', 20, 10))
    Seed_Main <- Seed_Fold + 20 # Seed_Fold 747 used for Fish_Len_Otie_Wgt_Run_2. Seed_Main <- 707 used for previous runs of Sable_2022 before 28 Dec 2023  # Reducing the number of seeds will be considered later
    set.seed(Seed_Main) 
-   Seed_reps <- sample(1e7, Rdm_reps)
+   Seed_reps <- sample(1e7, Rdm_reps)  # Long vector of Seed_reps is created using Seed_Main so that Seed_Data is always correct regardless of restarts
    
    # Start fresh or continue by loading a file with model iterations already finished (see the commented line with an example model file). 
    if(Rdm_reps_Iter == 1) {
@@ -1296,7 +1308,7 @@ if(exists('Wrap_Up_Flag'))
          
     # Using the Model_Spectra_Meta_Path with extra TMA ages for 2024
     Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model", Multi_Year = TRUE, Use_Session_Report_Meta = FALSE, Bias_Adj_Factor_Ages = 11:15, Lowess_smooth_para = 2/3, 
-        TMA_Ages = TRUE, Model_Spectra_Meta_Path = "C:/SIDT/PWHT_Acoustic_2019_2023_2024/PWHT_Acoustic_2019_2023_2024_Model_Spectra_ALL_GOOD_DATA.RData", main = "Str Wgt & Fish Len")
+        TMA_Ages = TRUE, Model_Spectra_Meta_Path = "C:/SIDT/PWHT_Acoustic_2019_2023_2024/PWHT_Acoustic_2019_2023_2024_Model_Spectra_ALL_GOOD_DATA.RData", main = "Str Wgt")
 
 
 
