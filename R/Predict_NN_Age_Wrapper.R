@@ -27,7 +27,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     '  #     "C:/SIDT/Predict_NN_Ages/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA_1556N.RData"                                                                                                '
     '  #     "C:/SIDT/Sablefish 2022 Combo/Sable_Combo_2022_NN_Sex/Sable_Combo_2022_NN_Fish_Len_Otie_Wgt_Weight_Depth_No_Lat_Male_Run_1/Sable_Combo_2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")   '        
     
-    '  # !!! How year is extracted from the "filenames" column in New_Ages based on different spectra sets is changed under "# --- Add Index to New_ages and set colors... ---" !!!                     '
+    '  # !!! How year is extracted from the "filenames" column in New_Ages based on different spectra sets is changed under "# --- Add Index to New_Ages and set colors... ---" !!!                     '
      
      # ------------------------------------ Main User Setup ------------------------------------------------------------
       
@@ -111,6 +111,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
+	 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Column_Move.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lowess.line.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/switchSlash.R")   # Switch "\" to "/" for copied Windows paths [Copy path and run switchSlash() in R. Utilized by JRWToolBox::setWd()]
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/extractRData.R")  
@@ -124,8 +125,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
      
      if(TMA_Ages) {
-         sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
-         sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R") 
+         sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R")
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
          sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
      }    
@@ -337,7 +337,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      New_Ages <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]  # Non-missing predictions
      headTail(New_Ages)
      
-     # --- Early save of New_ages for debugging ---
+     # --- Early save of New_Ages for debugging ---
      save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
           
      newScans.pred.ALL <- New_Ages_Pred[['newScans.pred.ALL']]
@@ -359,7 +359,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # ----- Extract the rounding Delta -----
          Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
-         New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
+         New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded <- round(New_Ages$NN_Pred_Median + Delta)
          cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
         
          # --- Save ages ---
@@ -380,7 +380,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
          }
          
-         # --- Add Index to New_ages and set cols for the figures below ---
+         # --- Add Index to New_Ages and set cols for the figures below ---
          New_Ages <- data.frame(Index = 1:nrow(New_Ages), New_Ages)  # Add 'Index' as the first column in the data frame
          headTail(New_Ages, 3)
          assign('cols', c('green', 'red'), pos = 1)
@@ -390,20 +390,20 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
               geom_point() +
               geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-              geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+              geom_point(aes(Index, Pred_Age_Bias_Corr_plus_Delta_rounded, col = cols[1])) + 
               scale_color_manual(labels = 'Rounded Age', values = cols[1], name = ' ')
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names.png'))
           
          
          # -- Plot by sorted NN predicted ages --
-         New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+         New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_Ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
          if(verbose) head(New_Ages_Sorted, 10)
          
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1])) + 
+         geom_point(aes(Index, Pred_Age_Bias_Corr_plus_Delta_rounded, col = cols[1])) + 
          scale_color_manual(labels = 'Rounded Age', values = cols[1], name = ' ')
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
      }
@@ -420,9 +420,13 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          New_Ages$TMA <- NULL # Clear old TMA before updating
          if(length(get.subs(get.subs(New_Ages$filenames[1], sep = "."))) == 2)
              New_Ages$filenames <- get.subs(New_Ages$filenames, sep = ".")[1,]
-         New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', 'TMA')  
+         New_Ages <- match.f(New_Ages, Model_Spectra_Meta, 'filenames', 'filenames', c('project', 'sample_year', 'specimen_id', 'TMA'))
+		 names(New_Ages)[grep('sample_year', names(New_Ages))] <- "Year"
+         New_Ages <- Column_Move(New_Ages, "project", 2)
+         New_Ages <- Column_Move(New_Ages, "Year", 3)
+         New_Ages <- Column_Move(New_Ages, "specimen_id", 4)
+		 
          headTail(New_Ages)
-         
          
          if(!is.null(Bias_Adj_Factor_Ages)) {
 		 
@@ -442,19 +446,19 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                 Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - 
                                              New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], f = Lowess_smooth_para), newdata = Bias_Adj_Factor_Ages[[i]][-1]))
                 
-                New_Ages$Bias_Adj <- Bias_Increase_Factor * predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)]), newdata = New_Ages$NN_Pred_Median)
-                New_Ages$NN_Pred_Median <- New_Ages$NN_Pred_Median_BIASED + New_Ages$Bias_Adj
-				New_Ages$Lower_Quantile_0.025 <- New_Ages$Lower_Quantile_0.025_BIASED + New_Ages$Bias_Adj 
-				New_Ages$Upper_Quantile_0.975 <- New_Ages$Upper_Quantile_0.975_BIASED + New_Ages$Bias_Adj 
+                New_Ages$Bias_Adjustment <- Bias_Increase_Factor * predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)]), newdata = New_Ages$NN_Pred_Median)
+                New_Ages$NN_Pred_Median <- New_Ages$NN_Pred_Median_BIASED + New_Ages$Bias_Adjustment
+				New_Ages$Lower_Quantile_0.025 <- New_Ages$Lower_Quantile_0.025_BIASED + New_Ages$Bias_Adjustment 
+				New_Ages$Upper_Quantile_0.975 <- New_Ages$Upper_Quantile_0.975_BIASED + New_Ages$Bias_Adjustment 
 				
 			    # 
-				New_Ages$Bias_adj <- TRUE			
-				New_Ages$Bias_adj[New_Ages$NN_Pred_Median_BIASED < Bias_Adj_Factor_Ages[[i]][1]] <- FALSE
-			    New_Ages$NN_Pred_Median[!New_Ages$Bias_adj] <- New_Ages$NN_Pred_Median_BIASED[!New_Ages$Bias_adj]
-				New_Ages$Lower_Quantile_0.025[!New_Ages$Bias_adj] <- New_Ages$Lower_Quantile_0.025_BIASED[!New_Ages$Bias_adj]
-				New_Ages$Upper_Quantile_0.975[!New_Ages$Bias_adj] <- New_Ages$Upper_Quantile_0.975_BIASED[!New_Ages$Bias_adj]
+				New_Ages$Bias_Adj <- TRUE			
+				New_Ages$Bias_Adj[New_Ages$NN_Pred_Median_BIASED < Bias_Adj_Factor_Ages[[i]][1]] <- FALSE
+			    New_Ages$NN_Pred_Median[!New_Ages$Bias_Adj] <- New_Ages$NN_Pred_Median_BIASED[!New_Ages$Bias_Adj]
+				New_Ages$Lower_Quantile_0.025[!New_Ages$Bias_Adj] <- New_Ages$Lower_Quantile_0.025_BIASED[!New_Ages$Bias_Adj]
+				New_Ages$Upper_Quantile_0.975[!New_Ages$Bias_Adj] <- New_Ages$Upper_Quantile_0.975_BIASED[!New_Ages$Bias_Adj]
 				
-				New_Ages$Lower_Quantile_0.025_BIASED <- New_Ages$Upper_Quantile_0.975_BIASED <- NULL # Removing these but leaving NN_Pred_Median_BIASED for comparisons
+				New_Ages$Bias_Adjustment <- New_Ages$Lower_Quantile_0.025_BIASED <- New_Ages$Upper_Quantile_0.975_BIASED <- NULL # Removing these but leaving NN_Pred_Median_BIASED for comparisons
 				
 			   
                 if(verbose) 
@@ -512,7 +516,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
              Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
          }
          
-         New_Ages$Age_Rounded <- round(New_Ages$NN_Pred_Median + Delta)
+		 New_Ages$Delta <- Delta
+         New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded <- round(New_Ages$NN_Pred_Median + Delta)
          cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
          nrow(newScans.pred.ALL)/max(newScans.pred.ALL$Index)
      
@@ -536,14 +541,14 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             openxlsx::saveWorkbook(metadata.wb, Meta_Path_Save, overwrite = TRUE)
           }
          
-         # --- Add Index to New_ages and set colors and pchs for the figures below ---
+         # --- Add Index to New_Ages and set colors and pchs for the figures below ---
          if(Spectra_Set %in% c("PWHT_Acoustic2019", "PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023", "PWHT_Acoustic_2019_2023_Half_2024")) {
             Sub_str <- get.subs(New_Ages$filenames, sep = "_")[2, ]
             Year <- ifelse(grepl('Net', Sub_str), as.numeric(substring(Sub_str, 21)) , as.numeric(substring(Sub_str, 9)))
          } else
             Year <- as.numeric(substring(get.subs(New_Ages$filenames, sep = "_")[2, ], 6))    
             
-         New_Ages <- data.frame(Index = 1:nrow(New_Ages), Year = Year, New_Ages, TMA_Minus_Age_Rounded = New_Ages$TMA - New_Ages$Age_Rounded)  # Add 'Index' as the first column in the data frame and Year the second
+         New_Ages <- data.frame(Index = 1:nrow(New_Ages), Year = Year, New_Ages, TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded = New_Ages$TMA - New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded)  # Add 'Index' as the first column in the data frame and Year the second
          headTail(New_Ages, 3)
          Table(New_Ages$Year)
           
@@ -600,7 +605,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         
          
          # -- Plot of relative error by sorted TMA --   
-         New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_ages' by TMA, except for "Index" (see the next line below)
+         New_Ages_Sorted <- sort.f(New_Ages, 'TMA')  # Sort 'New_Ages' by TMA, except for "Index" (see the next line below)
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
          if(verbose) headTail(New_Ages_Sorted, 10)
          New_Ages_Sorted <- na.omit(New_Ages_Sorted)
@@ -621,7 +626,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index, Pred_Age_Bias_Corr_plus_Delta_rounded, col = cols[1]), pch = pchs[1]) + 
          geom_point(aes(Index + 0.1, TMA, col = cols[2]), pch = pchs[2]) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
          assign('g', g, pos = 1)
@@ -631,31 +636,31 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # g <- ggplotly(ggplot(New_Ages, aes(TMA, NN_Pred_Median)) +  
          # geom_point() +
          # geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         # geom_point(aes(TMA, Age_Rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
+         # geom_point(aes(TMA, Pred_Age_Bias_Corr_plus_Delta_rounded, color = Rounded_Age)) + scale_color_manual(values = c(" " = "green")), dynamicTicks = TRUE)
          # print(g)
          # unlink(paste0(Predicted_Ages_Path, '/Predicted_Ages_Order_by_File_Names'), recursive = TRUE)
          # saveHtmlFolder(paste0(Predicted_Ages_Path, '/TMA vs Predicted_Ages'), view = !interactive())
         
         
          # For this sorting of the data, the pch coding is incorrect,
-         # Age_Rounded can be an open circle and TMA solid, but that is not what I want.
-         # Also the labels are both solid circles in all these plots unless both Age_Rounded and TMA are both set to open circles (pch = 16)
+         # Pred_Age_Bias_Corr_plus_Delta_rounded can be an open circle and TMA solid, but that is not what I want.
+         # Also the labels are both solid circles in all these plots unless both Pred_Age_Bias_Corr_plus_Delta_rounded and TMA are both set to open circles (pch = 16)
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) +
+         geom_point(aes(Index, Pred_Age_Bias_Corr_plus_Delta_rounded, col = cols[1]), pch = pchs[1]) +
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted.png'))
          
          # For this sorting of the data, the pch coding is incorrect,
-         # Age_Rounded can be an open circle and TMA solid, but that is not what I want.
+         # Pred_Age_Bias_Corr_plus_Delta_rounded can be an open circle and TMA solid, but that is not what I want.
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
          geom_point(aes(Index, jitter(TMA + 0.2, 1/6), col = cols[2]), pch = pchs[2]) + 
-         geom_point(aes(Index, jitter(Age_Rounded, 1/6), col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index, jitter(Pred_Age_Bias_Corr_plus_Delta_rounded, 1/6), col = cols[1]), pch = pchs[1]) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA (+ 0.2)'), values = cols, name = ' ')
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted_Jittered.png'))
@@ -671,25 +676,25 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index, Pred_Age_Bias_Corr_plus_Delta_rounded, col = cols[1]), pch = pchs[1]) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ')
          assign('g', g, pos = 1)
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/TMA_Sorted_Subset.png'))
        
          
          # -- Plot by sorted NN predicted ages --
-         New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+         New_Ages_Sorted <- sort.f(New_Ages, 'NN_Pred_Median') # Sort 'New_Ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
             #  New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages_Sorted), ifelse(nrow(New_Ages_Sorted) < 200, nrow(New_Ages_Sorted), 200)), ], 'NN_Pred_Median') 
             #  New_Ages_Sorted <- New_Ages_Sorted[New_Ages_Sorted$NN_Pred_Median <= 10, ]
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
-        #  New_Ages_Sorted$Age_Rounded_Plus_0.2 <- New_Ages_Sorted$Age_Rounded + 0.2
+        #  New_Ages_Sorted$Pred_Age_Bias_Corr_plus_Delta_rounded_Plus_0.2 <- New_Ages_Sorted$Pred_Age_Bias_Corr_plus_Delta_rounded + 0.2
          if(verbose) head(New_Ages_Sorted, 20)
          
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
-         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index, Pred_Age_Bias_Corr_plus_Delta_rounded, col = cols[1]), pch = pchs[1]) + 
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
          assign('g', g, pos = 1)         
          browsePlot('print(g)', file = paste0(Predicted_Ages_Path, '/Predicted_Ages_Sorted.png'))
@@ -697,7 +702,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, jitter(Age_Rounded, 1/6), col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index, jitter(Pred_Age_Bias_Corr_plus_Delta_rounded, 1/6), col = cols[1]), pch = pchs[1]) + 
          geom_point(aes(Index, jitter(TMA + 0.2, 1/6), col = cols[2]), pch = pchs[2]) +  
          scale_color_manual(labels = c('Rounded Age', 'TMA (+ 0.2)'), values = cols, name = ' ') 
          assign('g', g, pos = 1)         
@@ -713,14 +718,14 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # -- Plot SUBSET of data by sorted NN predicted ages --
          set.seed(Seed_Plot)
-         New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), ifelse(nrow(New_Ages) < 150, nrow(New_Ages), 150)), ], 'NN_Pred_Median')  # Sort 'New_ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
+         New_Ages_Sorted <- sort.f(New_Ages[sample(1:nrow(New_Ages), ifelse(nrow(New_Ages) < 150, nrow(New_Ages), 150)), ], 'NN_Pred_Median')  # Sort 'New_Ages' by 'NN_Pred_Median', except for "Index" (see the next line below)
          New_Ages_Sorted$Index <- sort(New_Ages_Sorted$Index)  # Reset Index for graphing
          if(verbose) head(New_Ages_Sorted, 20)
          
          g <- ggplot(New_Ages_Sorted, aes(Index, NN_Pred_Median)) + 
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
-         geom_point(aes(Index, Age_Rounded, col = cols[1]), pch = pchs[1]) + 
+         geom_point(aes(Index, Pred_Age_Bias_Corr_plus_Delta_rounded, col = cols[1]), pch = pchs[1]) + 
          geom_point(aes(Index, TMA, col = cols[2]), pch = pchs[2]) +  
          scale_color_manual(labels = c('Rounded Age', 'TMA'), values = cols, name = ' ') 
          assign('g', g, pos = 1)
@@ -730,12 +735,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA  --
          dim(New_Ages)
          
-         assign('xlim', c(min(c(New_Ages$TMA, New_Ages$Age_Rounded)) - 1.25, max(c(New_Ages$TMA, New_Ages$Age_Rounded)) + 1.25), pos = 1)         
-         New_Ages$TMA_Minus_Age_Rounded <- New_Ages$TMA - New_Ages$Age_Rounded
+         assign('xlim', c(min(c(New_Ages$TMA, New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded)) - 1.25, max(c(New_Ages$TMA, New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded)) + 1.25), pos = 1)         
+         New_Ages$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded <- New_Ages$TMA - New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded
          assign('New_Ages', New_Ages, pos = 1)
          # Superceded ny the highlighted version below
-         # browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Age_Rounded", ylab = "TMA - Age_Rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-         #                 grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rounded_vs_TMA_Jittered.png'))
+         # browsePlot('set.seed(Seed_Plot); gPlot(New_Ages, "TMA", "TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded", ylab = "TMA - Pred_Age_Bias_Corr_plus_Delta_rounded", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+         #                 grid = FALSE, vertLineEachPoint = TRUE)', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Pred_Age_Bias_Corr_plus_Delta_rounded_vs_TMA_Jittered.png'))
                             
          
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA, highlighting those oties that were left out of the NN model - if any --
@@ -754,32 +759,32 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          Table(New_Ages_Good$Used_NN_Model)
          
          # Plot TMA minus rounded age vs TMA with oties left out of the NN model highlighted (if present)
-        New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+        New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded <- New_Ages_Good$TMA - New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded
         assign('New_Ages_Good', New_Ages_Good, pos = 1)
         browsePlot('
             set.seed(Seed_Plot)
-            gPlot(New_Ages_Good, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+            gPlot(New_Ages_Good, "TMA", "TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                        grid = FALSE, vertLineEachPoint = TRUE, col = "white")
             set.seed(Seed_Plot)
-            points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
-            points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
-            lowess.line(New_Ages_Good$TMA, New_Ages_Good$TMA_Minus_Age_Rounded, smoothing.param = 0.05, col = "green")
-            abline(lsfit(New_Ages_Good$TMA, New_Ages_Good$TMA_Minus_Age_Rounded), col = "blue")
+            points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
+            points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Good$Used_NN_Model])
+            lowess.line(New_Ages_Good$TMA, New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded, smoothing.param = 0.05, col = "green")
+            abline(lsfit(New_Ages_Good$TMA, New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded), col = "blue")
                       
         ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
         
-        # Plot TMA minus rounded age vs the predicted "Age_Rounded" with oties left out of the NN model highlighted (if present)
-        New_Ages_Good$TMA_Minus_Age_Rounded <- New_Ages_Good$TMA - New_Ages_Good$Age_Rounded
+        # Plot TMA minus rounded age vs the predicted "Pred_Age_Bias_Corr_plus_Delta_rounded" with oties left out of the NN model highlighted (if present)
+        New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded <- New_Ages_Good$TMA - New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded
         assign('New_Ages_Good', New_Ages_Good, pos = 1)
         browsePlot('
             set.seed(Seed_Plot)
-            gPlot(New_Ages_Good, "Age_Rounded", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+            gPlot(New_Ages_Good, "Pred_Age_Bias_Corr_plus_Delta_rounded", "TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                        grid = FALSE, vertLineEachPoint = TRUE, col = "white")
             set.seed(Seed_Plot)
-            points(jitter(New_Ages_Good$Age_Rounded[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
-            points(jitter(New_Ages_Good$Age_Rounded[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Age_Rounded[New_Ages_Good$Used_NN_Model])
-            lowess.line(New_Ages_Good$Age_Rounded, New_Ages_Good$TMA_Minus_Age_Rounded, smoothing.param = 0.05, col = "green")
-            abline(lsfit(New_Ages_Good$Age_Rounded, New_Ages_Good$TMA_Minus_Age_Rounded), col = "blue")
+            points(jitter(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Good$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
+            points(jitter(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Good$Used_NN_Model]), New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Good$Used_NN_Model])
+            lowess.line(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded, New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded, smoothing.param = 0.05, col = "green")
+            abline(lsfit(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded, New_Ages_Good$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded), col = "blue")
             
         ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_NN_Age_Rd_Jittered_Left_Out_Oties_Highlighted.png')) 
          
@@ -790,28 +795,28 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                par(mfrow = c(3, 2))
                for(Year in unique(New_Ages$Year)) {
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
-                    gPlot(New_Ages_Year, "TMA", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                    gPlot(New_Ages_Year, "TMA", "TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                                main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "white")
-                    points(jitter(New_Ages_Year$TMA[New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[New_Ages_Year$Used_NN_Model])
-                    points(jitter(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
-                    lowess.line(New_Ages_Year$TMA, New_Ages_Year$TMA_Minus_Age_Rounded, smoothing.param = 0.05, col = "green")
-                    abline(lsfit(New_Ages_Year$TMA, New_Ages_Year$TMA_Minus_Age_Rounded), col = "blue")
+                    points(jitter(New_Ages_Year$TMA[New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Year$Used_NN_Model])
+                    points(jitter(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
+                    lowess.line(New_Ages_Year$TMA, New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded, smoothing.param = 0.05, col = "green")
+                    abline(lsfit(New_Ages_Year$TMA, New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded), col = "blue")
               }
             ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_TMA_Jitter_Left_Out_Oties_Highlight_by_Year.png'), width = 10, height = 10, res = 600)
          }
          
-         # By year, with TMA minus rounded age vs the predicted "Age_Rounded" 
+         # By year, with TMA minus rounded age vs the predicted "Pred_Age_Bias_Corr_plus_Delta_rounded" 
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
                par(mfrow = c(3, 2))
                for(Year in unique(New_Ages$Year)) {
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
-                    gPlot(New_Ages_Year, "Age_Rounded", "TMA_Minus_Age_Rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                    gPlot(New_Ages_Year, "Pred_Age_Bias_Corr_plus_Delta_rounded", "TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                                main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "white")
-                    points(jitter(New_Ages_Year$Age_Rounded[New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[New_Ages_Year$Used_NN_Model])
-                    points(jitter(New_Ages_Year$Age_Rounded[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Age_Rounded[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
-                    lowess.line(New_Ages_Year$Age_Rounded, New_Ages_Year$TMA_Minus_Age_Rounded, smoothing.param = 0.05, col = "green")
-                    abline(lsfit(New_Ages_Year$Age_Rounded, New_Ages_Year$TMA_Minus_Age_Rounded), col = "blue")
+                    points(jitter(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Year$Used_NN_Model])
+                    points(jitter(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
+                    lowess.line(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded, New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded, smoothing.param = 0.05, col = "green")
+                    abline(lsfit(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded, New_Ages_Year$TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded), col = "blue")
     
               }
             ', file = paste0(Predicted_Ages_Path, '/TMA_minus_NN_Age_Rd_vs_Age_Rd_Jitter_Left_Out_Oties_Highlight_by_Year.png'), width = 10, height = 10, res = 600)
