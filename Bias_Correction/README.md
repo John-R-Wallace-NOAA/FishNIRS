@@ -30,7 +30,7 @@ Plot the data with a 1-1 line to the bias:
     plot(TMA_Pred); abline(0, 1)
 
     
-Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line() [which depends on predict.lowess()].
+Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line() [which depends on predict.lowess()]. My toolbox function browsePlot() will also be downloaded used for plotting.
 
      predict.lowess <- 
      function(loFit, newdata = loFit$x, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean) {  
@@ -58,6 +58,13 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
            j <- order(lo$x)
            lines(lo$x[j], predictLo[j], ...)
     }
+
+    # Avoid source_url() in the bloatware devtools package.  This code is from sourceFunctionURL() in my rgit package.
+    write(paste(readLines(textConnection(httr::content(httr::GET( 
+      "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")))), collapse = "\n"), 'browsePlot.R')
+    source('browsePlot.R')
+		 
+		 
 
     # ------------------------------------------------------
 
