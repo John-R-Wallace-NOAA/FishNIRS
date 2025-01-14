@@ -69,6 +69,25 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
      lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
      points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'green')
      lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'green')
+
+
+
+
+      Bias_Adj_Factor_Ages <- c(8, 9:15)
+      Ages_Diff <- Bias_Adj_Factor_Ages[[i]][-1] - apply(matrix(Bias_Adj_Factor_Ages[[i]][-1], ncol = 1), 1, function(x) mean(New_Ages$NN_Pred_Median[New_Ages$TMA == x]))
+                Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - 
+                                             New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], f = Lowess_smooth_para), newdata = Bias_Adj_Factor_Ages[[i]][-1]))
+
+
+
+   
+    (Bias_Adjustment <- predict(gam(lo(TMA_Pred$TMA - TMA_Pred$NN_Pred, span = 4) ~ TMA_Pred$NN_Pred), newdata = TMA_Pred[, 'NN_Pred', drop = F],  type = "response"))
+
+     dev.new(width = 14, height = 9)
+     plot(TMA_Pred); abline(0, 1)
+     lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
+     points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'red')
+     lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'red')
     '---'   
 
 
