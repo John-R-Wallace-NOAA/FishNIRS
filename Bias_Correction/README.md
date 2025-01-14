@@ -63,7 +63,7 @@ Plot the data with a 1-1 line to the bias.  My toolbox function browsePlot() was
     browsePlot('plot(TMA_Pred); abline(0, 1)', file = 'NN_Pred_vs_TMA.png')	
     " "
     
-Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line() [which depends on predict.lowess()].
+Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line().
 		 
 
     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
@@ -73,7 +73,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        plot(TMA_Pred); abline(0, 1)
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
        points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  # Note the need to get the quoting correct when using browsePlot: ' "" '
      ')
 
 
