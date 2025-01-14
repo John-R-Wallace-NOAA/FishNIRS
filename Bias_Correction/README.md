@@ -29,7 +29,7 @@ Plot the data with a 1-1 line to the bias:
     plot(TMA_Pred); abline(0, 1)
 
     
-Using predict.lowess() [which used stats::splinefun()] from my toolbox, the difference between TMA and NN_Pred is fitted against NN_Pred
+Using predict.lowess() [which used stats::splinefun()] from my toolbox, the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line (which uses predict.lowess).
 
      predict.lowess <- function(loFit, newdata = loFit$x, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean) {  
           "  "
@@ -46,12 +46,24 @@ Using predict.lowess() [which used stats::splinefun()] from my toolbox, the diff
        (stats::splinefun(loFit, method = method, ties = ties))(newdata)
     }
 
+    lowess.line <- function(x, y, smoothing.param = 2/3, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean, ...) {
+    
+           tmp <- na.omit(cbind(x, y))
+           lo <- stats::lowess(tmp[, 1], tmp[, 2], f = smoothing.param)
+           predictLo <- predict.lowess(lo, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean)
+           j <- order(lo$x)
+           lines(lo$x[j], predictLo[j], ...)
+    }
+
+# ------------------------------------------------------
+
     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)]), newdata = TMA_Pred$NN_Pred))
 
      dev.new()
      plot(TMA_Pred); abline(0, 1)
+     lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
      points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'green')
-
+     lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'green')
 
 
 
