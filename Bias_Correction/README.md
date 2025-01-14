@@ -31,7 +31,8 @@ Plot the data with a 1-1 line to the bias:
     
 Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line() [which depends on predict.lowess()].
 
-     predict.lowess <- function(loFit, newdata = loFit$x, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean) {  
+     predict.lowess <- 
+     function(loFit, newdata = loFit$x, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean) {  
           "  "
           "  # dev.new()   "
           "  # JRWToolBox::plot.lowess(cars$speed, cars$dist)   "
@@ -46,7 +47,8 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        (stats::splinefun(loFit, method = method, ties = ties))(newdata)
     }
 
-    lowess.line <- function(x, y, smoothing.param = 2/3, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean, ...) {
+    lowess.line <- 
+    function(x, y, smoothing.param = 2/3, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean, ...) {
     
            tmp <- na.omit(cbind(x, y))
            lo <- stats::lowess(tmp[, 1], tmp[, 2], f = smoothing.param)
