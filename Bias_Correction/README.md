@@ -55,7 +55,7 @@ Using predict.lowess() [which used stats::splinefun()] from my toolbox, the diff
            lines(lo$x[j], predictLo[j], ...)
     }
 
-# ------------------------------------------------------
+    # ------------------------------------------------------
 
     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)]), newdata = TMA_Pred$NN_Pred))
 
