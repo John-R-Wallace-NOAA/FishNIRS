@@ -26,7 +26,7 @@ Create a simple example dataset with some missing TMA:
 
 Plot the data with a 1-1 line to the bias:
 
-    dev.new(width = 14, height = 8)
+    dev.new(width = 14, height = 9)
     plot(TMA_Pred); abline(0, 1)
 
     
@@ -64,7 +64,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
                                                 TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)]), newdata = TMA_Pred$NN_Pred))
 
-     dev.new(width = 14, height = 8)
+     dev.new(width = 14, height = 9)
      plot(TMA_Pred); abline(0, 1)
      lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
      points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'green')
