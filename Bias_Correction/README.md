@@ -7,26 +7,70 @@ The bias correction needs to be done not only when a TMA (Traditional Method of 
 A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction, but if an estimate of the additional error added by using a bias correction is wanted, a GAM with a smoother or a parametric functional form may work.
 
 
-Create a simple example dataset:
+Create a simple example dataset with some missing TMA:
 
 
-    TMA_Pred <- structure(list(TMA = c(1, 1, 2, 2, 2, 2, 3, 4, 3, 4, 5, 5, 6, 
+    (TMA_Pred <- structure(list(TMA = c(1, 1, 2, 2, 2, 2, 3, 4, 3, 4, 5, 5, 6, 
                 6, 7, 7, 8, 8, 9, 9, 10, 10, 10, 11, 12, 12, 12, 13, 13, 13, 
-                14, 14, 14, 15, 16), NN_Pred = c(0.590654205607477, 1.43177570093458, 
+                14, 14, 14, 15, 16, NA, NA, NA, NA), NN_Pred = c(0.590654205607477, 1.43177570093458, 
                 1.37570093457944, 2.04859813084112, 2.41308411214953, 2.02056074766355, 
                 3.05794392523365, 2.97383177570094, 4.09532710280374, 4.74018691588785, 
                 4.20747663551402, 5.94579439252337, 5.74953271028037, 6.87102803738318, 
                 7.43177570093458, 6.64672897196262, 8.24485981308411, 7.3196261682243, 
                 8.4411214953271, 7.85233644859813, 9.42242990654206, 8.2, 7.96448598130841, 
                 9.5, 8.1, 9, 9.31028037383178, 11.581308411215, 11.3, 9.4785046728972, 
-                12.1420560747664, 10.9364485981308, 9.92710280373832, 10.2, 10.7
-                )), row.names = c(NA, -35L), class = "data.frame")
+                12.1420560747664, 10.9364485981308, 9.92710280373832, 10.2, 10.7, 9.2, 9.9, 12.3, 16.1
+                )), row.names = c(NA, -39L), class = "data.frame"))
     
 
 
-Plot the data with a 1-1 line to see where the bias starts and see where the unbiased data is not 
+Plot the data with a 1-1 line to the bias:
 
     plot(TMA_Pred); abline(0, 1)
 
     
+Using predict.lowess() [which used stats::splinefun()] from my toolbox, the difference between TMA and NN_Pred is fitted against NN_Pred
 
+     predict.lowess <- function(loFit, newdata = loFit$x, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean) {  
+          "  "
+          "  # dev.new()   "
+          "  # JRWToolBox::plot.lowess(cars$speed, cars$dist)   "
+      
+          "  # lo.car <- lowess(cars$speed, cars$dist)   "
+          "  # If the lowess() x variable is descending, then it has to be called explictly, i.e. predict.lowess(lo.car, cars$speed)  "
+          "  # points(cars$speed, predict.lowess(lo.car), col = 'dodgerblue', pch = 19)    "
+      
+          "  # x.new <- c(5.3, 6.8, 20.5, 25.2)   "
+          "  # points(x.new, predict.lowess(lo.car, x.new), col = 'red', pch = 19)   "
+          "  "
+       (stats::splinefun(loFit, method = method, ties = ties))(newdata)
+    }
+
+    (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)]), newdata = TMA_Pred$NN_Pred))
+
+     dev.new()
+     plot(TMA_Pred); abline(0, 1)
+     points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'green')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
