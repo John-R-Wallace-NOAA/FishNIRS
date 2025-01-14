@@ -29,7 +29,7 @@ Plot the data with a 1-1 line to the bias:
     plot(TMA_Pred); abline(0, 1)
 
     
-Using predict.lowess() [which used stats::splinefun()] from my toolbox, the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line (which uses predict.lowess).
+Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line (which uses predict.lowess).
 
      predict.lowess <- function(loFit, newdata = loFit$x, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean) {  
           "  "
