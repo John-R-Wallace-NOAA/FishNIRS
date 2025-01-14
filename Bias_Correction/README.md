@@ -60,7 +60,7 @@ Create a simple example dataset with some missing TMA:
 
 Plot the data with a 1-1 line to the bias.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
 
-    browsePlot('plot(TMA_Pred); abline(0, 1)', file = 'NN_Pred_vs_TMA.png')	
+    browsePlot('plot(TMA_Pred, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')	
     " "
     
 Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line().
@@ -70,11 +70,11 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
                                                 TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)]), newdata = TMA_Pred$NN_Pred))
 
      browsePlot('
-       plot(TMA_Pred); abline(0, 1)
+       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
        points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  # Note the need to get the quoting correct when using browsePlot: ' "" '
-     ')
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  # Note the need to get the quoting correct when using browsePlot
+     ', file = 'asdffff.png')
 
 
      
@@ -86,13 +86,13 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
      TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred 									 
      TMA_Pred$Bias_Adjustment <- Bias_Increase_Factor * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
 			        TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred)
-     TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment
+     TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment  # !! Writing over TMA_Pred$NN_Pred !!
 											 
      # assign('TMA_Pred', TMA_Pred, pos = 1)
      # assign('Bias_Adj_Factor_Ages_Vec', Bias_Adj_Factor_Ages, pos = 1)
     
      browsePlot('
-        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED,
+        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16),
     	     xlab = "TMA; Bias corrected points staggered to the right (Lowess line is not moved over.)", ylab = "NN Predicted Median", 
              main = paste0("Lowess Bias Corr using ", Bias_Adj_Factor_Ages_Vec[2], ":", Bias_Adj_Factor_Ages_Vec[length(Bias_Adj_Factor_Ages_Vec)], 
                            " NN_Pred, Starting at ", Bias_Adj_Factor_Ages_Vec[1], "; No Bias Correction is Black, Bias Corrected is Green"))
