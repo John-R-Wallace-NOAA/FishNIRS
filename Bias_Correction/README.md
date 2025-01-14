@@ -36,8 +36,8 @@ First some functions are needed, see below for what they will be used for:
     }
 
     # Avoid source_url() in the bloatware devtools package.  This code is from sourceFunctionURL() in my rgit package.
-    write(paste(readLines(textConnection(httr::content(httr::GET( 
-     "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")))), col = "\n"), 'browsePlot.R')
+    write(readLines(textConnection(httr::content(httr::GET( 
+      "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")))), 'browsePlot.R')
     source('browsePlot.R')
 
 
