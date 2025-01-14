@@ -77,13 +77,34 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
      ')
 
 
-      Bias_Adj_Factor_Ages <- c(8, 9:15)
-      Ages_Diff <- Bias_Adj_Factor_Ages[[i]][-1] - apply(matrix(Bias_Adj_Factor_Ages[[i]][-1], ncol = 1), 1, function(x) mean(New_Ages$NN_Pred_Median[New_Ages$TMA == x]))
-                Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - 
-                                             New_Ages$NN_Pred_Median[!is.na(New_Ages$TMA)], f = Lowess_smooth_para), newdata = Bias_Adj_Factor_Ages[[i]][-1]))
+     
+     Bias_Adj_Factor_Ages <- c(8, 9:15)
+     Ages_Diff <- Bias_Adj_Factor_Ages[-1] - apply(matrix(Bias_Adj_Factor_Ages[-1], ncol = 1), 1, function(x) mean(TMA_Pred$NN_Pred[TMA_Pred$TMA == x],na.rm = T))
+     Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
+                             TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = Bias_Adj_Factor_Ages[-1]))
+											 
+     TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred 									 
+     TMA_Pred$Bias_Adjustment <- Bias_Increase_Factor * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
+			        TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred)
+     TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment
+											 
+     # assign('TMA_Pred', TMA_Pred, pos = 1)
+     # assign('Bias_Adj_Factor_Ages_Vec', Bias_Adj_Factor_Ages, pos = 1)
+    
+     browsePlot('
+        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED,
+    	     xlab = "TMA; Bias corrected points staggered to the right (Lowess line is not moved over.)", ylab = "NN Predicted Median", 
+             main = paste0("Lowess Bias Corr using ", Bias_Adj_Factor_Ages_Vec[2], ":", Bias_Adj_Factor_Ages_Vec[length(Bias_Adj_Factor_Ages_Vec)], 
+                           " NN_Pred, Starting at ", Bias_Adj_Factor_Ages_Vec[1], "; No Bias Correction is Black, Bias Corrected is Green"))
+    	lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, smoothing.param = 2/3)
+        points(TMA_Pred$TMA + 0.25, TMA_Pred$NN_Pred, col = "green")
+    	lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 2/3)
+         
+        abline(0, 1, col = "grey"
+     )', file = 'dfasdf.png')
+										
 
-
-
+     
 
 
 
