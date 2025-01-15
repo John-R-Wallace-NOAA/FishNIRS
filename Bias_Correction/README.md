@@ -55,8 +55,9 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
        points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  # Note the need to get the quoting correct when using browsePlot
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  
      ', file = 'asdffff.png')
+     # Note the need to get the quoting correct when using browsePlot
      "  "
      
   asdfsdf   
