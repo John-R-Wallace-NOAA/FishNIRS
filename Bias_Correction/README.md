@@ -57,6 +57,9 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  # Note the need to get the quoting correct when using browsePlot
      ', file = 'asdffff.png')
+     "  "
+     
+  asdfsdf   
 
     Bias_Adj_Factor_Ages <- c(8, 9:15)
     Ages_Diff <- Bias_Adj_Factor_Ages[-1] - apply(matrix(Bias_Adj_Factor_Ages[-1], ncol = 1), 1, function(x) mean(TMA_Pred$NN_Pred[TMA_Pred$TMA == x],na.rm = T))
@@ -77,7 +80,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
     browsePlot('
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16),
             xlab = "TMA; Bias corrected points staggered to the right (Lowess line is not moved over.)", ylab = "NN Predicted Median", 
-            main = paste0("Lowess Bias Corr using ", Bias_Adj_Factor_Ages[2], ":", Bias_Adj_Factor_Ages_Vec[length(Bias_Adj_Factor_Ages)], 
+            main = paste0("Lowess Bias Corr using ", Bias_Adj_Factor_Ages[2], ":", Bias_Adj_Factor_Ages[length(Bias_Adj_Factor_Ages)], 
                           " NN_Pred, Starting at ", Bias_Adj_Factor_Ages[1], "; No Bias Correction is Black, Bias Corrected is Green"))
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, smoothing.param = 2/3)
        points(TMA_Pred$TMA + 0.25, TMA_Pred$NN_Pred, col = "green")
