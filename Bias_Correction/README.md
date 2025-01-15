@@ -9,14 +9,20 @@ A functional form (model) is needed that predicts the difference between TMA and
 <br>
 First some functions are needed, see below for what they will be used for:
 
-    # Avoid source_url() in the bloatware devtools package.  The guts of this code is from sourceFunctionURL() in my rgit package.
+    # Avoid source_url() in the bloatware devtools package. The guts of this code is from sourceFunctionURL() in my rgit package.
 
     File.ASCII <- tempfile()
+    
     for(Func in c("predict.lowess.R", "lowess.line.R", "browsePlot.R")) {
        write(readLines(textConnection(httr::content(httr::GET( 
          paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/", Func))))), File.ASCII)
        source(File.ASCII)
     }
+    
+     write(readLines(textConnection(httr::content(httr::GET( 
+         "https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")))), File.ASCII)
+     source(File.ASCII)
+    
     nul <- file.remove(File.ASCII); rm(File.ASCII, nul)
     "  "
     
@@ -37,12 +43,20 @@ Create a simple example dataset with some missing TMA:
      " "
     
 <br>
-Plot the data with a 1-1 line to the bias.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
+Plot the data with a 1-1 line to the bias and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
 
     TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred
     browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16))
-                abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')	
-    " "
+                abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')
+
+    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA[!is.na(TMA_Pred$TMA)], TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)])
+     " "
+     
+<br> 
+The stats for TMA vs the biased NN_Pred are:
+
+    Correlation R_squared    RMSE     MAE     SAD     APE  N
+       0.957727   0.91724 2.05496 1.49661 52.3813 9.76834 35
     
 <br>   
 Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line().
