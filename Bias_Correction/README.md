@@ -53,6 +53,9 @@ Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePl
      " "
      
 <br> 
+
+[Pacific hake](https://docs.google.com/presentation/d/19_nQMLzEmGpiChAYMeOcr2lyXGsVh9NCok1FG56sWvI/edit?usp=sharing)
+
 The stats for the biased NN_Pred plotted against TMA 
 [figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
 
