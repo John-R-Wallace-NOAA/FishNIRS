@@ -43,7 +43,7 @@ Create a simple example dataset with some missing TMA:
      " "
     
 <br>
-Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
+Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file.
 
     TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred
     browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16))
@@ -53,7 +53,7 @@ Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePl
      " "
      
 <br> 
-The stats for TMA vs the biased NN_Pred are:
+The stats for the biased [NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
 
     Correlation R_squared    RMSE     MAE     SAD     APE  N
        0.957727   0.91724 2.05496 1.49661 52.3813 9.76834 35
