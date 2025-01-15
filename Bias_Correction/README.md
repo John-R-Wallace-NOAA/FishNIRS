@@ -53,8 +53,13 @@ Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePl
      " "
      
 <br> 
-The stats for the biased [NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
+[Pacific hake](https://docs.google.com/presentation/d/19_nQMLzEmGpiChAYMeOcr2lyXGsVh9NCok1FG56sWvI/edit?usp=sharing) 
+
+The stats for the biased
+[NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
+
 [figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
+
     Correlation R_squared    RMSE     MAE     SAD     APE  N
        0.957727   0.91724 2.05496 1.49661 52.3813 9.76834 35
     
