@@ -8,40 +8,21 @@ A functional form (model) is needed that predicts the difference between TMA and
 
 First some functions are needed, see below for what they will be used for:
 
-     predict.lowess <- 
-     function(loFit, newdata = loFit$x, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean) {  
-          "  "
-          "  # dev.new()   "
-          "  # JRWToolBox::plot.lowess(cars$speed, cars$dist)   "
-      
-          "  # lo.car <- lowess(cars$speed, cars$dist)   "
-          "  # If the lowess() x variable is descending, then it has to be called explictly,   " 
-          "        i.e. predict.lowess(lo.car, cars$speed)  "
-          "  # points(cars$speed, predict.lowess(lo.car), col = 'dodgerblue', pch = 19)   "
-      
-          "  # x.new <- c(5.3, 6.8, 20.5, 25.2)   "
-          "  # points(x.new, predict.lowess(lo.car, x.new), col = 'red', pch = 19)   "
-          "  "
-       (stats::splinefun(loFit, method = method, ties = ties))(newdata)
-    }
-
-    lowess.line <- 
-    function(x, y, smoothing.param = 2/3, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean, ...) {
-    
-           tmp <- na.omit(cbind(x, y))
-           lo <- stats::lowess(tmp[, 1], tmp[, 2], f = smoothing.param)
-           predictLo <- predict.lowess(lo, method = c("fmm", "periodic", "natural", "monoH.FC", "hyman"), ties = mean)
-           j <- order(lo$x)
-           lines(lo$x[j], predictLo[j], ...)
-    }
-
     # Avoid source_url() in the bloatware devtools package.  This code is from sourceFunctionURL() in my rgit package.
+    
+    write(readLines(textConnection(httr::content(httr::GET( 
+      "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")))), 'predict.lowess.R')
+    source('predict.lowess.R')
+    
+    write(readLines(textConnection(httr::content(httr::GET( 
+      "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lowess.line.R")))), 'lowess.line.R')
+    source('lowess.line.R')
+    
     write(readLines(textConnection(httr::content(httr::GET( 
       "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")))), 'browsePlot.R')
     source('browsePlot.R')
-
-
-
+    
+<br>
 Create a simple example dataset with some missing TMA:
 
 
@@ -57,12 +38,15 @@ Create a simple example dataset with some missing TMA:
                 12.1420560747664, 10.9364485981308, 9.92710280373832, 10.2, 10.7, 9.2, 9.9, 12.3, 16.1
                 )), row.names = c(NA, -39L), class = "data.frame"))
     " "
-
+    
+<br>
 Plot the data with a 1-1 line to the bias.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
 
-    browsePlot('plot(TMA_Pred, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')	
+    TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred
+    browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')	
     " "
     
+<br>   
 Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line().
 		 
 
@@ -82,8 +66,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
     Ages_Diff <- Bias_Adj_Factor_Ages[-1] - apply(matrix(Bias_Adj_Factor_Ages[-1], ncol = 1), 1, function(x) mean(TMA_Pred$NN_Pred[TMA_Pred$TMA == x],na.rm = T))
     Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
                             TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = Bias_Adj_Factor_Ages[-1]))
-                                            
-    TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred                                      
+                                      
     TMA_Pred$Bias_Adjustment <- Bias_Increase_Factor * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
                    TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred)
     TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment  # !! Writing over TMA_Pred$NN_Pred !!
@@ -107,9 +90,9 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        abline(0, 1, col = "grey"
     )', file = 'dfasdf.png')
     "  "
-                               
     
-										
+<br>   
+kl;'kl;'										
 
      
 
