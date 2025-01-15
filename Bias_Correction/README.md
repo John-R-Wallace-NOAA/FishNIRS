@@ -43,7 +43,7 @@ Create a simple example dataset with some missing TMA:
      " "
     
 <br>
-Plot the data with a 1-1 line to the bias and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
+Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
 
     TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred
     browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16))
