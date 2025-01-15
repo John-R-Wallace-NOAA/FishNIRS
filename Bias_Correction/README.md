@@ -67,8 +67,8 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
     Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
                             TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = Bias_Adj_Factor_Ages[-1]))
                                       
-    TMA_Pred$Bias_Adjustment <- (1 + Bias_Increase_Factor) * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                   TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred)
+    TMA_Pred$Bias_Adjustment <- (1 + 0.8 * Bias_Increase_Factor) * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
+                   TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred_BIASED)
     TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment  # !! Writing over TMA_Pred$NN_Pred !!
     
     TMA_Pred$Bias_Adj <- TRUE			
@@ -86,6 +86,8 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, smoothing.param = 2/3)
        points(TMA_Pred$TMA + 0.25, TMA_Pred$NN_Pred, col = "green")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 2/3)
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 1/3, lty = 2)
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 0.1, lty = 3)
         
        abline(0, 1, col = "grey"
     )', file = 'dfasdf.png')
