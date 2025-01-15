@@ -89,7 +89,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        points(TMA_Pred$TMA + 0.25, TMA_Pred$NN_Pred, col = "green")
        abline(0, 1, col = "grey"
     )', file = 'dfasGFDGdf.png')
-    "  "
+   
     
     browsePlot('
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16),
@@ -104,7 +104,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
         
        abline(0, 1, col = "grey"
     )', file = 'dfasdf.png')
-
+    "  "
     
     
 <br>   
