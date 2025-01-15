@@ -58,8 +58,6 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  # Note the need to get the quoting correct when using browsePlot
      ', file = 'asdffff.png')
 
-
-     
     Bias_Adj_Factor_Ages <- c(8, 9:15)
     Ages_Diff <- Bias_Adj_Factor_Ages[-1] - apply(matrix(Bias_Adj_Factor_Ages[-1], ncol = 1), 1, function(x) mean(TMA_Pred$NN_Pred[TMA_Pred$TMA == x],na.rm = T))
     Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
