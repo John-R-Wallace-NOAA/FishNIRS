@@ -49,31 +49,44 @@ Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePl
     browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16))
                 abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')
 
-    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA[!is.na(TMA_Pred$TMA)], TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)])
+    # The default is na.rm = TRUE for Cor_R_squared_RMSE_MAE_SAD_APE()
+    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, digits = 4)
      " "
      
 <br> 
 
 The stats for the [biased NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
 
-    Correlation R_squared    RMSE     MAE     SAD     APE  N
-       0.957727   0.91724 2.05496 1.49661 52.3813 9.76834 35
+      Correlation R_squared  RMSE   MAE   SAD   APE  N
+           0.9577    0.9172 2.055 1.497 52.38 8.766 35
+
     
 <br>   
 Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line().
 		 
 
      (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                                                TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)]), newdata = TMA_Pred$NN_Pred))
+                                                TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred))
 
+    # Note the need to get the quoting correct inside the plotting code when using browsePlot ( '  " "  ')
      browsePlot('
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
        points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  
-     ', file = 'asdffff.png')
-     # Note the need to get the quoting correct when using browsePlot
+     ', file = 'NN_Pred_Bias_Adj_vs_TMA_.png')
+    
+     
+     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, digits = 4)
      "  "
+
+The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_vs_TMA_.png) are:
+    
+     Correlation R_squared  RMSE    MAE   SAD   APE  N
+           0.968     0.937 1.143 0.9053 31.69 5.983 35
+
+
+     
      
   asdfsdf   
 
