@@ -6,25 +6,22 @@ The bias correction needs to be done not only when a TMA (Traditional Method of 
 
 A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction, but if an estimate of the additional error added by using a bias correction is wanted, a GAM with a smoother or a parametric functional form may work.
 
+<br>
 First some functions are needed, see below for what they will be used for:
 
-    # Avoid source_url() in the bloatware devtools package.  This code is from sourceFunctionURL() in my rgit package.
-    
-    write(readLines(textConnection(httr::content(httr::GET( 
-      "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")))), 'predict.lowess.R')
-    source('predict.lowess.R')
-    
-    write(readLines(textConnection(httr::content(httr::GET( 
-      "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lowess.line.R")))), 'lowess.line.R')
-    source('lowess.line.R')
-    
-    write(readLines(textConnection(httr::content(httr::GET( 
-      "https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R")))), 'browsePlot.R')
-    source('browsePlot.R')
+    # Avoid source_url() in the bloatware devtools package.  The guts of this code is from sourceFunctionURL() in my rgit package.
+
+    File.ASCII <- tempfile()
+    for(Func in c("predict.lowess.R", "lowess.line.R", "browsePlot.R")) {
+       write(readLines(textConnection(httr::content(httr::GET( 
+         paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/", Func))))), File.ASCII)
+       source(File.ASCII)
+    }
+   file.remove(File.ASCII); rm(File.ASCII)
+    "  "
     
 <br>
 Create a simple example dataset with some missing TMA:
-
 
     (TMA_Pred <- structure(list(TMA = c(1, 1, 2, 2, 2, 2, 3, 4, 3, 4, 5, 5, 6, 
                 6, 7, 7, 8, 8, 9, 9, 10, 10, 10, 11, 12, 12, 12, 13, 13, 13, 
@@ -37,13 +34,14 @@ Create a simple example dataset with some missing TMA:
                 9.5, 8.1, 9, 9.31028037383178, 11.581308411215, 11.3, 9.4785046728972, 
                 12.1420560747664, 10.9364485981308, 9.92710280373832, 10.2, 10.7, 9.2, 9.9, 12.3, 16.1
                 )), row.names = c(NA, -39L), class = "data.frame"))
-    " "
+     " "
     
 <br>
 Plot the data with a 1-1 line to the bias.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file. Those saved files can also be found in this repo.
 
     TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred
-    browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')	
+    browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16))
+                abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')	
     " "
     
 <br>   
