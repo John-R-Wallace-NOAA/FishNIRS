@@ -17,7 +17,7 @@ First some functions are needed, see below for what they will be used for:
          paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/", Func))))), File.ASCII)
        source(File.ASCII)
     }
-   file.remove(File.ASCII); rm(File.ASCII)
+    nul <- file.remove(File.ASCII); rm(File.ASCII, nul)
     "  "
     
 <br>
