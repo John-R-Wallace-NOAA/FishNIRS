@@ -67,7 +67,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
     Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
                             TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = Bias_Adj_Factor_Ages[-1]))
                                       
-    TMA_Pred$Bias_Adjustment <- Bias_Increase_Factor * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
+    TMA_Pred$Bias_Adjustment <- (1 + Bias_Increase_Factor) * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
                    TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred)
     TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment  # !! Writing over TMA_Pred$NN_Pred !!
     
