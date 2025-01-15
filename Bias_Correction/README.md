@@ -62,8 +62,8 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
      
   asdfsdf   
 
-   # TMA_Pred_SAVE <- TMA_Pred
-   # TMA_Pred_SAVE -> TMA_Pred
+    # TMA_Pred_SAVE <- TMA_Pred
+    # TMA_Pred_SAVE -> TMA_Pred
 
     Bias_Adj_Factor_Ages <- c(8, 9:15)
     Ages_Diff <- Bias_Adj_Factor_Ages[-1] - apply(matrix(Bias_Adj_Factor_Ages[-1], ncol = 1), 1, function(x) mean(TMA_Pred$NN_Pred[TMA_Pred$TMA == x],na.rm = T))
