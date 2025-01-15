@@ -12,8 +12,8 @@
     }
     
     signif(data.frame(
-      Correlation = cor(Pred, Obs),
-        R_squared = cor(Pred, Obs)^2, 
+      Correlation = cor(Pred, Obs, use = ifelse(na.rm, "pairwise.complete.obs", "everything")),
+        R_squared = cor(Pred, Obs, use = ifelse(na.rm, "pairwise.complete.obs", "everything"))^2, 
              RMSE = sqrt(mean((Pred - Obs)^2, na.rm = na.rm)), 
               MAE = mean(abs(Pred - Obs), na.rm = na.rm),
               SAD = sum(abs(Pred - Obs), na.rm = na.rm),
