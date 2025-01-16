@@ -37,7 +37,7 @@ Download a dataset with some missing TMA:
 <br>
 Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file.
 
-    browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16))
+    browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 18.5), ylim = c(0, 18.5))
                 abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')
 
     # The default is na.rm = TRUE for Cor_R_squared_RMSE_MAE_SAD_APE()
