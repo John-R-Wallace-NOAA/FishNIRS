@@ -44,8 +44,9 @@ Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePl
 
 The stats for the [biased NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
 
-      Correlation R_squared  RMSE   MAE   SAD   APE  N
-           0.9577    0.9172 2.055 1.497 52.38 8.766 35
+    Correlation R_squared     RMSE      MAE     SAD     APE    N
+       0.964892  0.931016 0.817247 0.528977 2898.26 7.38822 5479
+
 
     
 <br>   
