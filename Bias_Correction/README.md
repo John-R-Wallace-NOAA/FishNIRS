@@ -70,7 +70,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
      Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, digits = 6)
      "  "
 
-The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_vs_TMA.png) are:
+The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_vs_TMA.png) are:
     
     Correlation R_squared     RMSE      MAE     SAD     APE    N
        0.964895  0.931023 0.773152 0.472545 2589.07 5.68895 5479
