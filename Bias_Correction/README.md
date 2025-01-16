@@ -64,13 +64,13 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 2/3) 
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 0.8, lty = 2)
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 1, lty = 3)
-     ', file = 'NN_Pred_Bias_Adj_vs_TMA_.png')
+     ', file = 'NN_Pred_Bias_Adj_Lowess_vs_TMA.png')
     
      
      Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, digits = 6)
      "  "
 
-The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_vs_TMA_.png) are:
+The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_vs_TMA.png) are:
     
     Correlation R_squared     RMSE      MAE     SAD     APE    N
        0.964895  0.931023 0.773152 0.472545 2589.07 5.68895 5479
@@ -97,16 +97,6 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
                                             
     # assign('TMA_Pred', TMA_Pred, pos = 1)  # These assignments to ".GlobalEnv" would be needed if browsePlot() was inside a function
     # assign('Bias_Adj_Factor_Ages', Bias_Adj_Factor_Ages, pos = 1)
-
-    browsePlot('
-       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16),
-            xlab = "TMA; Bias corrected points staggered to the right", ylab = "NN Predicted Median", 
-            main = paste0("Lowess Bias Corr using ", Bias_Adj_Factor_Ages[2], ":", Bias_Adj_Factor_Ages[length(Bias_Adj_Factor_Ages)], 
-                          " NN_Pred, Starting at ", Bias_Adj_Factor_Ages[1], "; No Bias Correction is Black, Bias Corrected is Green"))
-       points(TMA_Pred$TMA + 0.25, TMA_Pred$NN_Pred, col = "green")
-       abline(0, 1, col = "grey"
-    )', file = 'dfasGFDGdf.png')
-   
     
     browsePlot('
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16),
@@ -120,13 +110,18 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 1, lty = 3)
         
        abline(0, 1, col = "grey"
-    )', file = 'dfasdf.png')
+    )', file = 'NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png')
 
     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred, digits = 6)
 
     headTail(TMA_Pred, 3, 12)
     "  "
-    
+
+The stats for the [lowess biased and factor adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) are:
+
+    Correlation R_squared     RMSE      MAE     SAD     APE    N
+       0.963091  0.927545 0.832667 0.538483 2950.35 7.42614 5479
+
     
 <br>   
 kl;'kl;'										
