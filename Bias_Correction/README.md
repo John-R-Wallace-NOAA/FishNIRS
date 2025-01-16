@@ -23,7 +23,7 @@ First some functions are needed:
     "  "
     
 <br>
-Download a dataset with some missing TMA in the last 10 rows:
+Download an example dataset with some missing TMA in the last 10 rows:
 
      download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/main/Bias_Correction/TMA_Pred.RData",
                    "TMA_Pred.RData")
