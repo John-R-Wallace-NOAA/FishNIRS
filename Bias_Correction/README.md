@@ -18,7 +18,7 @@ First some functions are needed:
     download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R", 
                   File.ASCII)
     source(File.ASCII)
-    nul <- file.remove(File.ASCII); rm(File.ASCII, nul)
+    nul <- file.remove(File.ASCII); rm(File.ASCII, Func, nul)
     "  "
     
 <br>
