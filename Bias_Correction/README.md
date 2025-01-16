@@ -20,7 +20,7 @@ First some functions are needed:
         source(File.ASCII)
     }
     nul <- file.remove(File.ASCII); rm(File.ASCII, Func, nul)
-    <br>
+    "  "
     
 <br>
 Download an example dataset with some missing TMA in the last 10 rows:
@@ -32,15 +32,13 @@ Download an example dataset with some missing TMA in the last 10 rows:
      " "
     
 <br>
-
-
-
 Plot the data in an [agreement figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA_Agreement_Fig.png). 
 My toolbox function browsePlot() was downloaded above and will be used for viewing the figures directly in browser and (optionally) saved into a file.
 
     browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 18.5), ylim = c(0, 18.5), 
                main = "NN Predicted Ages with Bias at Older Ages")', file = 'NN_Pred_vs_TMA_Agreement_Fig.png')
      " "
+     
 <br>   
 Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line().
 		 
@@ -48,7 +46,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
      (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
                               TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred))[1:10]
 
-    # Note the need to get the quoting correct inside the plotting code when using browsePlot ( '  " "  ')
+    # Note the need to use double quotes inside the plotting code when using browsePlot()
      browsePlot('
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
