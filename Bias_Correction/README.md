@@ -41,7 +41,7 @@ Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePl
                 abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')
 
     # The default is na.rm = TRUE for Cor_R_squared_RMSE_MAE_SAD_APE()
-    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, digits = 4)
+    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, digits = 6)
      " "
      
 <br> 
@@ -57,18 +57,20 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
 		 
 
      (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                                                TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred))
+                                                TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred))[1:10]
 
     # Note the need to get the quoting correct inside the plotting code when using browsePlot ( '  " "  ')
      browsePlot('
-       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
-       points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = "green")  
+       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
+       points(TMA_Pred$TMA + 0.15, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green")
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green"smoothing.param = 2/3) 
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 0.8, lty = 2)
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 1, lty = 3)
      ', file = 'NN_Pred_Bias_Adj_vs_TMA_.png')
     
      
-     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, digits = 4)
+     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, digits = 6)
      "  "
 
 The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_vs_TMA_.png) are:
@@ -85,13 +87,13 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
     # TMA_Pred_SAVE -> TMA_Pred
 
     Bias_Adj_Factor_Ages <- c(8, 9:15)
-    Ages_Diff <- Bias_Adj_Factor_Ages[-1] - apply(matrix(Bias_Adj_Factor_Ages[-1], ncol = 1), 1, function(x) mean(TMA_Pred$NN_Pred[TMA_Pred$TMA == x],na.rm = T))
-    Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                            TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = Bias_Adj_Factor_Ages[-1]))
+    Ages_Diff <- Bias_Adj_Factor_Ages[-1] - apply(matrix(Bias_Adj_Factor_Ages[-1], ncol = 1), 1, function(x) mean(TMA_Pred$NN_Pred_BIASED[TMA_Pred$TMA == x],na.rm = T))
+    Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
+                            TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = Bias_Adj_Factor_Ages[-1]))
                                       
-    TMA_Pred$Bias_Adjustment <- (1 + 0.5 * Bias_Increase_Factor) * predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                   TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred_BIASED)
-    TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment  # !! Writing over TMA_Pred$NN_Pred !!
+    TMA_Pred$Bias_Adjustment <- (1 + Bias_Increase_Factor/2) * predict.lowess(lowess(TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
+                   TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred_BIASED)
+    TMA_Pred$NN_Pred <- TMA_Pred$NN_Pred_BIASED + TMA_Pred$Bias_Adjustment 
     
     TMA_Pred$Bias_Adj <- TRUE			
     TMA_Pred$Bias_Adj[TMA_Pred$NN_Pred_BIASED < Bias_Adj_Factor_Ages[1]] <- FALSE
@@ -123,6 +125,8 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
         
        abline(0, 1, col = "grey"
     )', file = 'dfasdf.png')
+
+    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred, digits = 6)
     "  "
     
     
