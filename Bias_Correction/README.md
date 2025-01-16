@@ -7,31 +7,26 @@ The bias correction needs to be done not only when a TMA (Traditional Method of 
 A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction, but if an estimate of the additional error added by using a bias correction is wanted, a GAM with a smoother or a parametric functional form may work.
 
 <br>
-First some functions are needed, see below for what they will be used for:
-
-    # Avoid source_url() in the bloatware devtools package. The guts of this code is from sourceFunctionURL() in my rgit package.
-
+First some functions are needed:
+  
     File.ASCII <- tempfile()
-    
-    for(Func in c("predict.lowess.R", "lowess.line.R", "browsePlot.R")) {
-       write(readLines(textConnection(httr::content(httr::GET( 
-         paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/", Func))))), File.ASCII)
+    for(Func in c("predict.lowess.R", "lowess.line.R", "browsePlot.R", "headTail")) {
+       download.file(paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/", Func), File.ASCII)
        source(File.ASCII)
     }
     
-     write(readLines(textConnection(httr::content(httr::GET( 
-         "https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")))), File.ASCII)
-     source(File.ASCII)
-    
+    download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R", File.ASCII)
+    source(File.ASCII)
     nul <- file.remove(File.ASCII); rm(File.ASCII, nul)
     "  "
     
 <br>
-Download a dataset with some missing TMA:
+Download a dataset with some missing TMA in the last 10 rows:
 
      download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/main/Bias_Correction/TMA_Pred.RData",
                    "TMA_Pred.RData")
      load("C:\\ALL_USR\\JRW\\R_Scratch\\TMA_Pred.RData")
+     headTail(TMA_Pred, 3, 12)
      " "
     
 <br>
@@ -127,6 +122,8 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
     )', file = 'dfasdf.png')
 
     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred, digits = 6)
+
+    headTail(TMA_Pred, 3, 12)
     "  "
     
     
