@@ -10,7 +10,7 @@ A functional form (model) is needed that predicts the difference between TMA and
 First some functions are needed:
   
     File.ASCII <- tempfile()
-    for(Func in c("predict.lowess.R", "lowess.line.R", "browsePlot.R", "headTail")) {
+    for(Func in c("predict.lowess.R", "lowess.line.R", "browsePlot.R", "headTail.R")) {
        download.file(paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/", Func), File.ASCII)
        source(File.ASCII)
     }
