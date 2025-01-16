@@ -4,7 +4,7 @@ Since the NN prediction bias in older ages is consistently in one direction it c
 
 The bias correction needs to be done not only when a TMA (Traditional Method of Aging) age is given, but also when there is no corresponding TMA for a given age structure. Hence the goal of a bias corrected prediction, from scans and/or metadata without the need for traditional aging, can be achieved. 
 
-A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction, but if an estimate of the additional error added by using a bias correction is wanted, a GAM with a smoother or a parametric functional form may work.
+A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction. A GAM with a lo() or s() with various smoothing parameters ??? - see the code at the bottom of this repo doc.
 
 <br>
 First some functions are needed:
@@ -14,10 +14,11 @@ First some functions are needed:
        download.file(paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/", Func), File.ASCII)
        source(File.ASCII)
     }
-    
-    download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R", 
-                  File.ASCII)
-    source(File.ASCII)
+
+    for(Func in c("agreementFigure.R", "Cor_R_squared_RMSE_MAE_SAD_APE.R")) {
+        download.file(paste0("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/", Func), File.ASCII)
+        source(File.ASCII)
+    }
     nul <- file.remove(File.ASCII); rm(File.ASCII, Func, nul)
     "  "
     
@@ -26,29 +27,19 @@ Download a dataset with some missing TMA in the last 10 rows:
 
      download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/main/Bias_Correction/TMA_Pred.RData",
                    "TMA_Pred.RData")
-     load("C:\\ALL_USR\\JRW\\R_Scratch\\TMA_Pred.RData")
+     load("TMA_Pred.RData")
      headTail(TMA_Pred, 3, 12)
      " "
     
 <br>
-Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file.
+Plot the data in an [agreement figure.](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA_Agreement_Fig.png) 
+My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and (optionally) saved into a file.
 
-    browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 18.5), ylim = c(0, 18.5))
-                abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')
-
-    # The default is na.rm = TRUE for Cor_R_squared_RMSE_MAE_SAD_APE()
-    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, digits = 6)
+    browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 18.5), ylim = c(0, 18.5), main = "NN Predicted Ages with Bias at Older Ages")', 
+       file = 'NN_Pred_vs_TMA_Agreement_Fig.png')
      " "
      
-<br> 
 
-The stats for the [biased NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA.png) are:
-
-    Correlation R_squared     RMSE      MAE     SAD     APE    N
-       0.964892  0.931016 0.817247 0.528977 2898.26 7.38822 5479
-
-
-    
 <br>   
 Using predict.lowess() from my toolbox [which uses stats::splinefun()], the difference between TMA and NN_Pred is fitted against NN_Pred using lowess(). The difference upon being added to NN_Pred is plotted with lowess smoothed lines using lowess.line().
 		 
