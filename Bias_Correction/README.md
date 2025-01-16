@@ -54,7 +54,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
 		 
 
      (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                                                TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred))[1:10]
+                              TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred))[1:10]
 
     # Note the need to get the quoting correct inside the plotting code when using browsePlot ( '  " "  ')
      browsePlot('
