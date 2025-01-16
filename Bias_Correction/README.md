@@ -20,7 +20,7 @@ First some functions are needed:
         source(File.ASCII)
     }
     nul <- file.remove(File.ASCII); rm(File.ASCII, Func, nul)
-    "  "
+    <br>
     
 <br>
 Download an example dataset with some missing TMA in the last 10 rows:
