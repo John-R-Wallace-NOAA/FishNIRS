@@ -27,16 +27,15 @@ First some functions are needed, see below for what they will be used for:
     "  "
     
 <br>
-Download dataset with some missing TMA:
+Download a dataset with some missing TMA:
 
-     download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/main/Bias_Correction/NN_Predicted_Ages.RData", "TMA_Pred.RData")
+     download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/main/Bias_Correction/TMA_Pred.RData", "TMA_Pred.RData")
      load("C:\\ALL_USR\\JRW\\R_Scratch\\TMA_Pred.RData")
      " "
     
 <br>
 Plot the data with a 1-1 line and calculate stats.  My toolbox function browsePlot() was downloaded above and will used for plotting the figures directly into a browser and saved into a file.
 
-    TMA_Pred$NN_Pred_BIASED <- TMA_Pred$NN_Pred
     browsePlot('plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16))
                 abline(0, 1, col = "grey")', file = 'NN_Pred_vs_TMA.png')
 
