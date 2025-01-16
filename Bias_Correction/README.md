@@ -61,7 +61,7 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
        points(TMA_Pred$TMA + 0.15, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green"smoothing.param = 2/3) 
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 2/3) 
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 0.8, lty = 2)
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 1, lty = 3)
      ', file = 'NN_Pred_Bias_Adj_vs_TMA_.png')
@@ -72,11 +72,10 @@ Using predict.lowess() from my toolbox [which uses stats::splinefun()], the diff
 
 The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_vs_TMA_.png) are:
     
-     Correlation R_squared  RMSE    MAE   SAD   APE  N
-           0.968     0.937 1.143 0.9053 31.69 5.983 35
+    Correlation R_squared     RMSE      MAE     SAD     APE    N
+       0.964895  0.931023 0.773152 0.472545 2589.07 5.68895 5479
 
 
-     
      
   asdfsdf   
 
