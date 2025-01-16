@@ -29,7 +29,8 @@ First some functions are needed, see below for what they will be used for:
 <br>
 Download a dataset with some missing TMA:
 
-     download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/main/Bias_Correction/TMA_Pred.RData", "TMA_Pred.RData")
+     download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/main/Bias_Correction/TMA_Pred.RData",
+                   "TMA_Pred.RData")
      load("C:\\ALL_USR\\JRW\\R_Scratch\\TMA_Pred.RData")
      " "
     
