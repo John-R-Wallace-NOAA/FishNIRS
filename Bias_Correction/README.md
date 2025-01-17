@@ -58,10 +58,10 @@ The difference between TMA and NN_Pred is fitted against the biased NN_Pred usin
      ', file = 'NN_Pred_Bias_Adj_Lowess_vs_TMA.png')
     
      
-     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, digits = 4)
+     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, round(TMA_Pred$NN_Pred_BIASED + Bias_Adjustment), digits = 4)
      "  "
 
-The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_vs_TMA.png) are:
+The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_vs_TMA.png) where the NN_pred is rounded to the newest integer (no Delta added) are:
     
      Correlation R_squared   RMSE    MAE  SAD   APE    N
           0.9649     0.931 0.7732 0.4725 2589 5.699 5479
@@ -104,15 +104,21 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
        abline(0, 1, col = "grey"
     )', file = 'NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png')
 
-    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, TMA_Pred$NN_Pred, digits = 6)
+    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, round(TMA_Pred$NN_Pred), digits = 4)
 
     headTail(TMA_Pred, 3, 12)
     "  "
 
-The stats for the [lowess biased and factor adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) are:
+The stats for the [lowess biased and factor adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) where the NN_pred is rounded to the newest integer (no Delta added) are:
+    
 
-    Correlation R_squared     RMSE      MAE     SAD     APE    N
-       0.963091  0.927545 0.832667 0.538483 2950.35 7.42614 5479
+   Correlation R_squared   RMSE    MAE  SAD   APE    N
+        0.9566    0.9151 0.9246 0.4846 2660 4.951 5489
+
+
+
+ browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 18.5), ylim = c(0, 18.5), 
+               main = "NN Predicted Ages with Corrected Bias at Older Ages")', file = 'NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png')
 
     
 <br>   
