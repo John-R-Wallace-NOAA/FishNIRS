@@ -145,7 +145,7 @@ First and last values rows TMA_Pred are below. Row 5,485 shows that the older ag
 <br>   
 
 If standard errors for the bias adjustment are wanted, then the mgcv R package could be 
-[tried](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/mgcv_gam_bias_adjustmet.png):
+[tried](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/mgcv_gam_bias_adjustment.png):
 
     # mgcv R package's gam() with mgcv's s() smoother  (Trevor Hastie's 'gam' package also has a s() smoother.)  
     
@@ -160,7 +160,7 @@ If standard errors for the bias adjustment are wanted, then the mgcv R package c
       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
       points(TMA_Pred$TMA + 0.2, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment$fit, col = "red")
       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment$fit, col = "red")
-    ', file = 'mgcv_gam_bias_adjustmet.png')
+    ', file = 'mgcv_gam_bias_adjustment.png')
      
      headTail(data.frame(fit = Bias_Adjustment$fit, se.fit = Bias_Adjustment$se.fit), 3, 12)
      
