@@ -121,7 +121,7 @@ The lowess based adjustment above does not move the older ages sufficiently (per
     
 <br>   
 
-If a standard error for the bias adjustment is wanted, then the mgcv R package could be 
+If standard errors for the bias adjustment is wanted, then the mgcv R package could be 
 [tried](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/mgcv_gam_bias_adjustmet.png) :
 
     # mgcv R package's gam() with mgcv's s() smoother  (Trevor Hastie's 'gam' package also has a s() smoother.)  
