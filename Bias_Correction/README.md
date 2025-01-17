@@ -117,27 +117,33 @@ The lowess based adjustment above does not move the older ages sufficiently, so 
 
 sadfasdf
 
-     # gam()'s lo() smoother  (The default of span = 0.5 was too small for this dataset.)
-     (Bias_Adjustment <- predict(gam(TMA_Pred$TMA - TMA_Pred$NN_Pred_BIASED ~ lo(TMA_Pred$NN_Pred_BIASED, span = c(2, 5, 10)[2])), 
-          newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response", se.fit = TRUE))[1:10]
-
-     browsePlot('
-       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
-       points(TMA_Pred$TMA + 0.2, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
-     ')
-
-
-     # gam()'s s() smoother
-     (Bias_Adjustment <- predict(gam(TMA_Pred$TMA - TMA_Pred$NN_Pred_BIASED ~ s(TMA_Pred$NN_Pred_BIASED, df = c(2, 4, 8)[1])), newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response"))[1:10]
-
-     browsePlot('
-       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
-       points(TMA_Pred$TMA + 0.2, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
-     ')
+    # mgcv R package's gam() with s() smoother    
+    
+    if(!any(installed.packages()[, 1] %in% "mgcv"))  install.packages('mgcv')  
+    library(mgcv)
+    
+    Bias_Adjustment <- predict(mgcv::gam(TMA - NN_Pred_BIASED ~ s(NN_Pred_BIASED), data = TMA_Pred, newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response"), se.fit = TRUE)
+    
+    browsePlot('
+      plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
+      lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
+      points(TMA_Pred$TMA + 0.2, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment$fit, col = "red")
+      lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment$fit, col = "red")
+    ')
+     
+     data.frame(fit = Bias_Adjustment$fit, se.fit = Bias_Adjustment$se.fit)[1:10, ]
+     
+              fit     se.fit
+     1  0.2228624 0.02133048
+     2  0.1223436 0.03055174
+     3  0.1698469 0.02567175
+     4  0.1789458 0.02482816
+     5  0.3300349 0.01944323
+     6  0.3573969 0.02153072
+     7  0.1926023 0.02363083
+     8  0.3055291 0.02017020
+     9  0.1708344 0.02557855
+     10 0.1837648 0.02439579
      "  "  
 
 
