@@ -44,8 +44,9 @@ My toolbox function browsePlot() was downloaded above and will be used for viewi
 The difference between TMA and NN_Pred is fitted against the biased NN_Pred using lowess(). A prediction of the bias adjustment given a new value of NN_PRed is done with predict.lowess() from my toolbox [which uses stats::splinefun()]. The resulting bias adjustment is added to NN_Pred and plotted along with lowess smoothed lines using lowess.line() with 3 different values of the smoothing parameter (all in green). The original biased data is plotted in black and only one smoothed line for the old data is shown. 
 		 
 
-     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                              TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred_BIASED))[1:10]
+     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], 
+          TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], f = 2/3), 
+          newdata = TMA_Pred$NN_Pred_BIASED))[1:10]
 
     # Note the need to use double quotes inside the plotting code when using browsePlot()
      browsePlot('
