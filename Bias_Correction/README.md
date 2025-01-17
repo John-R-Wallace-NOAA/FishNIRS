@@ -66,7 +66,7 @@ The difference between TMA and NN_Pred is fitted against the biased NN_Pred usin
      
 <br>
 
-The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_vs_TMA.png) where the NN_pred is rounded to the newest integer (no Delta added) are:
+The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_vs_TMA.png) figure, where the NN_pred is rounded to the newest integer (no Delta added) are:
     
       Correlation R_squared   RMSE    MAE  SAD   APE    N
            0.9649     0.931 0.7732 0.4725 2589 5.699 5479
@@ -77,7 +77,7 @@ The lowess based adjustment above does not move the older ages sufficiently (per
 
 <br>
 
-[A bias adjustmnent figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) and an 
+A [bias adjustmnent figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) and an 
 [agreement figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png) are created. Smoothers are fickle and caution is needed when using them, looking past the smoothers and looking only at the data should also be done.  One the smoothers being right on the 1-1 line for older ages, as seen in this bias adjustment figure, is atypical. 
 
     # TMA_Pred_SAVE <- TMA_Pred
