@@ -114,24 +114,30 @@ The lowess based adjustment above does not move the older ages sufficiently, so 
     "  "
     
 <br>   
-kl;'kl;'										
 
-     
+sadfasdf
+
+     # gam()'s lo() smoother  (The default of span = 0.5 was too small for this dataset.)
+     (Bias_Adjustment <- predict(gam(TMA_Pred$TMA - TMA_Pred$NN_Pred_BIASED ~ lo(TMA_Pred$NN_Pred_BIASED, span = c(2, 5, 10)[2])), 
+          newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response", se.fit = TRUE))[1:10]
+
+     browsePlot('
+       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
+       points(TMA_Pred$TMA + 0.2, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
+     ')
 
 
+     # gam()'s s() smoother
+     (Bias_Adjustment <- predict(gam(TMA_Pred$TMA - TMA_Pred$NN_Pred_BIASED ~ s(TMA_Pred$NN_Pred_BIASED, df = c(2, 4, 8)[1])), newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response"))[1:10]
 
-
-
-
-
-   
-    (Bias_Adjustment <- predict(gam(lo(TMA_Pred$TMA - TMA_Pred$NN_Pred, span = 4) ~ TMA_Pred$NN_Pred), newdata = TMA_Pred[, 'NN_Pred', drop = F],  type = "response"))
-
-     dev.new(width = 14, height = 9)
-     plot(TMA_Pred); abline(0, 1)
-     lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred)
-     points(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'red')
-     lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred + Bias_Adjustment, col = 'red')
+     browsePlot('
+       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
+       points(TMA_Pred$TMA + 0.2, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "red")
+     ')
      "  "  
 
 
