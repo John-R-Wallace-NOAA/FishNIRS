@@ -64,7 +64,7 @@ The difference between TMA and NN_Pred is fitted against the biased NN_Pred usin
 The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_vs_TMA.png) where the NN_pred is rounded to the newest integer (no Delta added) are:
     
       Correlation R_squared   RMSE    MAE  SAD   APE    N
-          0.9649     0.931 0.7732 0.4725 2589 5.699 5479
+           0.9649     0.931 0.7732 0.4725 2589 5.699 5479
 
 <br>
 
