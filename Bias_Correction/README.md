@@ -44,8 +44,8 @@ My toolbox function browsePlot() was downloaded above and will be used for viewi
 The difference between TMA and NN_Pred is fitted against the biased NN_Pred using lowess(). A prediction of the bias adjustment given a new value of NN_PRed is done with predict.lowess() from my toolbox [which uses stats::splinefun()]. The resulting bias adjustment is added to NN_Pred and plotted along with lowess smoothed lines using lowess.line() with 3 different values of the smoothing parameter (all in green). The original biased data is plotted in black and only one smoothed line for the old data is shown. 
 		 
 
-     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
-                              TMA_Pred$NN_Pred[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred))[1:10]
+     (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], TMA_Pred$TMA[!is.na(TMA_Pred$TMA)] - 
+                              TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], f = 2/3), newdata = TMA_Pred$NN_Pred_BIASED))[1:10]
 
     # Note the need to use double quotes inside the plotting code when using browsePlot()
      browsePlot('
@@ -67,7 +67,7 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
           0.9649     0.931 0.7732 0.4725 2589 5.699 5479
 
 
-The lowess based ajustment above does not move the older ages sufficiently, so a bias adjustment factor was implemented. First, older ages where bias still existed and where there was sufficient data was defined (ages 9-15 in the example below). For each of these ages, the difference between the age and the average of the biased NN predicted ages which have a TMA value of that defined ages was calculated (Ages_Diff below). Next the defined ages differences were divided by the lowess predicted ages at each TMA value for those defined ages, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" can not depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value.
+The lowess based ajustment above does not move the older ages sufficiently, so a bias adjustment factor was implemented. First, older ages where bias still existed and where there was sufficient data was defined (ages 9-15 in the example below). For each of these ages, the difference between the age and the average of the biased NN predicted ages which have a TMA value of each defined age was calculated (Ages_Diff below). Next the defined ages differences were divided by the lowess predicted ages at each TMA value for those defined ages, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" can not depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value. One plus the Bias_Increase_Factor divided by two is then multiplied by the lowess predictions looked at above and added to biased NN predictions to create less biased estimates (NN_Pred below). (The code below repeats the lowess predictions and does not depend on the code looking only at the lowess predictions above.)
 
     # TMA_Pred_SAVE <- TMA_Pred
     # TMA_Pred_SAVE -> TMA_Pred
