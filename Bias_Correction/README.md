@@ -79,7 +79,7 @@ A [bias adjustment figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/
 
 <br>
 
-Smoothers are fickle and caution is needed when using them, looking past the smoothers and only at the data should also be done.  One of the smoothers being right on the 1-1 line for older ages, as seen in this bias adjustment figure, is atypical. 
+Smoothers are fickle and caution is needed when using them, looking past the smoothers and only at the data should also be done.  One of the smoothers being right on the 1-1 line for older ages, as seen in this bias adjustment figure, is atypical. Although, that smoothed line is based on the lowess() function’s smoothing parameter default value of 2/3.
 
     # TMA_Pred_SAVE <- TMA_Pred
     # TMA_Pred_SAVE -> TMA_Pred
