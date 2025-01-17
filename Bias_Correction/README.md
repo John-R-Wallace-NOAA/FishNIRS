@@ -95,7 +95,7 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
             xlab = "TMA; Bias corrected points staggered to the right (Lowess line is not moved over.)", ylab = "NN Predicted Median", 
             main = paste0("Lowess Bias Corr using ", Bias_Adj_Factor_Ages[2], ":", Bias_Adj_Factor_Ages[length(Bias_Adj_Factor_Ages)], 
                           " NN_Pred, Starting at ", Bias_Adj_Factor_Ages[1], "; No Bias Correction is Black, Bias Corrected is Green"))
-       abline(0, 1, col = "grey"
+       abline(0, 1, col = "grey")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, smoothing.param = 2/3)
        points(TMA_Pred$TMA + 0.25, TMA_Pred$NN_Pred, col = "green")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 0.1)
