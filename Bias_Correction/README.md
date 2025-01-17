@@ -73,7 +73,10 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
 
 <br>
 
-The lowess based adjustment above does not move the older ages sufficiently (perhaps it will for other data), so a bias adjustment factor was implemented. First, older ages where bias still existed, and where there was sufficient data, is defined (ages 9-15 in the example below). For each of these TMA ages, the difference between each age and the average of the biased NN predicted ages which have that TMA value was calculated (Ages_Diff below). Next the those differences were divided by the lowess predicted ages at each TMA value, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" cannot depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value. One plus the Bias_Increase_Factor divided by two is then multiplied by the lowess predictions looked at above and added to biased NN predictions to create less biased estimates (NN_Pred below). (Note that the code below repeats the lowess predictions and does not depend on the code looking only at the lowess predictions above.) 
+The lowess based adjustment above does not move the older ages sufficiently (perhaps it will for other data), so a bias adjustment factor was implemented. First, older ages where bias still existed, and where there was sufficient data, is defined (ages 9-15 in the example below). For each of these TMA ages, the difference between each age and the average of the biased NN predicted ages which have that TMA value was calculated (Ages_Diff below). Next the those differences were divided by the lowess predicted ages at each TMA value, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" cannot depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value. One plus the Bias_Increase_Factor divided by two is then multiplied by the lowess predictions looked at above and added to biased NN predictions to create less biased estimates (NN_Pred below). (Note that the code below repeats the lowess predictions and does not depend on the code looking only at the lowess predictions above.) Another value (age 8 in the example below) is selected below which the unbiased younger ages remain unchanged.
+
+<br>
+
 [A bias adjustmnent figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) and an 
 [agreement figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png) are created. Smoothers are fickle and caution is needed when using them, looking past the smoothers and looking only at the data should also be done.  One the smoothers being right on the 1-1 line for older ages, as seen in this bias adjustment figure, is atypical. 
 
@@ -117,8 +120,24 @@ The lowess based adjustment above does not move the older ages sufficiently (per
     
 <br>   
 
-First and last values in TMA_Pred:
+First and last values rows TMA_Pred are below. Row 5,485 shows that the older aged biased prediction was adjusted with TMA being unknown.
 
+     #        TMA NN_Pred_BIASED Bias_Adjustment  NN_Pred Bias_Adj
+     #  1      1         0.9643       0.5370134 0.964300    FALSE
+     #  2      1         0.7074       0.5261169 0.707400    FALSE
+     #  3      1         0.8265       0.5315790 0.826500    FALSE
+     #  5478   4         2.4962       0.5018800 2.496200    FALSE
+     #  5479   8         5.8144       0.5208765 5.814400    FALSE
+     #  5480  NA         0.7195       0.5267396 0.719500    FALSE
+     #  5481  NA         7.3813       0.6889761 7.381300    FALSE
+     #  5482  NA         4.8665       0.3319816 4.866500    FALSE
+     #  5483  NA         2.3780       0.5240816 2.378000    FALSE
+     #  5484  NA         4.8340       0.3305552 4.834000    FALSE
+     #  5485  NA         8.9714       0.9309345 9.902334     TRUE
+     #  5486  NA         2.8856       0.4943580 2.885600    FALSE
+     #  5487  NA         4.9158       0.3341453 4.915800    FALSE
+     #  5488  NA         2.0576       0.5446515 2.057600    FALSE
+     #  5489  NA         5.1654       0.3648089 5.165400    FALSE
 
 
     
