@@ -1,4 +1,6 @@
-Bias Correction for Older NN Predicted Ages
+<h3> Bias Correction for Older NN Predicted Ages </h3>
+
+<br>
 
 Since the NN prediction bias in older ages is consistently in one direction it can be adjusted for.
 
