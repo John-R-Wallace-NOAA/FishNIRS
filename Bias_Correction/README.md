@@ -63,13 +63,11 @@ The difference between TMA and NN_Pred is fitted against the biased NN_Pred usin
 
 The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_vs_TMA.png) where the NN_pred is rounded to the newest integer (no Delta added) are:
     
-     Correlation R_squared   RMSE    MAE  SAD   APE    N
+      Correlation R_squared   RMSE    MAE  SAD   APE    N
           0.9649     0.931 0.7732 0.4725 2589 5.699 5479
 
 
-
-     
-  asdfsdf   
+The lowess based ajustment above does not move the older ages sufficiently, so a bias adjustment factor was implemented. First, older ages where bias still existed and where there was sufficient data was defined (ages 9-15 in the example below). For each of these ages, the difference between the age and the average of the biased NN predicted ages which have a TMA value of that defined ages was calculated (Ages_Diff below). Next the defined ages differences were divided by the lowess predicted ages at each TMA value for those defined ages, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" can not depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value.
 
     # TMA_Pred_SAVE <- TMA_Pred
     # TMA_Pred_SAVE -> TMA_Pred
@@ -106,19 +104,10 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, round(TMA_Pred$NN_Pred), digits = 4)
 
     headTail(TMA_Pred, 3, 12)
-    "  "
-
-The stats for the [lowess biased and factor adjusted NN_Pred plotted against TMA](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) where the NN_pred is rounded to the newest integer (no Delta added) are:
     
-
-   Correlation R_squared   RMSE    MAE  SAD   APE    N
-        0.9566    0.9151 0.9246 0.4846 2660 4.951 5489
-
-
-
- browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 18.5), ylim = c(0, 18.5), 
+    browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 18.5), ylim = c(0, 18.5), 
                main = "NN Predicted Ages with Corrected Bias at Older Ages")', file = 'NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png')
-
+    "  "
     
 <br>   
 kl;'kl;'										
