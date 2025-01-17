@@ -122,7 +122,8 @@ sadfasdf
     if(!any(installed.packages()[, 1] %in% "mgcv"))  install.packages('mgcv')  
     library(mgcv)
     
-    Bias_Adjustment <- predict(mgcv::gam(TMA - NN_Pred_BIASED ~ s(NN_Pred_BIASED), data = TMA_Pred, newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response"), se.fit = TRUE)
+    Bias_Adjustment <- predict(mgcv::gam(TMA - NN_Pred_BIASED ~ s(NN_Pred_BIASED), data = TMA_Pred, 
+            newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response"), se.fit = TRUE)
     
     browsePlot('
       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
