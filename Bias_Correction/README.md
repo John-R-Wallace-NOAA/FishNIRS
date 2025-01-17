@@ -55,9 +55,9 @@ The difference between TMA and NN_Pred is fitted against the biased NN_Pred usin
        plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 16), ylim = c(0, 16)); abline(0, 1, col = "grey")
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
        points(TMA_Pred$TMA + 0.15, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 2/3) 
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 0.8, lty = 2)
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 1, lty = 3)
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 0.1) 
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 1/3, lty = 2)
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment, col = "green", smoothing.param = 2/3, lty = 3)
      ', file = 'NN_Pred_Bias_Adj_Lowess_vs_TMA.png')
     
      
