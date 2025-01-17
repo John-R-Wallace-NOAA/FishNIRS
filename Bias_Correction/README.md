@@ -4,7 +4,7 @@ Since the NN prediction bias in older ages is consistently in one direction it c
 
 The bias correction needs to be done not only when a TMA (Traditional Method of Aging) age is given, but also when there is no corresponding TMA for a given age structure. Hence the goal of a bias corrected prediction, from scans and/or metadata without the need for traditional aging, can be achieved. 
 
-A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction. A GAM with a lo() or s() with various smoothing parameters ??? - see the code at the bottom of this repo doc.
+A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction. mgcv R package's gam() with s() smoother is also looked at for standard errors of bhe bias adjustment.
 
 <br>
 First some functions are needed:
@@ -41,7 +41,7 @@ My toolbox function browsePlot() was downloaded above and will be used for viewi
      " "
      
 <br>   
-The difference between TMA and NN_Pred is fitted against the biased NN_Pred using lowess(). A prediction of the bias adjustment given a new value of NN_PRed is done with predict.lowess() from my toolbox [which uses stats::splinefun()]. The resulting bias adjustment is added to NN_Pred and plotted along with lowess smoothed lines using lowess.line() with 3 different values of the smoothing parameter (all in green). The original biased data is plotted in black and only one smoothed line for the old data is shown. 
+The difference between TMA and NN_Pred is fitted against the biased NN_Pred using lowess(). A prediction of the bias adjustment given a new value of NN_PRed is done with predict.lowess() from my toolbox [which uses stats::splinefun()]. The resulting bias adjustment is added to NN_Pred and plotted along with lowess smoothed lines using lowess.line() with 3 different values of the smoothing parameter (all in green). The original biased data is plotted in black and only one smoothed line for the biased data is shown. 
 		 
 
      (Bias_Adjustment <- predict.lowess(lowess(TMA_Pred$NN_Pred_BIASED[!is.na(TMA_Pred$TMA)], 
@@ -71,7 +71,7 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
 
 <br>
 
-The lowess based adjustment above does not move the older ages sufficiently, so a bias adjustment factor was implemented. First, older ages where bias still existed, and where there was sufficient data, is defined (ages 9-15 in the example below). For each of these TMA ages, the difference between each age and the average of the biased NN predicted ages which have that TMA value was calculated (Ages_Diff below). Next the defined ages differences were divided by the lowess predicted ages at each TMA value, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" cannot depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value. One plus the Bias_Increase_Factor divided by two is then multiplied by the lowess predictions looked at above and added to biased NN predictions to create less biased estimates (NN_Pred below). (Note that the code below repeats the lowess predictions and does not depend on the code looking only at the lowess predictions above.) 
+The lowess based adjustment above does not move the older ages sufficiently (perhaps it will for other data), so a bias adjustment factor was implemented. First, older ages where bias still existed, and where there was sufficient data, is defined (ages 9-15 in the example below). For each of these TMA ages, the difference between each age and the average of the biased NN predicted ages which have that TMA value was calculated (Ages_Diff below). Next the defined ages differences were divided by the lowess predicted ages at each TMA value, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" cannot depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value. One plus the Bias_Increase_Factor divided by two is then multiplied by the lowess predictions looked at above and added to biased NN predictions to create less biased estimates (NN_Pred below). (Note that the code below repeats the lowess predictions and does not depend on the code looking only at the lowess predictions above.) 
 [A bias adjustmnent figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) and an 
 [agreement figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png) are created. Smoothers are fickle and caution is needed when using them, looking at only the data and not the smoother(s) should also be done.
 
