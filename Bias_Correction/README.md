@@ -4,7 +4,7 @@
 
 Since the NN prediction bias in older ages is consistently in one direction it can be adjusted for.
 
-The bias correction needs to be done not only when a TMA (Traditional Method of Aging) age is given, but also when there is no corresponding TMA for a given age structure. Hence the goal of a bias corrected prediction, from scans and/or metadata without the need for traditional aging, can be achieved. 
+The bias correction needs to be done not only when a TMA (Traditional Method of Aging) age is given, but also when there is no corresponding TMA for a given age structure. Hence, the goal of a bias corrected prediction from scans and/or metadata without the need for traditional aging, can be achieved. 
 
 A functional form (model) is needed that predicts the difference between TMA and the NN predicted age given a new value of the NN predicted age. Below a LOWESS (locally weighted scatterplot smoothing) non-parametric model is used with R's splinefun() function for prediction. mgcv R package's gam() with s() smoother is also looked at for standard errors of bhe bias adjustment.
 
