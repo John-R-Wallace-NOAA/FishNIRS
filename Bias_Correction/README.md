@@ -109,13 +109,16 @@ The lowess based adjustment above does not move the older ages sufficiently (per
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", lwd = 1.2, smoothing.param = 2/3, lty = 3)
     ', file = 'NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png')
 
-    Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, round(TMA_Pred$NN_Pred), digits = 4)
-
     headTail(TMA_Pred, 3, 12)
     
     browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 18.5), ylim = c(0, 18.5), 
                main = "NN Predicted Ages with Corrected Bias at Older Ages")', file = 'NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png')
     "  "
+    
+<br>   
+
+First and last values in TMA_Pred:
+
 
 
     
