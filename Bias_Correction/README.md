@@ -132,8 +132,8 @@ If standard errors for the bias adjustment is wanted, then the mgcv R package co
     if(!any(installed.packages()[, 1] %in% "mgcv"))  install.packages('mgcv')  
     library(mgcv)
     
-    Bias_Adjustment <- predict(mgcv::gam(TMA - NN_Pred_BIASED ~ s(NN_Pred_BIASED), data = TMA_Pred, 
-            newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response"), se.fit = TRUE)
+    Bias_Adjustment <- predict(mgcv::gam(TMA - NN_Pred_BIASED ~ s(NN_Pred_BIASED), data = TMA_Pred), 
+            newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response", se.fit = TRUE)
 
     browsePlot('
       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
@@ -144,24 +144,24 @@ If standard errors for the bias adjustment is wanted, then the mgcv R package co
      
      headTail(data.frame(fit = Bias_Adjustment$fit, se.fit = Bias_Adjustment$se.fit), 3, 12)
      
-    #               fit     se.fit
-    #  1     0.22286243 0.02133048
-    #  2     0.12234356 0.03055174
-    #  3     0.16984689 0.02567175
-    #  5478  0.18704121 0.02046113
-    #  5479 -0.12241849 0.03428746
-    #  5480  0.12719359 0.03002257
-    #  5481  0.54384640 0.03610918
-    #  5482  0.22045271 0.03098755
-    #  5483  0.20598725 0.01944309
-    #  5484  0.23887132 0.03116682
-    #  5485  0.25236178 0.04107110
-    #  5486  0.20150935 0.02369555
-    #  5487  0.19227490 0.03078920
-    #  5488  0.28476193 0.01952460
-    #  5489  0.05336993 0.03116177
-    
-    #  Dimension: 5489 2 
+     #                fit     se.fit
+     #   1     0.22295098 0.02120150
+     #   2     0.12220316 0.03037579
+     #   3     0.16982558 0.02552071
+     #   5478  0.18421369 0.02034234
+     #   5479 -0.12689477 0.03405727
+     #   5480  0.12706570 0.02984933
+     #   5481  0.53932923 0.03583973
+     #   5482  0.21001997 0.03085982
+     #   5483  0.20315991 0.01932915
+     #   5484  0.22857269 0.03103718
+     #   5485  0.24260078 0.04077792
+     #   5486  0.19955985 0.02355215
+     #   5487  0.18167853 0.03066340
+     #   5488  0.28256894 0.01940362
+     #   5489  0.04279344 0.03102674
+  
+     #   Dimension: 5489 2 
      "  "  
 
 
