@@ -32,7 +32,8 @@ Download an example dataset with some missing TMA in the last 10 rows:
      " "
     
 <br>
-Plot the data in an [agreement figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA_Agreement_Fig.png). 
+
+Plot the data in an [agreement figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_vs_TMA_Agreement_Fig.png) 
 My toolbox function browsePlot() was downloaded above and will be used for viewing the figures directly in browser and (optionally) saved into a file.
 
     browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, xlim = c(0, 18.5), ylim = c(0, 18.5), 
