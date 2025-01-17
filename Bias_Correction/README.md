@@ -132,7 +132,7 @@ sadfasdf
       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment$fit, col = "red")
     ')
      
-     headTail(data.frame(fit = Bias_Adjustment$fit, se.fit = Bias_Adjustment$se.fit)[1:10, ], 3, 12)
+     headTail(data.frame(fit = Bias_Adjustment$fit, se.fit = Bias_Adjustment$se.fit), 3, 12)
      
               fit     se.fit
      1  0.2228624 0.02133048
