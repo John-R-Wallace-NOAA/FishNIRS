@@ -115,16 +115,16 @@ The lowess based adjustment above does not move the older ages sufficiently, so 
     
 <br>   
 
-sadfasdf
+If a standard error for the bias adjustment is wanted, then the mgcv R package could be tried:
 
-    # mgcv R package's gam() with s() smoother    
+    # mgcv R package's gam() with mgcv's s() smoother  (Trevor Hastie's 'gam' package also has a s() smoother.)  
     
     if(!any(installed.packages()[, 1] %in% "mgcv"))  install.packages('mgcv')  
     library(mgcv)
     
     Bias_Adjustment <- predict(mgcv::gam(TMA - NN_Pred_BIASED ~ s(NN_Pred_BIASED), data = TMA_Pred, 
             newdata = TMA_Pred[, 'NN_Pred_BIASED', drop = F],  type = "response"), se.fit = TRUE)
-    
+
     browsePlot('
       plot(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED); abline(0, 1, col = "grey")
       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
@@ -134,17 +134,17 @@ sadfasdf
      
      headTail(data.frame(fit = Bias_Adjustment$fit, se.fit = Bias_Adjustment$se.fit), 3, 12)
      
-              fit     se.fit
-     1  0.2228624 0.02133048
-     2  0.1223436 0.03055174
-     3  0.1698469 0.02567175
-     4  0.1789458 0.02482816
-     5  0.3300349 0.01944323
-     6  0.3573969 0.02153072
-     7  0.1926023 0.02363083
-     8  0.3055291 0.02017020
-     9  0.1708344 0.02557855
-     10 0.1837648 0.02439579
+    #          fit     se.fit
+    #  1  0.2228624 0.02133048
+    #  2  0.1223436 0.03055174
+    #  3  0.1698469 0.02567175
+    #  4  0.1789458 0.02482816
+    #  5  0.3300349 0.01944323
+    #  6  0.3573969 0.02153072
+    #  7  0.1926023 0.02363083
+    #  8  0.3055291 0.02017020
+    #  9  0.1708344 0.02557855
+    #  10 0.1837648 0.02439579
      "  "  
 
 
