@@ -71,7 +71,9 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
 
 <br>
 
-The lowess based adjustment above does not move the older ages sufficiently, so a bias adjustment factor was implemented. First, older ages where bias still existed and where there was sufficient data was defined (ages 9-15 in the example below). For each of these ages, the difference between the age and the average of the biased NN predicted ages which have a TMA value of each defined age was calculated (Ages_Diff below). Next the defined ages differences were divided by the lowess predicted ages at each TMA value for those defined ages, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" cannot depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value. One plus the Bias_Increase_Factor divided by two is then multiplied by the lowess predictions looked at above and added to biased NN predictions to create less biased estimates (NN_Pred below). (The code below repeats the lowess predictions and does not depend on the code looking only at the lowess predictions above.)
+The lowess based adjustment above does not move the older ages sufficiently, so a bias adjustment factor was implemented. First, older ages where bias still existed, and where there was sufficient data, was defined (ages 9-15 in the example below). For each of these TMA ages, the difference between an age and the average of the biased NN predicted ages which have that TMA value was calculated (Ages_Diff below). Next the defined ages differences were divided by the lowess predicted ages at each TMA value, and the average taken (Bias_Increase_Factor below). Note that the "Bias_Increase_Factor" cannot depend on TMA, since predictions need to made when TMA is unknown, hence the need for a single scalar value. One plus the Bias_Increase_Factor divided by two is then multiplied by the lowess predictions looked at above and added to biased NN predictions to create less biased estimates (NN_Pred below). (Note that the code below repeats the lowess predictions and does not depend on the code looking only at the lowess predictions above.) 
+[A bias adjustmnent figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png) and an 
+[agreement figure](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png) are created.
 
     # TMA_Pred_SAVE <- TMA_Pred
     # TMA_Pred_SAVE -> TMA_Pred
@@ -112,10 +114,13 @@ The lowess based adjustment above does not move the older ages sufficiently, so 
     browsePlot('agreementFigure(TMA_Pred$TMA, TMA_Pred$NN_Pred, xlim = c(0, 18.5), ylim = c(0, 18.5), 
                main = "NN Predicted Ages with Corrected Bias at Older Ages")', file = 'NN_Pred_Bias_Corrected_vs_TMA_Agreement_Fig.png')
     "  "
+
+
     
 <br>   
 
-If a standard error for the bias adjustment is wanted, then the mgcv R package could be tried:
+If a standard error for the bias adjustment is wanted, then the mgcv R package could be 
+[tried](https://github.com/John-R-Wallace-NOAA/FishNIRS/tree/main/Bias_Correction/mgcv_gam_bias_adjustmet.png) :
 
     # mgcv R package's gam() with mgcv's s() smoother  (Trevor Hastie's 'gam' package also has a s() smoother.)  
     
@@ -130,7 +135,7 @@ If a standard error for the bias adjustment is wanted, then the mgcv R package c
       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED)
       points(TMA_Pred$TMA + 0.2, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment$fit, col = "red")
       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED + Bias_Adjustment$fit, col = "red")
-    ')
+    ', file = 'mgcv_gam_bias_adjustmet.png')
      
      headTail(data.frame(fit = Bias_Adjustment$fit, se.fit = Bias_Adjustment$se.fit), 3, 12)
      
