@@ -98,9 +98,9 @@ The stats for the [lowess biased adjusted NN_Pred plotted against TMA](https://g
        abline(0, 1, col = "grey"
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred_BIASED, smoothing.param = 2/3)
        points(TMA_Pred$TMA + 0.25, TMA_Pred$NN_Pred, col = "green")
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 2/3)
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 0.1)
        lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 1/3, lty = 2)
-       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 0.1, lty = 3)
+       lowess.line(TMA_Pred$TMA, TMA_Pred$NN_Pred, col = "green", smoothing.param = 2/3, lty = 3)
     )', file = 'NN_Pred_Bias_Adj_Lowess_Factor_vs_TMA.png')
 
     Cor_R_squared_RMSE_MAE_SAD_APE(TMA_Pred$TMA, round(TMA_Pred$NN_Pred), digits = 4)
