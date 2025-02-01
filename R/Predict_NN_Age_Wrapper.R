@@ -4,8 +4,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
                            Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Max_N_Spectra = list(50, 200, 'All')[[2]], 
                            Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Lowess_smooth_para = 2/3,
-                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Metadata_Extra_File = NULL, TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, 
-						   plot = TRUE, main = "") {
+                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Graph_Metadata_Extra = NULL, Metadata_Extra_File = NULL, 
+						   TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, plot = TRUE, main = "") {
 
     '  ################################################################################################################################################################                             '
     '  #       Need >= R ver 3.0                                                                                                                                      #                             '
@@ -856,7 +856,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
 			    file_name_loaded <- load(Metadata_Extra_File)
 			    New_Ages_Good <- match.f(New_Ages_Good, eval(parse(text = file_name_loaded)), "specimen_id", "specimen_id", Metadata_Extra)
 
-			    for(i in Metadata_Extra)
+			    for(i in Graph_Metadata_Extra)
 			        browsePlot('plot(New_Ages_Good$NN_Pred_Median, New_Ages_Good[, i], xlab = "NN Predicted Median", ylab = i, main = paste0("Metadata (not in model): ", i, " vs NN Predicted Median"), type = "n")
 					            points(New_Ages_Good$NN_Pred_Median[!New_Ages_Good$Used_NN_Model], New_Ages_Good[!New_Ages_Good$Used_NN_Model, i], col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
 			                    points(New_Ages_Good$NN_Pred_Median[New_Ages_Good$Used_NN_Model], New_Ages_Good[New_Ages_Good$Used_NN_Model, i]) ', 
