@@ -240,7 +240,7 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
        Fold_models <- Rdm_models[[j]]
        for (i in 1:length(Fold_models)) {      
              newScans.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
-             Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA)
+             Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA, use = "complete.obs")
              if(all(newScans.pred == 0) || Corr < 0.85) {
                 if(verbose)
                    cat(paste0("\nRandom Model ", j, "; Fold ", i, " NOT accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
