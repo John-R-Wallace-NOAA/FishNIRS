@@ -9,15 +9,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                          shortNameSegments = c(1, 6), shortNameSuffix = 'COMBO', yearPosition = 6, fineFreqAdj = 0,
                          Meta_Path = NULL, Extra_Meta_Path = NULL, TMA_Ages = c(TRUE, FALSE)[2], 
                          excelSheet = 3, Max_N_Spectra = list(50, 200, 'All')[[3]], OR_2008_2011 = FALSE,
-                         verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], htmlPlotFolder = "Figures",
+                         verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], htmlPlotFolder = NULL, Static_Figure = NULL,
                          spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1], 
                          opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]) { 
  
 #  Max_N_Spectra is the max number of new spectra to be plotted in the spectra figure. 
  
 # ------------------------------------ Main User Setup ------------------------------------------------------------
-
-   
    
     # Hake 2019, BMS
     if(Spectra_Set == "Hake_2019") {
@@ -122,6 +120,15 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        shortNameSuffix <- 'Comm'
        yearPosition <- 7 # e.g. WACOMM2011 => 2011 (Segment used (see above) is: shortNameSegments[1] + 1)
     }
+	
+	# Chilipepper
+	if(grepl("CLPR_SWFSC", Spectra_Set)) {   
+	   shortNameSegments <- c(3, 2)
+       shortNameSuffix <- 'RecSurvey'	 
+	}
+	
+	
+	
    
     # -----------------------------------------------------------------------------------------------------------------------------------
  
@@ -206,7 +213,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     if(verbose)
        cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
     metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
-     
+    assign('metadata', metadata, pos = 1) 
        
     # Reading in spectra and doing interpolation if needed. For both methods, the wavebands used are based on very first OPUS spectra read-in. 
     if(spectraInterp %in% c('stats_splinefun_lowess', 'prospectr_resample')) {     # Below simplify = FALSE, so interpolation is not done by Roudier's opusreader::opus_read(). 
@@ -279,6 +286,12 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         # dim(newScans.RAW)
         # print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
     }
+	
+	assign('newScans.RAW', newScans.RAW, pos = 1)
+	
+	if(verbose)
+       cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
+	
        
     if(plot) {
        sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
@@ -289,34 +302,45 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        else
          plotly.Spec(data.frame(filenames = fileNames.0, newScans.RAW, Otie = factor(rowNums), shortName = shortName), N_Samp = min(c(length(fileNames.0), Max_N_Spectra)), colorGroup = 'Otie') 
        
-       if(!is.null(htmlPlotFolder)) {
-         dir.create(htmlPlotFolder, showWarnings = FALSE)
-         saveHtmlFolder(htmlPlotFolder, view = !interactive())
+	   if(!is.null(htmlPlotFolder)) {
+	     dir.create("Figures", showWarnings = FALSE)
+         dir.create(paste0("Figures/", htmlPlotFolder), showWarnings = FALSE)
+         saveHtmlFolder(paste0("Figures/", htmlPlotFolder), view = !interactive())
        }  
+	   
+	   if(!is.null(Static_Figure))
+	     dir.create("Figures", showWarnings = FALSE)
+	     ggsave(paste0("Figures/", Static_Figure), width = 14, height = 10)
     }    
  
-    if(verbose)
-       cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
-    
     
     # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
     
     if(!OR_2008_2011) {
-        metadata$specimen_id <- as.character(metadata$specimen_id)
-        cat("\n\nmetadata$specimen_id = ", metadata$specimen_id[1:4], "\n\n")
-        
-        if(length(get.subs(metadata$specimen_id[1], sep = "_")) == 1){
-           cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
-           Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
+	
+	    if(grepl("CLPR_SWFSC", Spectra_Set)) {
+		
+		   metadata$specimen_id <- as.character(metadata$specimen_id)
+		   cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[2,][1:4], "\n\n")
+		   Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[2,]), 
               metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
-        
-        } else {
-           cat("\n\nModel_Spectra_Meta$specimen_id = ", paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")[1:4], "\n\n")
-           Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")), 
-                metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
-        } 
-        
-               
+			  
+		} else {
+		
+            metadata$specimen_id <- as.character(metadata$specimen_id)
+            cat("\n\nmetadata$specimen_id = ", metadata$specimen_id[1:4], "\n\n")
+            
+            if(length(get.subs(metadata$specimen_id[1], sep = "_")) == 1) {
+               cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
+               Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
+                  metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
+            
+            } else {
+               cat("\n\nModel_Spectra_Meta$specimen_id = ", paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")[1:4], "\n\n")
+               Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")), 
+                    metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
+			}		
+        }    
     }     
     
     if(OR_2008_2011) {
@@ -332,13 +356,15 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
     
-    
-    Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
-    Model_Spectra_Meta$percent_missing_scan <- as.numeric(Model_Spectra_Meta$percent_missing_scan)
-    Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
-    Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 'none' # Change NA to 'none' tissue level.
-    Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName) 
-        
+    if(!grepl("CLPR_SWFSC", Spectra_Set)) {
+       Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
+       Model_Spectra_Meta$percent_missing_scan <- as.numeric(Model_Spectra_Meta$percent_missing_scan)
+       Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
+       Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 'none' # Change NA to 'none' tissue level.
+    }     
+	 
+	Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName)  
+	 
     #  if(verbose) {
     #     print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])     
     #     CAT("\N\N")
@@ -347,10 +373,21 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     if(!is.null(Model_Spectra_Meta$structure_weight_g))       
            Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
 
-    if(verbose) 
-       cat("\n\n Extra_Meta_Path = ", Extra_Meta_Path, "\n\n")    
+    if(grepl("CLPR_SWFSC", Spectra_Set)) {
+	 
+	    if(!is.null(Model_Spectra_Meta$Length_cm))
+           Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/ifelse(exists("Sable_Len_cm_Range"), Sable_Len_cm_Range[2], max(Model_Spectra_Meta$Length_cm, na.rm = TRUE))
+                  
+        if(!is.null(Model_Spectra_Meta$Sex)) {
+           Sex_ <- Model_Spectra_Meta$Sex
+           Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Sex), ], as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+        }  
+	}
 
-    if(!is.null(Extra_Meta_Path)) {     
+    if(!is.null(Extra_Meta_Path)) {    
+
+        if(verbose) 
+           cat("\n\n Extra_Meta_Path = ", Extra_Meta_Path, "\n\n")    	
     
         base::load(Extra_Meta_Path) 
 
@@ -405,7 +442,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
              Model_Spectra_Meta$Days_into_Year_prop_max <- (Model_Spectra_Meta$Days_into_Year - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))/(max(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE) - min(Model_Spectra_Meta$Days_into_Year, na.rm = TRUE))
          }  
          
-           # For consistennce, don't use the 'light' (or other level) of tissue level until a study is done
+        # For consistennce, don't use the 'light' (or other level) of tissue level until a study is done
         # TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_missing_scan <= 10 & !is.na(Model_Spectra_Meta$Month_Scaled) & 
         #         (Model_Spectra_Meta$tissue_level_scan == "light" | is.na(Model_Spectra_Meta$tissue_level_scan)) & !is.na(Model_Spectra_Meta$Length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
                   
@@ -426,10 +463,10 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
         
         cat("\n\nRange of standardized metadata variables:\n\n")
-        print(apply(Model_Spectra_Meta[, grep('prop_max', names(Model_Spectra_Meta))], 2, range, na.rm = T))
+        print(apply(Model_Spectra_Meta[, grep('prop_max', names(Model_Spectra_Meta)), drop = FALSE], 2, range, na.rm = T))
         
         cat("\n\nNumber of missing values in the standardized metadata variables within the final result:\n\n")
-        print(apply(Model_Spectra_Meta[, grep('prop_max', names(Model_Spectra_Meta))], 2, function(x) sum(is.na(x))))
+        print(apply(Model_Spectra_Meta[, grep('prop_max', names(Model_Spectra_Meta)), drop = FALSE], 2, function(x) sum(is.na(x))))
         
         cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'))
         cat("\nAfter the particular metadata is selected for in a model run, remove those oties which contain any missing values for those applications, like NN modeling, that cannot handle them.\n\n")
