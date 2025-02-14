@@ -7,9 +7,9 @@
 
 Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acoustic2023", "Sable_2017_2019", "Sable_Combo_2022")[2], Spectra_Path = NULL, 
                          shortNameSegments = c(1, 6), shortNameSuffix = 'COMBO', yearPosition = 6, fineFreqAdj = 0,
-                         Meta_Path = NULL, Extra_Meta_Path = NULL, TMA_Ages = c(TRUE, FALSE)[2], 
+                         Meta_Path = NULL, Extra_Meta_Path = NULL, TMA_Ages_Only = c(TRUE, FALSE)[2], 
                          excelSheet = 3, Max_N_Spectra = list(50, 200, 'All')[[3]], OR_2008_2011 = FALSE,
-                         verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], htmlPlotFolder = NULL, Static_Figure = NULL,
+                         verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], Static_Figure = NULL, htmlPlotFolder = NULL, 
                          spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1], 
                          opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]) { 
  
@@ -124,7 +124,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
 	# Chilipepper
 	if(grepl("CLPR_SWFSC", Spectra_Set)) {   
 	   shortNameSegments <- c(3, 2)
-       shortNameSuffix <- 'RecSurvey'	 
+       shortNameSuffix <- 'Combo_Survey'	 
 	}
 	
 	
@@ -292,27 +292,6 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
 	if(verbose)
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
 	
-       
-    if(plot) {
-       sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-       rowNums <- 1:nrow(newScans.RAW)
-       if(length(rowNums <= 26^2))
-          plotly.Spec(data.frame(filenames = fileNames.0, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), 
-                      N_Samp = min(c(length(fileNames.0), Max_N_Spectra)), colorGroup = 'Otie')
-       else
-         plotly.Spec(data.frame(filenames = fileNames.0, newScans.RAW, Otie = factor(rowNums), shortName = shortName), N_Samp = min(c(length(fileNames.0), Max_N_Spectra)), colorGroup = 'Otie') 
-       
-	   if(!is.null(htmlPlotFolder)) {
-	     dir.create("Figures", showWarnings = FALSE)
-         dir.create(paste0("Figures/", htmlPlotFolder), showWarnings = FALSE)
-         saveHtmlFolder(paste0("Figures/", htmlPlotFolder), view = !interactive())
-       }  
-	   
-	   if(!is.null(Static_Figure))
-	     dir.create("Figures", showWarnings = FALSE)
-	     ggsave(paste0("Figures/", Static_Figure), width = 14, height = 10)
-    }    
- 
     
     # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
     
@@ -381,6 +360,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         if(!is.null(Model_Spectra_Meta$Sex)) {
            Sex_ <- Model_Spectra_Meta$Sex
            Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Sex), ], as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+		   if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
         }  
 	}
 
@@ -451,13 +431,14 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     } else  
         TF <- rep(TRUE, nrow(Model_Spectra_Meta))
 
-    if(TMA_Ages) {     
+    if(TMA_Ages_Only) {     
         TF <- TF & !is.na(Model_Spectra_Meta$TMA)
         if(verbose)
            cat('\n\nNumber of oties with TMA age:', sum(!is.na(Model_Spectra_Meta$TMA)), "\n\n")
     }
     
     Model_Spectra_Meta <- renum(Model_Spectra_Meta[TF, ])
+	assign("Model_Spectra_Meta", Model_Spectra_Meta, pos = 1)
     
     if(verbose) {
         print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
@@ -471,9 +452,38 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'))
         cat("\nAfter the particular metadata is selected for in a model run, remove those oties which contain any missing values for those applications, like NN modeling, that cannot handle them.\n\n")
     }
-     
+	
+	if(plot) {
+	
+        sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+		
+	    if(is.null(Model_Spectra_Meta$TMA)) {
+		
+            rowNums <- 1:nrow(newScans.RAW)
+            if(length(rowNums <= 26^2))
+               plotly.Spec(data.frame(filenames = fileNames.0, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), 
+                           N_Samp = min(c(length(fileNames.0), Max_N_Spectra)), colorGroup = 'Otie')
+            else
+              plotly.Spec(data.frame(filenames = fileNames.0, newScans.RAW, Otie = factor(rowNums), shortName = shortName), N_Samp = min(c(length(fileNames.0), Max_N_Spectra)), colorGroup = 'Otie') 
+            
+	        # if(!is.null(Static_Figure)) {
+	        #    dir.create("Figures", showWarnings = FALSE)
+	        #    ggsave(Static_Figure, path = "Figures", width = 14, height = 10, units = "in", dpi = 600)
+	        # }
+        	   
+		
+        } else 
+		
+	        plotly.Spec(Model_Spectra_Meta, N_Samp = min(c(nrow(Model_Spectra_Meta), Max_N_Spectra)), colorGroup = 'TMA')  
+
+        if(!is.null(htmlPlotFolder)) {
+	          dir.create("Figures", showWarnings = FALSE)
+              dir.create(paste0("Figures/", htmlPlotFolder), showWarnings = FALSE)
+              saveHtmlFolder(paste0("Figures/", htmlPlotFolder), view = !interactive())
+        }		
+	}
+ 	
     invisible(Model_Spectra_Meta)
-    
 }   
       
      
