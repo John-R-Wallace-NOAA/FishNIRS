@@ -120,8 +120,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
     
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")	
-     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
+     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+	 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
      
@@ -814,8 +814,16 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # The same as above by year, if there is more than one year and Multi_Year is TRUE
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
-               par(mfrow = c(3, 2))
-               for(Year in unique(New_Ages$Year)) {
+			    if(length(New_Ages$Year) == 2)
+			             par(mfrow = c(2, 1))
+                else if(length(New_Ages$Year) >  2 & length(New_Ages$Year) <= 4)		 
+                        par(mfrow = c(2, 2))
+                else if(length(New_Ages$Year) >  4 & length(New_Ages$Year) <= 6)		 
+                        par(mfrow = c(3, 2))
+				else if(length(New_Ages$Year) >  6)		  
+                        par(mfrow = c(3, 3))
+						
+                for(Year in unique(New_Ages$Year)) {
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
                     gPlot(New_Ages_Year, "TMA", "TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
                                main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00") #   < #ffffff00 > color is transparent
@@ -830,7 +838,15 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # By year, with TMA minus rounded age vs the predicted "Pred_Age_Bias_Corr_plus_Delta_rounded" 
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
-               par(mfrow = c(3, 2))
+               if(length(New_Ages$Year) == 2)
+			             par(mfrow = c(2, 1))
+                else if(length(New_Ages$Year) >  2 & length(New_Ages$Year) <= 4)		 
+                        par(mfrow = c(2, 2))
+                else if(length(New_Ages$Year) >  4 & length(New_Ages$Year) <= 6)		 
+                        par(mfrow = c(3, 2))
+				else if(length(New_Ages$Year) >  6)		  
+                        par(mfrow = c(3, 3))
+						
                for(Year in unique(New_Ages$Year)) {
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
                     gPlot(New_Ages_Year, "Pred_Age_Bias_Corr_plus_Delta_rounded", "TMA_Minus_Pred_Age_Bias_Corr_plus_Delta_rounded", ylab = paste0("TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
