@@ -814,13 +814,14 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # The same as above by year, if there is more than one year and Multi_Year is TRUE
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
-			    if(length(New_Ages$Year) == 2) {
+			    N_Years <- length(unique(New_Ages$Year))
+			    if(N_Years == 2) {
 			             par(mfrow = c(2, 1))
-                } else if(length(New_Ages$Year) >  2 & length(New_Ages$Year) <= 4) {
+                } else if(N_Years >  2 & N_Years <= 4) {
                         par(mfrow = c(2, 2))
-                } else if(length(New_Ages$Year) >  4 & length(New_Ages$Year) <= 6) {	 
+                } else if(N_Years >  4 & N_Years <= 6) {	 
                         par(mfrow = c(3, 2))
-				} else if(length(New_Ages$Year) >  6) {  
+				} else if(N_Years >  6) {  
                         par(mfrow = c(3, 3))
 				}		
 						
@@ -839,13 +840,14 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          # By year, with TMA minus rounded age vs the predicted "Pred_Age_Bias_Corr_plus_Delta_rounded" 
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
-               if(length(New_Ages$Year) == 2) {
+                N_Years <- length(unique(New_Ages$Year))
+			    if(N_Years == 2) {
 			             par(mfrow = c(2, 1))
-                } else if(length(New_Ages$Year) >  2 & length(New_Ages$Year) <= 4) {
+                } else if(N_Years >  2 & N_Years <= 4) {
                         par(mfrow = c(2, 2))
-                } else if(length(New_Ages$Year) >  4 & length(New_Ages$Year) <= 6) {	 
+                } else if(N_Years >  4 & N_Years <= 6) {	 
                         par(mfrow = c(3, 2))
-				} else if(length(New_Ages$Year) >  6) {  
+				} else if(N_Years >  6) {  
                         par(mfrow = c(3, 3))
 				}		
 						
