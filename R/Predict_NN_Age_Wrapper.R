@@ -3,7 +3,7 @@
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
                            Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Max_N_Spectra = list(50, 200, 'All')[[2]], 
-                           Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Lowess_smooth_para = 2/3,
+                           Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Bias_Reduction_Factor = 1, Lowess_smooth_para = 2/3,
                            Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Graph_Metadata_Extra = NULL, Metadata_Extra_File = NULL, 
 						   TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, plot = TRUE, main = "") {
 
@@ -450,7 +450,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                 Bias_Increase_Factor <- mean(Ages_Diff/predict.lowess(lowess(New_Ages$NN_Pred_Median_BIASED[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - 
                                              New_Ages$NN_Pred_Median_BIASED[!is.na(New_Ages$TMA)], f = Lowess_smooth_para), newdata = Bias_Adj_Factor_Ages[[i]][-1]))
                 
-                New_Ages$Bias_Adjustment <- (1 + Bias_Increase_Factor/2) * predict.lowess(lowess(New_Ages$NN_Pred_Median_BIASED[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - 
+                New_Ages$Bias_Adjustment <- (1 + Bias_Reduction_Factor * Bias_Increase_Factor) * predict.lowess(lowess(New_Ages$NN_Pred_Median_BIASED[!is.na(New_Ages$TMA)], New_Ages$TMA[!is.na(New_Ages$TMA)] - 
                                                 New_Ages$NN_Pred_Median_BIASED[!is.na(New_Ages$TMA)], f = Lowess_smooth_para), newdata = New_Ages$NN_Pred_Median_BIASED)
                                                 
                 New_Ages$NN_Pred_Median <- New_Ages$NN_Pred_Median_BIASED + New_Ages$Bias_Adjustment  # New_Ages$NN_Pred_Median changed for the first time here
@@ -638,6 +638,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          
          # -- Plot by order implied by the spectra file names -  ???? ggplotly() changes how scale_color_manual() works ???? --
+		 # cat(paste0("\n\n--- Note: The quantiles are a reflection of the NN models precision based on ", length(Rdm_models), " full 10-fold randomized models, not the accuracy to a TMA Age ---\n\n"))  
          g <- ggplot(New_Ages, aes(Index, NN_Pred_Median)) +  
          geom_point() +
          geom_errorbar(aes(ymin = Lower_Quantile_0.025, ymax = Upper_Quantile_0.975)) + 
