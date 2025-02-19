@@ -872,7 +872,6 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             New_Ages_Good <- match.f(New_Ages_Good, NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
             New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
             Table(New_Ages_Good$Used_NN_Model)
-            assign("New_Ages_Good", New_Ages_Good, pos = 1)
         }
           
 		New_Ages <- match.f(New_Ages, Model_Spectra_Meta, "specimen_id", "specimen_id", SG_Variables_Selected[metaDataVar])  
@@ -884,6 +883,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             New_Ages_Good <- match.f(New_Ages_Good, eval(parse(text = file_name_loaded)), "specimen_id", "specimen_id", Metadata_Extra)
         }
         
+		assign("New_Ages_Good", New_Ages_Good, pos = 1)
+		
         if(!is.null(Graph_Metadata_Extra)) {
             All_Years <- unique(New_Ages_Good$Year)
             N_Years <- length(All_Years)
@@ -901,7 +902,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                 browsePlot('
                   par(mfrow = c(par_mfr_row, par_mfr_col))        
                   for(Year in All_Years) {
-                        New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, c("NN_Pred_Median", "Used_NN_Model", "Sex_F", "Sex_M", i)]
+				        if(is.null(New_Ages_Good$Sex_F))
+						    New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, c("NN_Pred_Median", "Used_NN_Model", i)]
+						else
+                            New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, c("NN_Pred_Median", "Used_NN_Model", "Sex_F", "Sex_M", i)] # Sex_U will be zeros for both Sex_F & Sex_M
                         gPlot(New_Ages_Year, "NN_Pred_Median", i, xlab = "NN Predicted Median", ylab = i, main = paste0(Year, ": Model Metadata: ", i, " vs NN Predicted Median"), Type = "n")  
                   if(any(!is.na(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model])))
                            points(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model], New_Ages_Year[!New_Ages_Year$Used_NN_Model, i], col = "red", 
@@ -909,7 +913,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                         points(New_Ages_Year$NN_Pred_Median[New_Ages_Year$Used_NN_Model], New_Ages_Year[New_Ages_Year$Used_NN_Model, i],
                                pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F + New_Ages_Year$Sex_M * 4)
                   }           
-                ', file = paste0(Predicted_Ages_Path, "/Metadata ", i, " vs NN_Pred_Median.png"))
+                ', file = paste0(Predicted_Ages_Path, "/Metadata_", i, "_vs_NN_Pred_Median.png"))
             }
         }
         
