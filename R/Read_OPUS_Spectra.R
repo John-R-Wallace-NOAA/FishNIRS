@@ -11,7 +11,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                          excelSheet = 3, Max_N_Spectra = list(50, 200, 'All')[[3]], OR_2008_2011 = FALSE,
                          verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], Static_Figure = NULL, htmlPlotFolder = NULL, 
                          spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1], 
-                         opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2]) { 
+                         opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Debug = FALSE) { 
  
 #  Max_N_Spectra is the max number of new spectra to be plotted in the spectra figure. 
  
@@ -120,20 +120,20 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        shortNameSuffix <- 'Comm'
        yearPosition <- 7 # e.g. WACOMM2011 => 2011 (Segment used (see above) is: shortNameSegments[1] + 1)
     }
-	
-	# Chilipepper SW
-	if(grepl("CLPR_SWFSC", Spectra_Set)) {   
-	   shortNameSegments <- c(3, 2)
-       shortNameSuffix <- 'Combo_Survey'	 
-	}
-	
-	# Chilipepper NW
-	if(grepl("CLPR_NWFSC", Spectra_Set)) {   
-	   shortNameSegments <- c(1, 6)
-       shortNameSuffix <- 'Combo_Survey'	 
-	}
-	
-	
+    
+    # Chilipepper SW
+    if(grepl("CLPR_SWFSC", Spectra_Set)) {   
+       shortNameSegments <- c(3, 2)
+       shortNameSuffix <- 'Combo_Survey'     
+    }
+    
+    # Chilipepper NW
+    if(grepl("CLPR_NWFSC", Spectra_Set)) {   
+       shortNameSegments <- c(1, 6)
+       shortNameSuffix <- 'Combo_Survey'     
+    }
+    
+    
    
     # -----------------------------------------------------------------------------------------------------------------------------------
  
@@ -201,9 +201,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        fileNames.0 <- dir()
     else   
        fileNames.0 <- dir(path = Spectra_Path)
-	   
-	assign("fileNames.0", fileNames.0, pos = 1)   
-       
+            
     if(verbose) {
        cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
        print(fileNames.0[1:10])
@@ -215,13 +213,15 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         shortName <- paste0(shortName, "_", shortNameSuffix)
         
     fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
-	assign('fileNames', fileNames, pos = 1)
+    if(Debug)
+       assign('fileNames', fileNames, pos = 1)
     
     # Read in metadata
     if(verbose)
        cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
     metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
-    assign('metadata', metadata, pos = 1) 
+    if(Debug)
+       assign('metadata', metadata, pos = 1) 
        
     # Reading in spectra and doing interpolation if needed. For both methods, the wavebands used are based on very first OPUS spectra read-in. 
     if(spectraInterp %in% c('stats_splinefun_lowess', 'prospectr_resample')) {     # Below simplify = FALSE, so interpolation is not done by Roudier's opusreader::opus_read(). 
@@ -246,15 +246,20 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
            }   
         }
         
-        assign('newScans_meta', newScans_meta, pos = 1)
-        assign('newScans.ADJ', newScans.ADJ, pos = 1)
+        
         
         wavebandsToUse <- as.numeric(colnames(newScans.ADJ[[1]]))
-		assign("wavebandsToUse", wavebandsToUse, pos = 1)
+        
+        if(Debug) {
+           assign('newScans_meta', newScans_meta, pos = 1)
+           assign('newScans.ADJ', newScans.ADJ, pos = 1)
+           assign("wavebandsToUse", wavebandsToUse, pos = 1)
+        }
+        
         if(verbose) {
             cat("\n\nWavebands being used:",  head(wavebandsToUse, 4), "...", tail(wavebandsToUse, 4))
             cat("\nDifference in wavebands:", diff(head(wavebandsToUse, 5)), "...", diff(tail(wavebandsToUse, 5)), "\n\n")
-			cat("Tabulation of differences:"); Table(diff(wavebandsToUse)); cat("\n\n")
+            cat("Tabulation of differences:"); Table(diff(wavebandsToUse)); cat("\n\n")
         }
                
         colnames(newScans.ADJ[[1]]) <- wavebandsToUse
@@ -264,7 +269,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         
         for (j in 2:length(newScans.ADJ)) { 
           # bar(j, length(newScans.ADJ))
-		  print(j)
+          print(j)
           wavebandsOld <- as.numeric(colnames(newScans.ADJ[[j]]))
           wavebandsOld.8k <- wavebandsOld[wavebandsOld <= 8000]
           if(all(wavebandsOld.8k %in% wavebandsToUse.8k))
@@ -296,33 +301,34 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         # dim(newScans.RAW)
         # print(head(newScans.RAW[, c(1:5, (ncol(newScans.RAW) - 25):(ncol(newScans.RAW) - 20))])); cat("\n\n")
     }
-	
-	assign('newScans.RAW', newScans.RAW, pos = 1)
-	
-	if(verbose)
+    
+    if(Debug)
+       assign('newScans.RAW', newScans.RAW, pos = 1)
+    
+    if(verbose)
        cat("\nDimension of Spectral File Matrix Read In:", dim(newScans.RAW), "\n\n")
-	
+    
     
     # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
     
     if(!OR_2008_2011) {
-	
-	    if(grepl("CLPR_SWFSC", Spectra_Set)) {
-		
-		   metadata$specimen_id <- as.character(metadata$specimen_id)
-		   cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[2,][1:4], "\n\n")
-		   Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[2,]), 
+    
+        if(grepl("CLPR_SWFSC", Spectra_Set)) {
+        
+           metadata$specimen_id <- as.character(metadata$specimen_id)
+           cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[2,][1:4], "\n\n")
+           Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[2,]), 
               metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
-			  
-		} else if(grepl("CLPR_NWFSC", Spectra_Set)) {
-		
-		   metadata$specimen_id <- as.character(metadata$specimen_id)
-		   cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
-		   Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
-              metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id	  
-			  
-		} else {
-		
+              
+        } else if(grepl("CLPR_NWFSC", Spectra_Set)) {
+        
+           metadata$specimen_id <- as.character(metadata$specimen_id)
+           cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
+           Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
+              metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id      
+              
+        } else {
+        
             metadata$specimen_id <- as.character(metadata$specimen_id)
             cat("\n\nmetadata$specimen_id = ", metadata$specimen_id[1:4], "\n\n")
             
@@ -335,7 +341,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                cat("\n\nModel_Spectra_Meta$specimen_id = ", paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")[1:4], "\n\n")
                Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")), 
                     metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
-			}		
+            }        
         }    
     }     
     
@@ -358,9 +364,9 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
        Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 'none' # Change NA to 'none' tissue level.
     }     
-	 
-	Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName)  
-	 
+     
+    Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName)  
+     
     #  if(verbose) {
     #     print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])     
     #     CAT("\N\N")
@@ -369,22 +375,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     if(!is.null(Model_Spectra_Meta$structure_weight_g))    # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
            Model_Spectra_Meta$structure_weight_dg = 10 * as.numeric(Model_Spectra_Meta$structure_weight_g) # dg = decigram
 	
-    if(grepl("CLPR_SWFSC", Spectra_Set)) {
-	 
-	    if(!is.null(Model_Spectra_Meta$Length_cm))
-           Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/ifelse(exists("Sable_Len_cm_Range"), Sable_Len_cm_Range[2], max(Model_Spectra_Meta$Length_cm, na.rm = TRUE))
-                  
-        if(!is.null(Model_Spectra_Meta$Sex)) {
-           Sex_ <- Model_Spectra_Meta$Sex
-           Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Sex), ], as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
-		   if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
-        }  
-	}
+    if(Debug)
+       assign('Model_Spectra_Meta_D1', Model_Spectra_Meta, pos = 1)
 
     if(!is.null(Extra_Meta_Path)) {    
 
         if(verbose) 
-           cat("\n\n Extra_Meta_Path = ", Extra_Meta_Path, "\n\n")    	
+           cat("\n\n Extra_Meta_Path = ", Extra_Meta_Path, "\n\n")        
     
         if(Spectra_Set == "PWHT_Acoustic2019")
         
@@ -393,12 +390,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         else  {
         
             Object_Name <- JRWToolBox::load(Extra_Meta_Path) # 'DW' is NWFSC Data Warehouse
-			assign('metadata_DW', eval(parse(text = Object_Name)))
-			
-			
-            Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- Model_Spectra_Meta$Sex <- NULL   
-            # Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))  
-			Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month'))  
+            assign('metadata_DW', eval(parse(text = Object_Name[grep("Ages", Object_Name)])))
+            
+            if(Debug)
+               assign('metadata_DW', metadata_DW, pos = 1)
+            
+            Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$Length_cm <- Model_Spectra_Meta$weight_kg <- Model_Spectra_Meta$Sex <- Model_Spectra_Meta$Latitude <- Model_Spectra_Meta$Longitude <- NULL   
+            Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))
         }
      
            
@@ -409,16 +407,17 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
            Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))/
                             (ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[2], max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)) - 
                                 ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))
-          
-        assign('Model_Spectra_Meta', Model_Spectra_Meta, pos = 1)
-		
+        
+        if(Debug)        
+            assign('Model_Spectra_Meta_D2', Model_Spectra_Meta, pos = 1)
+        
         if(!is.null(Model_Spectra_Meta$Sex)) {
            # Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
-		   Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
-		   Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
+           Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+           Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
            Sex_ <- Model_Spectra_Meta$Sex
-           Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Sex), ], as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
-		   if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
+           Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+           if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
         }   
                     
         if(!is.null(Model_Spectra_Meta$Depth_m)) {
@@ -435,8 +434,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
            
         if(!is.null(Model_Spectra_Meta$Month)) {
             # Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
-            Month_ <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[Model_Spectra_Meta$Month]
-            Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
+			Month_ <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[Model_Spectra_Meta$Month]
+			if(length(unique(Model_Spectra_Meta$Month)) > 2) {
+               Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
+			} else {
+			    Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], Single_Month = 1)
+				names(Model_Spectra_Meta)[grep("Single_Month", names(Model_Spectra_Meta))] <- paste0("Month_", unique(Month_))
+		    }		
         }
            
         if(!is.null(Model_Spectra_Meta$Days_into_Year)) {
@@ -449,8 +453,11 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         # For consistennce, don't use the 'light' (or other level) of tissue level until a study is done
         # TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_missing_scan <= 10 & !is.na(Model_Spectra_Meta$Month_Scaled) & 
         #         (Model_Spectra_Meta$tissue_level_scan == "light" | is.na(Model_Spectra_Meta$tissue_level_scan)) & !is.na(Model_Spectra_Meta$Length_cm) & !is.na(Model_Spectra_Meta$structure_weight_g)
-                  
-        TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_missing_scan <= 10 & Model_Spectra_Meta$tissue_level_scan == 'none' 
+            
+        if(!is.null(Model_Spectra_Meta$percent_crystallized_scan))
+           TF <- Model_Spectra_Meta$percent_crystallized_scan <= 15 & Model_Spectra_Meta$percent_missing_scan <= 10 & Model_Spectra_Meta$tissue_level_scan == 'none' 
+		else  
+           TF <- rep(TRUE, nrow(Model_Spectra_Meta))   
         
     } else  
         TF <- rep(TRUE, nrow(Model_Spectra_Meta))
@@ -462,7 +469,9 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     }
     
     Model_Spectra_Meta <- renum(Model_Spectra_Meta[TF, ])
-	assign("Model_Spectra_Meta", Model_Spectra_Meta, pos = 1)
+    
+    if(Debug)
+       assign("Model_Spectra_Meta", Model_Spectra_Meta, pos = 1)
     
     if(verbose) {
         print(Model_Spectra_Meta[1:3, c(1, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta))])
@@ -476,13 +485,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         cat(paste0('\n\nTotal number of oties read in: ', sum(TF) + sum(!TF), '.  Number rejected based on metadata (including missing TMA, when asked for): ', sum(!TF), '.  Number kept: ', sum(TF), '.\n'))
         cat("\nAfter the particular metadata is selected for in a model run, remove those oties which contain any missing values for those applications, like NN modeling, that cannot handle them.\n\n")
     }
-	
-	if(plot) {
-	
+    
+    if(plot) {
+    
         sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-		
-	    if(is.null(Model_Spectra_Meta$TMA)) {
-		
+        
+        if(is.null(Model_Spectra_Meta$TMA)) {
+        
             rowNums <- 1:nrow(newScans.RAW)
             if(length(rowNums <= 26^2))
                plotly.Spec(data.frame(filenames = fileNames.0, newScans.RAW, Otie = paste0(LETTERS[floor((rowNums - 0.001)/26) + 1], LETTERS[rowNums %r1% 26], '_', rowNums), shortName = shortName), 
@@ -490,23 +499,23 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
             else
               plotly.Spec(data.frame(filenames = fileNames.0, newScans.RAW, Otie = factor(rowNums), shortName = shortName), N_Samp = min(c(length(fileNames.0), Max_N_Spectra)), colorGroup = 'Otie') 
             
-	        # if(!is.null(Static_Figure)) {
-	        #    dir.create("Figures", showWarnings = FALSE)
-	        #    ggsave(Static_Figure, path = "Figures", width = 14, height = 10, units = "in", dpi = 600)
-	        # }
-        	   
-		
+            # if(!is.null(Static_Figure)) {
+            #    dir.create("Figures", showWarnings = FALSE)
+            #    ggsave(Static_Figure, path = "Figures", width = 14, height = 10, units = "in", dpi = 600)
+            # }
+               
+        
         } else 
-		
-	        plotly.Spec(Model_Spectra_Meta, N_Samp = min(c(nrow(Model_Spectra_Meta), Max_N_Spectra)), colorGroup = 'TMA')  
+        
+            plotly.Spec(Model_Spectra_Meta, N_Samp = min(c(nrow(Model_Spectra_Meta), Max_N_Spectra)), colorGroup = 'TMA')  
 
         if(!is.null(htmlPlotFolder)) {
-	          dir.create("Figures", showWarnings = FALSE)
+              dir.create("Figures", showWarnings = FALSE)
               dir.create(paste0("Figures/", htmlPlotFolder), showWarnings = FALSE)
               saveHtmlFolder(paste0("Figures/", htmlPlotFolder), view = !interactive())
-        }		
-	}
- 	
+        }        
+    }
+     
     invisible(Model_Spectra_Meta)
 }   
       
