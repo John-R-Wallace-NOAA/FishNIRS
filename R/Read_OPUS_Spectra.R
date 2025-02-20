@@ -121,12 +121,17 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        yearPosition <- 7 # e.g. WACOMM2011 => 2011 (Segment used (see above) is: shortNameSegments[1] + 1)
     }
 	
-	# Chilipepper
+	# Chilipepper SW
 	if(grepl("CLPR_SWFSC", Spectra_Set)) {   
 	   shortNameSegments <- c(3, 2)
        shortNameSuffix <- 'Combo_Survey'	 
 	}
 	
+	# Chilipepper NW
+	if(grepl("CLPR_NWFSC", Spectra_Set)) {   
+	   shortNameSegments <- c(1, 6)
+       shortNameSuffix <- 'Combo_Survey'	 
+	}
 	
 	
    
@@ -196,6 +201,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        fileNames.0 <- dir()
     else   
        fileNames.0 <- dir(path = Spectra_Path)
+	   
+	assign("fileNames.0", fileNames.0, pos = 1)   
        
     if(verbose) {
        cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
@@ -208,6 +215,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         shortName <- paste0(shortName, "_", shortNameSuffix)
         
     fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
+	assign('fileNames', fileNames, pos = 1)
     
     # Read in metadata
     if(verbose)
@@ -242,9 +250,11 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         assign('newScans.ADJ', newScans.ADJ, pos = 1)
         
         wavebandsToUse <- as.numeric(colnames(newScans.ADJ[[1]]))
+		assign("wavebandsToUse", wavebandsToUse, pos = 1)
         if(verbose) {
             cat("\n\nWavebands being used:",  head(wavebandsToUse, 4), "...", tail(wavebandsToUse, 4))
             cat("\nDifference in wavebands:", diff(head(wavebandsToUse, 5)), "...", diff(tail(wavebandsToUse, 5)), "\n\n")
+			cat("Tabulation of differences:"); Table(diff(wavebandsToUse)); cat("\n\n")
         }
                
         colnames(newScans.ADJ[[1]]) <- wavebandsToUse
@@ -304,6 +314,13 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
 		   Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[2,]), 
               metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
 			  
+		} else if(grepl("CLPR_NWFSC", Spectra_Set)) {
+		
+		   metadata$specimen_id <- as.character(metadata$specimen_id)
+		   cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
+		   Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
+              metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id	  
+			  
 		} else {
 		
             metadata$specimen_id <- as.character(metadata$specimen_id)
@@ -349,9 +366,9 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     #     CAT("\N\N")
     #  }
     
-    if(!is.null(Model_Spectra_Meta$structure_weight_g))       
-           Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
-
+    if(!is.null(Model_Spectra_Meta$structure_weight_g))    # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
+           Model_Spectra_Meta$structure_weight_dg = 10 * as.numeric(Model_Spectra_Meta$structure_weight_g) # dg = decigram
+	
     if(grepl("CLPR_SWFSC", Spectra_Set)) {
 	 
 	    if(!is.null(Model_Spectra_Meta$Length_cm))
@@ -369,17 +386,19 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         if(verbose) 
            cat("\n\n Extra_Meta_Path = ", Extra_Meta_Path, "\n\n")    	
     
-        base::load(Extra_Meta_Path) 
-
         if(Spectra_Set == "PWHT_Acoustic2019")
         
             Model_Spectra_Meta <- match.f(Model_Spectra_Meta,  PWHT_Acoustic2019_Extra_Metadata, "specimen_id", "Specimen_Number", c('Length_cm', 'Weight_kg', 'Sex'))
         
         else  {
         
-            metadata_DW <- selectSpAgesFramFeb2024; rm(selectSpAgesFramFeb2024) # 'DW' is NWFSC Data Warehouse
-            Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- NULL   
-            Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))  
+            Object_Name <- JRWToolBox::load(Extra_Meta_Path) # 'DW' is NWFSC Data Warehouse
+			assign('metadata_DW', eval(parse(text = Object_Name)))
+			
+			
+            Model_Spectra_Meta$length_cm <- Model_Spectra_Meta$weight_kg <- Model_Spectra_Meta$Sex <- NULL   
+            # Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))  
+			Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month'))  
         }
      
            
@@ -390,11 +409,16 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
            Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))/
                             (ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[2], max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)) - 
                                 ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))
-           
+          
+        assign('Model_Spectra_Meta', Model_Spectra_Meta, pos = 1)
+		
         if(!is.null(Model_Spectra_Meta$Sex)) {
            # Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
+		   Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+		   Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
            Sex_ <- Model_Spectra_Meta$Sex
            Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Sex), ], as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+		   if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
         }   
                     
         if(!is.null(Model_Spectra_Meta$Depth_m)) {
