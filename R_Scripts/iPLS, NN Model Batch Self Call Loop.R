@@ -85,6 +85,7 @@ lib(e1071)
 lib(mdatools)
 lib(plotly)
 lib(FSA)
+lib(remotes)
 
 # lib(reticulate) # Need to test if the latest version of reticulate, works or not, with the working versions of tensorflow and keras below 
 # lib(tensorflow) # Latest versions of tensorflow and keras don't work as of 1/6/2025. At least not with my current Condo environment below - but I don't beleive that's the issue.
@@ -94,10 +95,9 @@ if(!any(installed.packages()[, 1] %in% "reticulate")) remotes::install_version('
 if(!any(installed.packages()[, 1] %in% "tensorflow")) remotes::install_version('tensorflow', '2.13.0', repos = "http://cran.us.r-project.org", upgrade = "never")
 if(!any(installed.packages()[, 1] %in% "keras")) remotes::install_version('keras', '2.13.0', repos = "http://cran.us.r-project.org", upgrade = "never")
 
-lib(reticulate) # Now just using lib() as library(), not the install feature
+lib(reticulate) # Now just using lib() as library(), not using the install feature
 lib(tensorflow)
 lib(keras)
-
 
 lib(prospectr)
 lib(openxlsx)
@@ -105,12 +105,14 @@ lib(openxlsx)
 lib(RcppArmadillo)
 
 
-# --- Setup for TensorFlow and Keras ---
+# --- Setup for TensorFlow and Keras ---  # See https://www.youtube.com/watch?app=desktop&v=UbpuXWKQJXs
 
 #  --- Conda TensorFlow environment ---
 Conda_TF_Eniv <- ifelse(.Platform$OS.type == 'windows', "C:/m3/envs/tf", "/more_home/h_jwallace/Python/tf_cpu_only/bin")  # Change these paths as needed
 Sys.setenv(RETICULATE_PYTHON = Conda_TF_Eniv) 
-Sys.getenv("RETICULATE_PYTHON") 
+Sys.getenv("RETICULATE_PYTHON") # If environment variable RETICULATE_PYTHON was not set, use_condaenv("base", required=T) or use_condaenv(Conda_TF_Eniv, required=T) should work
+
+
 
 if(.Platform$OS.type != 'windows') {
    # https://github.com/rstudio/tensorflow/issues/412
@@ -130,8 +132,8 @@ Seed_Model <- c(777, 747, 727, 787, 797)[3]
 # Pick the NN model to use (CNN_model_2D currently not working.)
 model_Name <- c('FCNN_model_ver_1', 'CNN_model_ver_5', 'CNN_model_2D')[1]
  
-Disable_GPU <- model_Name == 'FCNN_model_ver_1' # Only using the CPU is faster for the FCNN model but slower for CNN_model_ver_5, at least on Sablefish with data from 2017 and 2019.
-# Disable_GPU <- FALSE
+# Disable_GPU <- model_Name == 'FCNN_model_ver_1' # Only using the CPU is faster for the FCNN model but slower for CNN_model_ver_5, at least on Sablefish with data from 2017 and 2019.
+Disable_GPU <- FALSE
 cat("\nDisable_GPU =", Disable_GPU, "\n\n")
 
 # !!! Disabling the GPU has to come first for it to work. !!! (Grrrr, finally found this on the Web applied to Python and it is true here also!)
@@ -139,7 +141,8 @@ cat("\nDisable_GPU =", Disable_GPU, "\n\n")
 tensorflow::set_random_seed(Seed_Model, disable_gpu = Disable_GPU) 
 
 # Test to see if TensorFlow is working in R and has the correct path
-cat("\n\nCheck that Tensorflow as the correct path:", Conda_TF_Eniv, "\n\n"); print(tf_config()); cat("\n")
+cat("\n\nCheck that Tensorflow has the correct path:", Conda_TF_Eniv, "\n\n"); print(tf_config()); cat("\n")
+cat("\n\nCheck NVIDIA SMI:\n\n"); print(system("nvidia-smi")); cat("\n")
 
 a <- tf$Variable(5.56)
 b <- tf$Variable(2.7)
@@ -157,9 +160,9 @@ if(interactive())
 if(!interactive()) options(width = 120) 
  
 # Defaults for reading in the spectra sets are in the Read_OPUS_Spectra() function.    
-Spectra_Set <- c("PWHT_Acoustic2019", "PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023", "PWHT_Acoustic_2019_2023_Half_2024", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", # 8
-                 "Sable_Combo_2017", "Sable_Combo_2023", "Sable_Combo_Multi_2000", "Sable_Combo_Multi_17_21", "Sable_Combo_Multi_17_22", "Sable_Combo_Multi_17_18_19_22", # 14
-                 "Sable_Combo_Multi_17_22_21_200N", "Sable_Combo_2017_21_22_200N", "REYE_Comm_2012_2023", "REYE_Comm_AShop_2008_2023")[4] 
+Spectra_Set <- c("PWHT_Acoustic2019", "PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023", "PWHT_Acoustic_2019_2023_Half_2024", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_2018", # 9
+                 "Sable_Combo_2017", "Sable_Combo_2023", "Sable_Combo_Multi_2000", "Sable_Combo_Multi_17_21", "Sable_Combo_Multi_17_22", "Sable_Combo_Multi_17_18_19_22", # 15
+                 "Sable_Combo_Multi_17_22_21_200N", "Sable_Combo_2017_21_22_200N", "REYE_Comm_2012_2023", "REYE_Comm_AShop_2008_2023", "CLPR_Combo_2010_2014", "CLPR_Combo_2010__2024")[21] 
                  
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 dir.create('Figures', showWarnings = FALSE)
@@ -181,14 +184,15 @@ if(!Spectra_Only)
                        c('structure_weight_dg', 'Weight_prop_max', 'Depth_prop_max'), # 6 No fish length nor lat
                        c('structure_weight_dg', 'Length_prop_max'), # 7
                        c('structure_weight_dg'), # 8 
-					   c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F'), # 9 
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 10 
-					   c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Year_2019', 'Year_2023', 'Year_2024'), # 11 
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U', 'Year_2019', 'Year_2023', 'Year_2024'), # 12 
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M'), # 13
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 14
-                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Month_May', 'Month_Jun', 'Month_Jul', 'Month_Aug', 'Month_Sep', 'Month_Oct') # 15
-                      )[[7]]
+					   c('structure_weight_dg', 'Sex_F', 'Sex_M', 'Sex_U'), # 9
+					   c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F'), # 10 
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 11 
+					   c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Year_2019', 'Year_2023', 'Year_2024'), # 12 
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Sex_F', 'Sex_M', 'Sex_U', 'Year_2019', 'Year_2023', 'Year_2024'), # 13 
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M'), # 14
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Latitude_prop_max', 'Sex_F', 'Sex_M', 'Sex_U'), # 15
+                       c('structure_weight_dg', 'Length_prop_max', 'Weight_prop_max', 'Depth_prop_max', 'Month_May', 'Month_Jun', 'Month_Jul', 'Month_Aug', 'Month_Sep', 'Month_Oct') # 16
+                      )[[9]]
 else
     Metadata_Names <- NULL
  
@@ -237,8 +241,14 @@ else if(Spectra_Set %in% "PWHT_Acoustic_2023")
 else if(Spectra_Set %in% "PWHT_Acoustic_2019_2023_Half_2024")   # 
         # Model_Spectra_Meta_Path <- "C:\\SIDT\\PWHT_Acoustic_2019_2023_Half_2024\\PWHT_A_2019_2023_2024_Half_Model_Spectra_Str_Wt_ALL_GOOD_DATA.RData"     
         Model_Spectra_Meta_Path <- "C:\\SIDT\\PWHT_Acoustic_2019_2023_Half_2024\\PWHT_Acoustic_2019_2023_2024_Half_Model_Spectra_ALL_GOOD_DATA.RData"             
+
+else if(Spectra_Set %in% "CLPR_Combo_2010_2014")   		
+		Model_Spectra_Meta_Path <- "C:\\SIDT\\CLPR_Combo_2010_2014\\CLPR_SWFSC_2010_2014_Model_Spectra_Meta_ALL_GOOD_DATA.RData"
         
-else    {
+else if(Spectra_Set %in% "CLPR_Combo_2010__2024")   		
+		Model_Spectra_Meta_Path <- "C:\\SIDT\\CLPR_Combo_2010__2024\\CLPR_SWFSC_2010__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData"        
+        
+else  {
    # Below works for standard Spectra_Set setups, like "PWHT_Acoustic2019", "Sable_Combo_2019", and "Sable_Combo_2021"
    # print(Model_Spectra_Meta_Path <- paste0('C:/SIDT/', Spectra_Set, '/', Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData'))
    Year <- get.subs(Spectra_Set, sep = "_")[3] 
@@ -324,9 +334,12 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     # GitHub_File_Download("John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")     
     # For testing Read_OPUS_Spectra(): Meta_Path <- Spectra_Path <- NULL; Extra_Meta_Path <- NULL; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; (htmlPlotFolder <- paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
    
-    else 
+    else {
         load(Model_Spectra_Meta_Path)
-    
+		# Debug: apply(Model_Spectra_Meta[, (grep('project', names(Model_Spectra_Meta))):ncol(Model_Spectra_Meta)], 2, function(x) sum(is.na(x)))
+		if(TMA_Ages) 
+		   Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$TMA), ]
+    }
     headTail(Model_Spectra_Meta, 2, 2, 3, 46)
          
     # Single sex model    
@@ -387,7 +400,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
           
            headTail(Model_Spectra_Meta, 2, 2, 3, 45)   
            
-        } else if(Spectra_Set %in% c("PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023", "PWHT_Acoustic_2019_2023_Half_2024"))   {
+        } else if(Spectra_Set %in% c("PWHT_Acoustic_2023", "PWHT_Acoustic_2019_2023", "PWHT_Acoustic_2019_2023_Half_2024", "CLPR_Combo_2010_2014", "CLPR_Combo_2010__2024"))   {
            # Data checked for missing data in: C:\SIDT\PWHT_Acoustic_2023\Read in Scans.R where besides 2023 data being read in, 2019 and 2023 years were combined
            headTail(Model_Spectra_Meta, 2, 2, 3, 45)      
        
@@ -504,6 +517,8 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
       mdatools::plotRMSE(Model_Spectra.iPLS.F$gm, ylim = c(yMin, yMax))
       mdatools::plotRMSE(Model_Spectra.iPLS.F$om, ylim = c(yMin, yMax))
     ', file = "Figures/iPLS RMSE vs Components, gm_top and om_bottom.png")
+	
+	cat("\n\n")
     
     # Select iPLS vars and add metadata wanted
     # (p <- length(Model_Spectra.iPLS.F$var.selected)) # 380 freq selected out of a total of 1140
@@ -516,10 +531,9 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     
     # ---- Scans and metadata run ----
     
-    if(!is.null(Extra_Meta_Path) | (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra)) {
-        Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)]) 
-		Model_Spectra.sg.iPLS_Meta <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, Metadata_Names, drop = FALSE]) 
-    }
+    if(!is.null(Extra_Meta_Path) | (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra)) 
+       	Model_Spectra.sg.iPLS_Meta <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, Metadata_Names, drop = FALSE]) 
+    
 	
     #  if(!is.null(Extra_Meta_Path)) {
     #      if(Spectra_Set %in% "PWHT_Acoustic2019")    # No depth for Hake
@@ -536,21 +550,25 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     # if(is.null(Extra_Meta_Path) & !Spectra_Only) # 2nd approach to structure_weight_dg as the only metadata - since it is not from Extra_Meta_Path
     #    Model_Spectra.sg.iPLS <- data.frame(Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)], Model_Spectra_Meta[, 'structure_weight_dg', drop = FALSE]) # dg = decigram
       
+      
     if(Spectra_Only) {
-        Model_Spectra.sg.iPLS <- Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)]
-        
-    } else {
-        TF <- rep(FALSE, nrow(Model_Spectra.sg.iPLS))
+        TF <- rep(FALSE, nrow(Model_Spectra.sg.iPLS_Meta))
         for(i in Metadata_Names)
-            TF <- TF | is.na(Model_Spectra.sg.iPLS[, i])
+            TF <- TF | is.na(Model_Spectra.sg.iPLS_Meta[, i])
         
-        Model_Spectra.sg.iPLS <- renum(Model_Spectra.sg.iPLS[!TF, ])
+        Model_Spectra.sg.iPLS_Meta <- renum(Model_Spectra.sg.iPLS_Meta[!TF, ])
+		headTail(Model_Spectra.sg.iPLS_Meta)
+    }
+        
+    Model_Spectra.sg.iPLS <- Model_Spectra.sg[, sort(Model_Spectra.iPLS.F$var.selected)] 
+    
+    if(verbose) {
+       cat("\n\nModel_Spectra.sg.iPLS:\n\n")
+       headTail(Model_Spectra.sg.iPLS)
     }
     
-    headTail(Model_Spectra.sg.iPLS)
+    save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))  #  !!!! Model_Spectra.sg.iPLS_Meta recreated from Model_Spectra.sg.iPLS for loop at bottom of 'Initial settings setup' above !!!!
     
-    save(Model_Spectra.sg.iPLS, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData'))
-    # save(TMA_Vector, file = paste0(Spectra_Set, '_TMA_Vector.RData'))    
 } ##
  
 }
@@ -571,7 +589,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
 
 
 #   # --------- Special code to test 'Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg', 'Days_into_Year', and reduced model size in the NN Model with the same scans in Model_Spectra.sg.iPLS_Meta ------------------------------
-#   base::load("C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData")  # From NWFSC Data Warehouse
+#   base::load("C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2025.RData")  # From NWFSC Data Warehouse
 #   
 #   
 #   #     ===>                                                                                                                                                                                              Fish length and Otie Wgt: # SAD: 2050; RMSE: 2.7280
@@ -611,7 +629,7 @@ if(Metadata_Only) {
     headTail(Model_Spectra_Meta, 2, 2, 3, 70)
     
     cat("\n\nModel_Spectra.sg.iPLS_Meta (Columns below are those in the NN model.)\n\n")    
-    Model_Spectra.sg.iPLS_Meta <- Model_Spectra_Meta[, Metadata_Names] # dg = decigram 
+    Model_Spectra.sg.iPLS_Meta <- Model_Spectra_Meta[, Metadata_Names] # dg = decigram   # The Model_Spectra.sg.iPLS_Meta name is used here - but there is only metadata
     headTail(Model_Spectra.sg.iPLS_Meta)
     
     # - Single sex model -
@@ -619,8 +637,7 @@ if(Metadata_Only) {
     # dim(Model_Spectra_Meta)
     
     save(Model_Spectra_Meta, file = paste0(Spectra_Set, '_Model_Spectra_Meta_ALL_GOOD_DATA.RData')) 
-    save(Model_Spectra.sg.iPLS_Meta, file = paste0(Spectra_Set, '_Model_Spectra.sg.iPLS_Meta.RData'))
-        
+            
     TMA_Vector <- Model_Spectra_Meta$TMA; print(length(TMA_Vector))
     fileNames <- Model_Spectra_Meta$filenames; print(length(fileNames))
 }
@@ -727,7 +744,7 @@ if(!Spectra_Only)
 
    # for(Rdm_reps_Iter in seq(1, 19, by = 2)) {  # Two loops at a time
    # If restarting the loops, replace '1' below with the next random model wanted, so if x model is already finished, replace 1 with x + 1. !!! Don't forget to reset back to 1 when done. !!!
-   for(Rdm_reps_Iter in 13:Rdm_Reps_Main) {    
+   for(Rdm_reps_Iter in 1:Rdm_Reps_Main) {    
       cat("\n\nRdm_reps_Iter =", Rdm_reps_Iter, "\n\n")
       save(Rdm_reps_Iter, file = 'C:/SIDT/Train_NN_Model/Rdm_reps_Iter_Flag.RData')    
       
@@ -1303,29 +1320,14 @@ if(exists('Wrap_Up_Flag')) {
 # If data is not from multiple sessions, then Use_Session_Report_Meta can be TRUE  
 # Having 'Multi' in the the Spectra_Set sets Use_Session_Report_Meta to FALSE
 if(exists('Wrap_Up_Flag'))
-    # Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model", Multi_Year = TRUE, Bias_Adj_Factor_Ages = 11:15, Lowess_smooth_para = 2/3,
-    #   Model_Spectra_Meta_Path = Model_Spectra_Meta_Path, Use_Session_Report_Meta = FALSE, main = "OHE Sex & Year") 
-         
-    # Using the Model_Spectra_Meta_Path with extra TMA ages for 2024
-    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model", Multi_Year = TRUE, Use_Session_Report_Meta = FALSE, Bias_Adj_Factor_Ages = 11:15, Lowess_smooth_para = 2/3, 
-        TMA_Ages = TRUE, Model_Spectra_Meta_Path = "C:/SIDT/PWHT_Acoustic_2019_2023_2024/PWHT_Acoustic_2019_2023_2024_Model_Spectra_ALL_GOOD_DATA.RData", main = "Str Wgt")
-
-
-
-          
-if(FALSE)  {   # After moving results to: C:\SIDT\PWHT_Acoustic2019\NN_500N_Otie_Wgt_Fish_Len_FIsh_Wgt
-
-    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model",  Multi_Year = FALSE, axes_zoomed_limit = 17,
-         Model_Spectra_Meta_Path = paste0("C:/SIDT/Train_NN_Model/", Spectra_Set, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"), Use_Session_Report_Meta = FALSE)
-
-    Spectra_Set <- "PWHT_Acoustic2019"
-    Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/PWHT_Acoustic2019/NN_750N_Otie_Wgt_Fish_Len_Fish_Wgt",  Multi_Year = FALSE, axes_zoomed_limit = 17,
-         Model_Spectra_Meta_Path = paste0("C:/SIDT/PWHT_Acoustic2019/NN_750N_Otie_Wgt_Fish_Len_Fish_Wgt/", Spectra_Set, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"), Use_Session_Report_Meta = TRUE)        
-          
-}  
- 
- 
- 
+   Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model", Multi_Year = TRUE, Use_Session_Report_Meta = FALSE, 
+     Bias_Adj_Factor_Ages = c(12, 13:15), Bias_Reduction_Factor = 1.5, Lowess_smooth_para = 2/3, TMA_Ages = TRUE, TMA_Ages_Only = FALSE, # TMA_Ages_Only = FALSE => Predictions without TMA
+     # Metadata_Extra = c("Ship", "Cruise", "Haul", "Date_UTC", "Length_cm", "Sex", "Weight_kg", "Net_Partition"), 
+     Metadata_Extra = "Length_cm", 
+     Graph_Metadata_Extra = c("structure_weight_dg", "Length_cm"), 
+     Metadata_Extra_File = Model_Spectra_Meta_Path, 
+     Model_Spectra_Meta_Path = Model_Spectra_Meta_Path, main = "Metadata: Str Wgt & Sex") 
+	  
  
  
  
