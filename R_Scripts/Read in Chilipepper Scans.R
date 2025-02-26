@@ -24,11 +24,11 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
 }
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")    
-# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Import_Species_Metadata_from_NWFSC_Warehouse.R")
-# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Import_Species_Metadata_from_NWFSC_Warehouse.R")
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 
-source("C:\\SIDT\\Train_NN_Model\\Read_OPUS_Spectra.R")
-source("C:\\SIDT\\Chilipepper\\Import_Species_Metadata_from_NWFSC_Warehouse.R")
+# source("C:\\SIDT\\Train_NN_Model\\Read_OPUS_Spectra.R")
+# source("C:\\SIDT\\Chilipepper\\Import_Species_Metadata_from_NWFSC_Warehouse.R")
 
 Chilipepper_Combo_Metadata <- Import_Species_Metadata_from_NWFSC_Warehouse("chilipepper")
 headTail(Chilipepper_Combo_Metadata)
