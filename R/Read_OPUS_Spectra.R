@@ -13,7 +13,45 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                          spectraInterp = c('stats_splinefun_lowess', 'prospectr_resample')[1], 
                          opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Debug = FALSE) { 
  
-#  Max_N_Spectra is the max number of new spectra to be plotted in the spectra figure. 
+       #  Max_N_Spectra is the max number of new spectra to be plotted in the spectra figure. 
+ 
+ # ------------------------------------ Download or define functions ------------------------------------------------
+ 
+   sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
+           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+           if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
+           File.ASCII <- tempfile()
+           if(type == "function")
+             on.exit(file.remove(File.ASCII))
+           getTMP <- httr::GET(gsub(' ', '%20', URL))
+           
+           if(type == "function") {
+             write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+             source(File.ASCII)
+           } 
+           if(type == "script") {
+             fileName <- strsplit(URL, "/")[[1]]
+             fileName <- rev(fileName)[1]
+             write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
+           }  
+    }
+    
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")      
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")   
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
+    
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
+    
+    '%r1%' <- function (e1, e2) 
+    {
+       ifelse(e1%%e2 == 0, e2, e1%%e2)
+    }
+     
  
 # ------------------------------------ Main User Setup ------------------------------------------------------------
    
@@ -155,41 +193,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        if (!any(installed.packages()[, 1] %in% "opusreader2")) 
          remotes::install_github("spectral-cockpit/opusreader2")   #  https://github.com/spectral-cockpit/opusreader2
     }
-  
-    sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
-           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
-           if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
-           File.ASCII <- tempfile()
-           if(type == "function")
-             on.exit(file.remove(File.ASCII))
-           getTMP <- httr::GET(gsub(' ', '%20', URL))
-           
-           if(type == "function") {
-             write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
-             source(File.ASCII)
-           } 
-           if(type == "script") {
-             fileName <- strsplit(URL, "/")[[1]]
-             fileName <- rev(fileName)[1]
-             write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
-           }  
-    }
     
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/bar.R")
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/renum.R")       
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")   
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
-    
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Correlation_R_squared_RMSE_MAE_SAD.R")
-    
-    '%r1%' <- function (e1, e2) 
-    {
-       ifelse(e1%%e2 == 0, e2, e1%%e2)
-    }
-     
     # -----------------------------------------------------------------------------------------------------------------------------------
 
   
@@ -390,7 +394,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         else  {
         
             Object_Name <- JRWToolBox::load(Extra_Meta_Path) # 'DW' is NWFSC Data Warehouse
-            assign('metadata_DW', eval(parse(text = Object_Name[grep("Ages", Object_Name)])))
+            assign('metadata_DW', eval(parse(text = Object_Name[grep("Metadata", Object_Name)])))
             
             if(Debug)
                assign('metadata_DW', metadata_DW, pos = 1)
@@ -438,8 +442,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
 			if(length(unique(Model_Spectra_Meta$Month)) > 2) {
                Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
 			} else {
-			    Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], Single_Month = 1)
-				names(Model_Spectra_Meta)[grep("Single_Month", names(Model_Spectra_Meta))] <- paste0("Month_", unique(Month_))
+			    Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ]
+				Model_Spectra_Meta[paste0("Month_", unique(Month_))] <- 1
 		    }		
         }
            
