@@ -41,8 +41,10 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")      
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")   
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/replaceString.R")     
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Months.POSIXt.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/saveHtmlFolder.R") 
     
@@ -53,7 +55,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        ifelse(e1%%e2 == 0, e2, e1%%e2)
     }
      
- 
+
 # ------------------------------------ Main User Setup ------------------------------------------------------------
    
     # Hake 2019, BMS
@@ -172,7 +174,16 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        shortNameSuffix <- 'Combo_Survey'     
     }
     
+    # Chilipepper CACOMM
+    if(grepl("CLPR_CACOMM", Spectra_Set)) {   
+       shortNameSegments <- c(1, 6)
+       shortNameSuffix <- 'CA_Comm'     
+    }
     
+    if(Debug) {
+        assign('Spectra_Set', Spectra_Set, pos = 1)
+        assign('shortNameSuffix', shortNameSuffix, pos = 1)
+    }   
    
     # -----------------------------------------------------------------------------------------------------------------------------------
  
@@ -206,6 +217,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        fileNames.0 <- dir()
     else   
        fileNames.0 <- dir(path = Spectra_Path)
+       
             
     if(verbose) {
        cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
@@ -213,7 +225,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        cat("\n\n")
     }
     
-    shortName <- apply(matrix(fileNames.0, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
+    
+    shortName <- apply(matrix(replaceString(fileNames.0, "-", "_"), ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
     if(!is.null(shortNameSuffix))
         shortName <- paste0(shortName, "_", shortNameSuffix)
         
@@ -224,7 +237,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     # Read in metadata
     if(verbose)
        cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
-    metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet) # Load in ancillary data 
+    metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet, detectDates = TRUE) # Load in ancillary data 
+    
     if(Debug)
        assign('metadata', metadata, pos = 1) 
        
@@ -250,7 +264,6 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                                           DUR = ifelse(is.null(Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value), NA, Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value))) # Scan time (sec)
            }   
         }
-        
         
         
         wavebandsToUse <- as.numeric(colnames(newScans.ADJ[[1]]))
@@ -377,6 +390,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     #     CAT("\N\N")
     #  }
     
+    # -- structure_weight_dg --
     if(!is.null(Model_Spectra_Meta$structure_weight_g))    # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
            Model_Spectra_Meta$structure_weight_dg = 10 * as.numeric(Model_Spectra_Meta$structure_weight_g) # dg = decigram
 	
@@ -404,26 +418,9 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
             Model_Spectra_Meta <- match.f(Model_Spectra_Meta, metadata_DW, "specimen_id", "AgeStr_id", c('Length_cm', 'Weight_kg', 'Sex', 'Depth_m', 'Latitude_dd', 'Month', 'Days_into_Year'))
         }
      
-           
-        if(!is.null(Model_Spectra_Meta$Length_cm))
-           Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/ifelse(exists("Sable_Len_cm_Range"), Sable_Len_cm_Range[2], max(Model_Spectra_Meta$Length_cm, na.rm = TRUE))
-        
-        if(!is.null(Model_Spectra_Meta$Weight_kg))
-           Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))/
-                            (ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[2], max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)) - 
-                                ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))
         
         if(Debug)        
             assign('Model_Spectra_Meta_D2', Model_Spectra_Meta, pos = 1)
-        
-        if(!is.null(Model_Spectra_Meta$Sex)) {
-           # Model_Spectra_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
-           Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
-           Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
-           Sex_ <- Model_Spectra_Meta$Sex
-           Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
-           if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
-        }   
                     
         if(!is.null(Model_Spectra_Meta$Depth_m)) {
            if(sum(abs(diff(Model_Spectra_Meta$Depth_m[!is.na(Model_Spectra_Meta$Depth_m)]))) == 0) # Are all the values the same?
@@ -437,16 +434,6 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         if(!is.null(Model_Spectra_Meta$Latitude_dd))
            Model_Spectra_Meta$Latitude_prop_max <- (Model_Spectra_Meta$Latitude_dd - 30.5)/(49.1 - 30.5)
            
-        if(!is.null(Model_Spectra_Meta$Month)) {
-            # Model_Spectra_Meta$Month_Scaled <- Model_Spectra_Meta$Month/12
-			Month_ <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[Model_Spectra_Meta$Month]
-			if(length(unique(Model_Spectra_Meta$Month)) > 2) {
-               Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
-			} else {
-			    Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ]
-				Model_Spectra_Meta[paste0("Month_", unique(Month_))] <- 1
-		    }		
-        }
            
         if(!is.null(Model_Spectra_Meta$Days_into_Year)) {
            if(sum(abs(diff(Model_Spectra_Meta$Days_into_Year[!is.na(Model_Spectra_Meta$Days_into_Year)]))) == 0)  # Are all the values the same?
@@ -464,9 +451,44 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
 		else  
            TF <- rep(TRUE, nrow(Model_Spectra_Meta))   
         
-    } else  
+    } else {
+        if(grepl("CLPR_CACOMM", Spectra_Set) | grepl("CLPR_ORCOMM", Spectra_Set)) {   
+           Model_Spectra_Meta$Sex <- recode.simple(Model_Spectra_Meta$Sex, cbind(c(1, 2, NA), c('M', 'F', 'U')))
+           Model_Spectra_Meta$Month <- Months.POSIXt(Model_Spectra_Meta$catch_date)
+        }   
         TF <- rep(TRUE, nrow(Model_Spectra_Meta))
-
+    }
+    
+    if(!is.null(Model_Spectra_Meta$Length_cm))
+        Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/ifelse(exists("Sable_Len_cm_Range"), Sable_Len_cm_Range[2], max(Model_Spectra_Meta$Length_cm, na.rm = TRUE))
+        
+    if(!is.null(Model_Spectra_Meta$Weight_kg))
+        Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))/
+                            (ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[2], max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)) - 
+                                ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))
+        
+    
+    # -- Sex, One hot encoding --
+    if(!is.null(Model_Spectra_Meta$Sex)) {
+        Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+        Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
+        Sex_ <- Model_Spectra_Meta$Sex
+        Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+        if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
+    }   
+    
+    #  -- Month, One hot encoding -- 
+     if(!is.null(Model_Spectra_Meta$Month)) {
+	    Month_ <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[Model_Spectra_Meta$Month]
+	    if(length(unique(Model_Spectra_Meta$Month)) > 2) {
+                Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
+	    } else {
+	        Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ]
+	    	Model_Spectra_Meta[paste0("Month_", unique(Month_))] <- 1
+        }		
+    }
+    
+    
     if(TMA_Ages_Only) {     
         TF <- TF & !is.na(Model_Spectra_Meta$TMA)
         if(verbose)
