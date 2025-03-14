@@ -23,7 +23,8 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
        }  
 }
 
-sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")    
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R") 
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/replaceString.R")     
 # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 
 source("C:\\SIDT\\Train_NN_Model\\Read_OPUS_Spectra.R")
@@ -38,6 +39,8 @@ headTail(Chilipepper_Combo_Metadata)
 save(Chilipepper_Combo_Metadata, file = "C:/SIDT/Get Otie Info from Data Warehouse/Chilipepper_Combo_Metadata.RData") # R object name needs to have "Metadata" in it
 
 
+
+
 # For testing Read_OPUS_Spectra():  Spectra_Set = "PWHT_Acoustic2023"; Spectra_Path = "PWHT_Acoustic2023_Scans"; fineFreqAdj = 0;
 #                   Meta_Path <- "C:/SIDT/PWHT_Acoustic_2023/Acoustic_2023_PWHT_NIR0069_Scanning_Session_Report_For_NWC.xlsx";
 #                   plot <- TRUE; Meta_Add <- TRUE; spectraInterp = 'stats_splinefun_lowess'; excelSheet <- 3; opusReader = 'philippbaumann_opusreader2'; 
@@ -45,7 +48,7 @@ save(Chilipepper_Combo_Metadata, file = "C:/SIDT/Get Otie Info from Data Warehou
 #      
 
 
-for (i in (2010:2016)[7]) {
+for (i in (2010:2016)) {
 
     Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = paste0("CLPR_SWFSC_", i), Spectra_Path = paste0(i, "_scans"), htmlPlotFolder = paste0("Figures_", i), Static_Figure = paste0("CLPR_SWFSC_", i, ".png"),
                                         Meta_Path = "C:/SIDT/Chilipepper/Chilipepper_Otolith_Weights_SWFSC_with_Scans.xlsx", excelSheet = i - 2009,
@@ -54,48 +57,113 @@ for (i in (2010:2016)[7]) {
 	if(i == 2010)  
         Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$shortName %in% "CLPR_100165282_Combo_Survey", ]
 		
-    headTail(Model_Spectra_Meta, 3, 3, 3, 40)
+    headTail(Model_Spectra_Meta, 3, 3, 3, 55)
 	     
     save(Model_Spectra_Meta, file = paste0("CLPR_SWFSC_", i, "_Model_Spectra_Meta_ALL_GOOD_DATA_TEST.RData"))
 }
 
 
-for (i in c(2019, 2021:2024)) {
+for (i in c(2018, 2019, 2021:2024)) {
 
     Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = paste0("CLPR_NWFSC_", i), Spectra_Path = paste0(i, "_scans"), htmlPlotFolder = paste0("Figures_", i), Static_Figure = paste0("CLPR_SWFSC_", i, ".png"),
                                         Meta_Path = paste0("C:/SIDT/Chilipepper/CLPR_COMBO_", i, "_Scanning_Session_Report_For_NWC.xlsx"),
 										Extra_Meta_Path = "C:/SIDT/Get Otie Info from Data Warehouse/Chilipepper_Combo_Metadata.RData", Debug = FALSE)
 		
-    headTail(Model_Spectra_Meta, 3, 3, 3, 40)
+    headTail(Model_Spectra_Meta, 3, 3, 3, 55)
+    Table(Model_Spectra_Meta$TMA)
 	     
     save(Model_Spectra_Meta, file = paste0("CLPR_SWFSC_", i, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
 }
 
 
-# --- CA Commercial - The 2018 oties were missing... ---
+# --- CA Commercial 2019, 2020- The 2018 oties were missing... ---
 
 #  !!!!!! Capitalize the first letter of "length_cm", weight_kg", and "sex" in the Excel file !!!!!!
+#  !!!!!! Also "project" needs to be in the first column, and there needs to be "TMA", "specimen_id", "sample_year", and "structure_weight_g" columns. !!!!!!
 
 Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = "CLPR_CACOMM_2019_2020", Spectra_Path = "2019_2020_CACOMM_Scans", htmlPlotFolder = "Figures_CLPR_CACOMM_2019_2020", 
-                                        shortNameSegments <- c(1, 6), shortNameSuffix <- 'CA_Comm', Static_Figure = "CLPR_CACOMM_2019_2020.png",
+                                        shortNameSegments = 6, shortNameSuffix = 'CA_Comm', Static_Figure = "CLPR_CACOMM_2019_2020.png",
                                         Meta_Path = "C:/SIDT/Chilipepper/CLPR_CACOMM_2019_2020_Scanning_Session_Report_For_NWC.xlsx", Debug = TRUE)
 		
-headTail(Model_Spectra_Meta, 3, 3, 3, 40)
+headTail(Model_Spectra_Meta, 3, 3, 3, 55)
 	     
 save(Model_Spectra_Meta, file = paste0("CLPR_CACOMM_2019_2020_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
 
 
-# --- OR Commercial ---
+# --- CA Commercial 1985 ---
+
+#  !!!!!! Capitalize the first letter of "length_cm", weight_kg", and "sex" in the Excel file !!!!!!
+#  !!!!!! Also "project" needs to be in the first column, and there needs to be "TMA", "specimen_id", "sample_year", and "structure_weight_g" columns. !!!!!!
+
+Cols <- c("project", "specimen_id", "sample_year", "Sex", "Length_cm", "Weight_kg", "TMA", "Month", "structure_weight_g")
+
+C_1985_sheet_1 <- openxlsx::read.xlsx("C:/SIDT/Chilipepper/Chilipepper_1985_Otolith_Weights_SWFSC_OA.xlsx", sheet = 1, detectDates = TRUE)
+C_1985_sheet_1$Length_cm <- C_1985_sheet_1$Length_mm/10
+C_1985_sheet_1$Weight_kg <- NA
+C_1985_sheet_1$Month <- NA
+
+C_1985_sheet_2 <- openxlsx::read.xlsx("C:/SIDT/Chilipepper/Chilipepper_1985_Otolith_Weights_SWFSC_OA.xlsx", sheet = 2, detectDates = TRUE)
+C_1985_sheet_2$Length_cm <- C_1985_sheet_2$Length_mm/10
+C_1985_sheet_2$specimen_id <- paste(C_1985_sheet_2$specimen_id, replaceString(format(C_1985_sheet_2$clust_no, width = 3), " ", "0"), replaceString(format(C_1985_sheet_2$fish_no, width = 3), " ", "0"), sep= "_")
+C_1985_sheet_2$Month <- NA
+
+openxlsx::write.xlsx(rbind(C_1985_sheet_1[, Cols], C_1985_sheet_2[, Cols]), file = "C:/SIDT/Chilipepper/Chilipepper_1985_Otolith_Weights_SWFSC.xlsx")
+
+Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = "CLPR_CACOMM_1985", Spectra_Path = "1985_CACOMM_Scans", htmlPlotFolder = "Figures_CLPR_CACOMM_1985", 
+                                        shortNameSegments = 2, shortNameSuffix = 'CA_Comm', Static_Figure = "CLPR_CACOMM_1985.png", excelSheet = 1,
+                                        Meta_Path = "C:/SIDT/Chilipepper/Chilipepper_1985_Otolith_Weights_SWFSC.xlsx", Debug = TRUE)
+        
+headTail(Model_Spectra_Meta, 3, 3, 3, 55)
+Table(Model_Spectra_Meta$TMA)
+
+# match.f(data.frame(FN = substring(fileNames, 13)), data.frame(MD = metadata$specimen_id), "FN", "MD", "MD")
+
+save(Model_Spectra_Meta, file = paste0("CLPR_CACOMM_1985_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
+
+
+# --- CA Commercial 1986 ---
+
+#  !!!!!! Capitalize the first letter of "length_cm", weight_kg", and "sex" in the Excel file !!!!!!
+#  !!!!!! Also "project" needs to be in the first column, and there needs to be "TMA", "specimen_id", "sample_year", and "structure_weight_g" columns. !!!!!!
+
+Cols <- c("project", "specimen_id", "sample_year", "Sex", "Length_cm", "Weight_kg", "TMA", "Month", "structure_weight_g")
+
+C_1986_sheet_1 <- openxlsx::read.xlsx("C:/SIDT/Chilipepper/Chilipepper_1986_Otolith_Weights_SWFSC_OA.xlsx", sheet = 1, detectDates = TRUE)
+C_1986_sheet_1$Length_cm <- C_1986_sheet_1$Length_mm/10
+C_1986_sheet_1$Weight_kg <- NA
+C_1986_sheet_1$Month <- NA
+
+
+openxlsx::write.xlsx(C_1986_sheet_1[, Cols], file = "C:/SIDT/Chilipepper/Chilipepper_1986_Otolith_Weights_SWFSC.xlsx")
+
+Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = "CLPR_CACOMM_1986", Spectra_Path = "1986_CACOMM_Scans", htmlPlotFolder = "Figures_CLPR_CACOMM_1986", 
+                                        shortNameSegments = 2, shortNameSuffix = 'CA_Comm', Static_Figure = "CLPR_CACOMM_1986.png", excelSheet = 1,
+                                        Meta_Path = "C:/SIDT/Chilipepper/Chilipepper_1986_Otolith_Weights_SWFSC.xlsx", Debug = TRUE)
+        
+headTail(Model_Spectra_Meta, 3, 3, 3, 55)
+Table(Model_Spectra_Meta$TMA)
+
+# match.f(data.frame(FN = substring(fileNames, 13)), data.frame(MD = metadata$specimen_id), "FN", "MD", "MD")
+
+save(Model_Spectra_Meta, file = paste0("CLPR_CACOMM_1986_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
+
+
+
+
+
+
+# --- OR Commercial 2023, 2024 ---
 
 #  !!!!!! Capitalize the first letter of "length_cm", weight_kg", and "sex" in the Excel file !!!!!!
 
 Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = "CLPR_ORCOMM_2023_2024", Spectra_Path = "2023_2024_ORCOMM_Scans", htmlPlotFolder = "Figures_CLPR_ORCOMM_2023_2024", 
-                                        shortNameSegments <- c(1, 6), shortNameSuffix <- 'CA_Comm', Static_Figure = "CLPR_ORCOMM_2023_2024.png",
+                                        shortNameSegments = 6, shortNameSuffix = 'OR_Comm', Static_Figure = "CLPR_ORCOMM_2023_2024.png",
                                         Meta_Path = "C:/SIDT/Chilipepper/CLPR_ORCOMM_2023_2024_Scanning_Session_Report_For_NWC.xlsx", Debug = TRUE)
 		
-headTail(Model_Spectra_Meta, 3, 3, 3, 40)
+headTail(Model_Spectra_Meta, 3, 3, 3, 55)
+Table(Model_Spectra_Meta$TMA)
 	     
-save(Model_Spectra_Meta, file = paste0("CLPR_CLPR_ORCOMM_2023_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
+save(Model_Spectra_Meta, file = paste0("CLPR_ORCOMM_2023_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
 
  
        
@@ -142,8 +210,14 @@ Columns <- Columns[c(1:511, 517, 518, 513, 520:526, 519, 527:533, 538)]
 matrix(Columns, ncol = 1) # Length is now 530
 Columns <- c(Columns[1:529], c("Month_May", "Month_Jun", "Month_Jul", "Month_Aug", "Month_Sep", "Month_Oct"), Columns[530])
 Columns[c(1, 507:536)]
- [1] "filenames"           "X3960"               "X3952"               "project"             "sample_year"         "Sex"                 "Length_cm"           "TMA"                 "structure_weight_g" 
-[10] "specimen_id"         "shortName"           "structure_weight_dg" "Length_prop_max"     "Sex_F"               "Sex_M"               "Sex_U"         
+ [1] "filenames"           "X3960"               "X3952"               "project"   "sample_year""Sex"  "Length_cm"   "TMA"     "structure_weight_g" 
+[10] "specimen_id"         "shortName"           "structure_weight_dg" "Length_prop_max"     "Sex_F"  "Sex_M"   "Sex_U"         
+
+[1] "filenames"               "X3960"                   "X3952"                   "project"                 "sample_year"             "TMA"                     "specimen_id"             "shortName"              
+[9] "structure_weight_g"      "Length_cm"               "Weight_kg"               "Sex"                     "Depth_m"                 "Latitude_dd"             "Month"                   "Days_into_Year"         
+[17] "structure_weight_dg"     "Length_prop_max"         "Weight_prop_max"         "Sex_F"                   "Sex_M"                   "Sex_U"                   "Depth_prop_max"          "Latitude_prop_max"      
+[25] "Month_May"               "Month_Jun"               "Month_Jul"               "Month_Aug"               "Month_Sep"               "Month_Oct"               "Days_into_Year_prop_max"
+
 
 
 
@@ -155,7 +229,7 @@ for(i in c(2010, 2014:2016, 2019, 2021:2024)[2]) {
 
 
 Model_Spectra_Meta_All <- NULL 
-for(i in c(2010, 2014:2016, 2019, 2021:2024)) {
+for(i in c(2010, 2014:2016, 2018:2019, 2021:2024)[2:10]) {
     print(i)
     base::load(paste0("C:\\SIDT\\Chilipepper\\CLPR_SWFSC_", i, "_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
 	if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
@@ -165,7 +239,8 @@ for(i in c(2010, 2014:2016, 2019, 2021:2024)) {
     if(is.null(Model_Spectra_Meta$Month_Aug))  Model_Spectra_Meta$Month_Aug <- 0
     if(is.null(Model_Spectra_Meta$Month_Sep))  Model_Spectra_Meta$Month_Sep <- 0
     if(is.null(Model_Spectra_Meta$Month_Oct))  Model_Spectra_Meta$Month_Oct <- 0
-    # plotly.Spec(Model_Spectra_Meta, N_Samp = min(c(nrow(Model_Spectra_Meta), 'All')), colorGroup = 'TMA')  
+    if(i == 2018)
+      plotly.Spec(Model_Spectra_Meta, N_Samp = min(c(nrow(Model_Spectra_Meta), 'All')), colorGroup = 'TMA')  
     Model_Spectra_Meta_All <- rbind(Model_Spectra_Meta_All, Model_Spectra_Meta[, Columns])
 }
 
@@ -176,7 +251,7 @@ Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 
 headTail(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$TMA), ], 3,3,3,40)
 
-save(Model_Spectra_Meta, file = "CLPR_SWFSC_2010__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+save(Model_Spectra_Meta, file = "CLPR_SWFSC_2010_2018_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 
 # For the preliminary model with only 2010 and 2014
@@ -188,8 +263,9 @@ save(Model_Spectra_Meta, file = "CLPR_SWFSC_2010_2014_Model_Spectra_Meta_ALL_GOO
 
 # ---- Add CA comm scans - *** need "Columns" vector from above *** ----
 
-load("CLPR_SWFSC_2010__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-Model_Spectra_Meta_SWFSC_2010__2024 <- Model_Spectra_Meta
+load("CLPR_SWFSC_2010_2018_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Table(Model_Spectra_Meta$ sample_year, Model_Spectra_Meta$TMA)
+Model_Spectra_Meta_SWFSC_2010_2018_2024 <- Model_Spectra_Meta
 
 load("CLPR_CACOMM_2019_2020_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
@@ -220,12 +296,13 @@ if(is.null(Model_Spectra_Meta$Month_Sep))  Model_Spectra_Meta$Month_Sep <- 0
 if(is.null(Model_Spectra_Meta$Month_Oct))  Model_Spectra_Meta$Month_Oct <- 0
 
 Model_Spectra_Meta$sample_year <- paste0(Model_Spectra_Meta$sample_year, "_CA_Comm")
-Table(Model_Spectra_Meta$sample_year)
+Table(Model_Spectra_Meta$ sample_year, Model_Spectra_Meta$TMA)
 
 headTail(Model_Spectra_Meta,3,3,3,62)
 
-Model_Spectra_Meta <- rbind(Model_Spectra_Meta_SWFSC_2010__2024, Model_Spectra_Meta[, Columns])  # Columns[c(1, 507:536)]
-Table(Model_Spectra_Meta$sample_year)
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_SWFSC_2010_2018_2024, Model_Spectra_Meta[, Columns])  # Columns[c(1, 507:536)]
+Table(Model_Spectra_Meta$ sample_year, Model_Spectra_Meta$TMA)
+
 
 save(Model_Spectra_Meta, file = "CLPR_SWFSC_2010__2024_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
@@ -234,10 +311,13 @@ save(Model_Spectra_Meta, file = "CLPR_SWFSC_2010__2024_Comm_Model_Spectra_Meta_A
 
 # ---- Add OR comm scans - *** need "Columns" vector from above *** ----
 
-load("C:\\SIDT\\CLPR_Combo_2010__2024\\CLPR_SWFSC_2010__2024_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+# load("C:\\SIDT\\CLPR_Combo_2010__2024\\CLPR_SWFSC_2010__2024_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+load("CLPR_SWFSC_2010__2024_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 Model_Spectra_Meta_SWFSC_2010__2024 <- Model_Spectra_Meta
 
-load("CLPR_CLPR_ORCOMM_2023_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+load("CLPR_ORCOMM_2023_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 Model_Spectra_Meta$Depth_m <- NA
 Model_Spectra_Meta$Latitude_dd <- NA
@@ -265,10 +345,63 @@ Table(Model_Spectra_Meta$sample_year)
 
 headTail(Model_Spectra_Meta,3,3,3,62)
 
-Model_Spectra_Meta <- rbind(Model_Spectra_Meta_SWFSC_2010__2024, Model_Spectra_Meta[, Columns])  # Columns[c(1, 507:536)]
-Table(Model_Spectra_Meta$sample_year)
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_SWFSC_2010__2024, Model_Spectra_Meta[, Columns])  
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 
 save(Model_Spectra_Meta, file = "CLPR_SWFSC_2010__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+
+
+# ---- Add 1985, 1986 CA comm scans - *** need "Columns" vector from above *** ----
+
+load("CLPR_SWFSC_2010__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+Model_Spectra_Meta_SWFSC_2010__2024 <- Model_Spectra_Meta
+
+
+load("C:\\SIDT\\Chilipepper\\CLPR_CACOMM_1985_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_CLPR_CACOMM_1985 <- Model_Spectra_Meta
+
+load("C:\\SIDT\\Chilipepper\\CLPR_CACOMM_1986_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_CLPR_CACOMM_1985, Model_Spectra_Meta)
+
+
+Model_Spectra_Meta$Depth_m <- NA
+Model_Spectra_Meta$Latitude_dd <- NA
+Model_Spectra_Meta$Days_into_Year <- NA
+
+Model_Spectra_Meta$Depth_prop_max <- NA
+Model_Spectra_Meta$Weight_prop_max <- NA
+Model_Spectra_Meta$Latitude_prop_max <- NA
+Model_Spectra_Meta$Days_into_Year_prop_max <- NA
+
+
+if(is.null(Model_Spectra_Meta$Sex_F))  Model_Spectra_Meta$Sex_F <- 0
+if(is.null(Model_Spectra_Meta$Sex_M))  Model_Spectra_Meta$Sex_M <- 0
+if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
+
+if(is.null(Model_Spectra_Meta$Month_May))  Model_Spectra_Meta$Month_May <- 0
+if(is.null(Model_Spectra_Meta$Month_Jun))  Model_Spectra_Meta$Month_Jun <- 0
+if(is.null(Model_Spectra_Meta$Month_Jul))  Model_Spectra_Meta$Month_Jul <- 0
+if(is.null(Model_Spectra_Meta$Month_Aug))  Model_Spectra_Meta$Month_Aug <- 0
+if(is.null(Model_Spectra_Meta$Month_Sep))  Model_Spectra_Meta$Month_Sep <- 0
+if(is.null(Model_Spectra_Meta$Month_Oct))  Model_Spectra_Meta$Month_Oct <- 0
+
+Model_Spectra_Meta$sample_year <- paste0(Model_Spectra_Meta$sample_year, "_OR_Comm")
+Table(Model_Spectra_Meta$sample_year)
+
+Model_Spectra_Meta <- Model_Spectra_Meta[!Model_Spectra_Meta$sample_year %in% 'NA_OR_Comm', ]
+Table(Model_Spectra_Meta$sample_year)
+
+headTail(Model_Spectra_Meta,3,3,3,62)
+
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_SWFSC_2010__2024, Model_Spectra_Meta[, Columns])  
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+
+Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$structure_weight_dg), ]
+
+save(Model_Spectra_Meta, file = "CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 
 
