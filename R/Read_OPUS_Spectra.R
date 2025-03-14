@@ -6,7 +6,7 @@
 
 
 Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acoustic2023", "Sable_2017_2019", "Sable_Combo_2022")[2], Spectra_Path = NULL, 
-                         shortNameSegments = c(1, 6), shortNameSuffix = 'COMBO', yearPosition = 6, fineFreqAdj = 0,
+                         shortNameSegments = NULL, shortNameSuffix = 'COMBO', yearPosition = 6, fineFreqAdj = 0,
                          Meta_Path = NULL, Extra_Meta_Path = NULL, TMA_Ages_Only = c(TRUE, FALSE)[2], 
                          excelSheet = 3, Max_N_Spectra = list(50, 200, 'All')[[3]], OR_2008_2011 = FALSE,
                          verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], Static_Figure = NULL, htmlPlotFolder = NULL, 
@@ -41,8 +41,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")      
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")  
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/replaceString.R")     
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")      
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Months.POSIXt.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
@@ -175,13 +174,15 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     }
     
     # Chilipepper CACOMM
-    if(grepl("CLPR_CACOMM", Spectra_Set)) {   
+    if(grepl("CLPR_CACOMM_2019_2020", Spectra_Set)) {   
        shortNameSegments <- c(1, 6)
        shortNameSuffix <- 'CA_Comm'     
     }
     
     if(Debug) {
         assign('Spectra_Set', Spectra_Set, pos = 1)
+        assign('Spectra_Path', Spectra_Path, pos = 1)
+        assign('shortNameSegments', shortNameSegments, pos = 1)
         assign('shortNameSuffix', shortNameSuffix, pos = 1)
     }   
    
@@ -213,35 +214,34 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     if(verbose)
        cat(paste("\nSpectra_Path =", Spectra_Path, "\n"))
     
-    if(is.null(Spectra_Path))
+    if(is.null(Spectra_Path)) 
        fileNames.0 <- dir()
     else   
        fileNames.0 <- dir(path = Spectra_Path)
        
-            
     if(verbose) {
        cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
        print(fileNames.0[1:10])
        cat("\n\n")
     }
     
-    
-    shortName <- apply(matrix(replaceString(fileNames.0, "-", "_"), ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
+    shortName <- apply(matrix(fileNames.0, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
     if(!is.null(shortNameSuffix))
         shortName <- paste0(shortName, "_", shortNameSuffix)
         
     fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
-    if(Debug)
-       assign('fileNames', fileNames, pos = 1)
     
     # Read in metadata
     if(verbose)
        cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
     metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet, detectDates = TRUE) # Load in ancillary data 
     
-    if(Debug)
+    if(Debug) {
+       assign('shortName', shortName, pos = 1) 
+       assign('fileNames', fileNames, pos = 1)
        assign('metadata', metadata, pos = 1) 
-       
+    }
+    
     # Reading in spectra and doing interpolation if needed. For both methods, the wavebands used are based on very first OPUS spectra read-in. 
     if(spectraInterp %in% c('stats_splinefun_lowess', 'prospectr_resample')) {     # Below simplify = FALSE, so interpolation is not done by Roudier's opusreader::opus_read(). 
     
@@ -330,24 +330,34 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW), metadata, dplyr::join_by("filenames" == "NWFSC_NIR_Filename")) # Match by filenames and look at the data/metadata
     
     if(!OR_2008_2011) {
-    
-        if(grepl("CLPR_SWFSC", Spectra_Set)) {
         
-           metadata$specimen_id <- as.character(metadata$specimen_id)
+        metadata$specimen_id <- as.character(metadata$specimen_id)
+        cat("\n\nmetadata$specimen_id = ", metadata$specimen_id[1:4], "\n\n")
+    
+        if(grepl("CLPR_SWFSC", Spectra_Set)) { 
+        
+           # metadata$specimen_id <- get.subs(metadata$specimen_id, sep = "_")[1, ]
            cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[2,][1:4], "\n\n")
            Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[2,]), 
               metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
               
-        } else if(grepl("CLPR_NWFSC", Spectra_Set)) {
+        } else if(grepl("CLPR_CACOMM_1985", Spectra_Set) | grepl("CLPR_CACOMM_1986", Spectra_Set)) { 
         
-           metadata$specimen_id <- as.character(metadata$specimen_id)
+           # metadata$specimen_id <- get.subs(metadata$specimen_id, sep = "_")[1, ]
+           cat("\n\nModel_Spectra_Meta$specimen_id = ", substring(fileNames, 13)[1:4], "\n\n")
+           # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = substring(fileNames, 13)), 
+           #   metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id    
+           
+           Model_Spectra_Meta <- match.f(data.frame(filenames = fileNames, newScans.RAW, specimen_id = substring(fileNames, 13)), metadata,  "specimen_id",  "specimen_id")    
+              
+        } else if(grepl("CLPR_NWFSC", Spectra_Set) | grepl("CLPR_CACOMM_2019_2020", Spectra_Set) | grepl("CLPR_ORCOMM_2023_2024", Spectra_Set)) {  
+           
            cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
            Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
               metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id      
               
         } else {
         
-            metadata$specimen_id <- as.character(metadata$specimen_id)
             cat("\n\nmetadata$specimen_id = ", metadata$specimen_id[1:4], "\n\n")
             
             if(length(get.subs(metadata$specimen_id[1], sep = "_")) == 1) {
@@ -376,7 +386,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
     
-    if(!grepl("CLPR_SWFSC", Spectra_Set)) {
+    if(!(grepl("CLPR_SWFSC", Spectra_Set) | grepl("CLPR_CACOMM_1985", Spectra_Set) | grepl("CLPR_CACOMM_1986", Spectra_Set))) {
        Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
        Model_Spectra_Meta$percent_missing_scan <- as.numeric(Model_Spectra_Meta$percent_missing_scan)
        Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
@@ -391,9 +401,11 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     #  }
     
     # -- structure_weight_dg --
-    if(!is.null(Model_Spectra_Meta$structure_weight_g))    # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
+    if(!is.null(Model_Spectra_Meta$structure_weight_g))  {  # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
            Model_Spectra_Meta$structure_weight_dg = 10 * as.numeric(Model_Spectra_Meta$structure_weight_g) # dg = decigram
-	
+           Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$structure_weight_dg), ]
+	}
+    
     if(Debug)
        assign('Model_Spectra_Meta_D1', Model_Spectra_Meta, pos = 1)
 
@@ -462,7 +474,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     if(!is.null(Model_Spectra_Meta$Length_cm))
         Model_Spectra_Meta$Length_prop_max <- Model_Spectra_Meta$Length_cm/ifelse(exists("Sable_Len_cm_Range"), Sable_Len_cm_Range[2], max(Model_Spectra_Meta$Length_cm, na.rm = TRUE))
         
-    if(!is.null(Model_Spectra_Meta$Weight_kg))
+    if(!is.null(Model_Spectra_Meta$Weight_kg) & !all(is.na(Model_Spectra_Meta$Weight_kg)))
         Model_Spectra_Meta$Weight_prop_max <- (Model_Spectra_Meta$Weight_kg - ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))/
                             (ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[2], max(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)) - 
                                 ifelse(exists("Sable_Wght_kg_Range"), Sable_Wght_kg_Range[1], min(Model_Spectra_Meta$Weight_kg, na.rm = TRUE)))
@@ -478,7 +490,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     }   
     
     #  -- Month, One hot encoding -- 
-     if(!is.null(Model_Spectra_Meta$Month)) {
+    if(!is.null(Model_Spectra_Meta$Month) & !all(is.na(Model_Spectra_Meta$Month))) {
 	    Month_ <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[Model_Spectra_Meta$Month]
 	    if(length(unique(Model_Spectra_Meta$Month)) > 2) {
                 Model_Spectra_Meta <- cbind(Model_Spectra_Meta[!is.na(Model_Spectra_Meta$Month), ], as.data.frame(model.matrix(formula(~ -1 + Month_)))) # Indicator columns added: Month_May, Month_Jun, Month_Jul, ...
