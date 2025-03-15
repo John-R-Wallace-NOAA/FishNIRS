@@ -1,6 +1,6 @@
 plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htmlPlotFolder = NULL, randomAfterSampNum = NULL, colorGroup = 'TMA', contColorVar = FALSE, facetGroup = NULL, WaveRange = c(0, 8000), 
-                  scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, alpha = 1, 
-                  bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, ...) {
+                  scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, alpha = 1, numColors = NULL,
+                  bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, Debug = FALSE, ...) {
    
    if (!any(installed.packages()[, 1] %in% "ggplot2")) 
      install.packages("ggplot2")
@@ -29,9 +29,6 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
      mirror = TRUE
    )  
   
-   xax <- list(title = xlab, range = xlim)
-   yax <- list(title = ylab, range = ylim)
-   
    oldOpts <- options(warn = -1)
    
    # Remove 'X' prefix from freq names, if present
@@ -79,11 +76,11 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
       Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta))]  
       
       Spec <- renum(data.frame(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum.Subset),  # Double use of data.frame() is needed
-                    Band = rep(as.numeric(names(Spectra)), N_Samp), Value = c(as.matrix(t(Spectra))), 
+                    Waveband = rep(as.numeric(names(Spectra)), N_Samp), Absorbance = c(as.matrix(t(Spectra))), 
                     Color = rep(spectraMeta[sampRows, grep(colorGroup, names(spectraMeta))[1]], each = freqNum.Subset)
                     )))) 
-      Spec$Band <- as.numeric(Spec$Band)
-      Spec$Value <- as.numeric(Spec$Value)
+      Spec$Waveband <- as.numeric(Spec$Waveband)
+      Spec$Absorbance <- as.numeric(Spec$Absorbance)
       
       if(contColorVar)
           Spec$Color <- as.numeric(Spec$Color)    
@@ -92,26 +89,24 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
          print(str(Spec))
          print(Spec[1:4,])                
       }   
-      #   if(plot) {
-      #     print(plot_ly(Spec, 
-      #                  x = ~Band, y = ~Value, split = ~Scan, color = ~Color, 
-      #                  colors = rainbow(length(unique(Spec$Color))), 
-      #                  hoverinfo = 'text',
-      #                  text = ~paste('Scan: ', Scan,
-      #                                '</br></br> x-axis: ', Band,
-      #                                '</br> y-axis: ', Value), ...) %>%
-      #         layout(title = main, plot_bgcolor = bgcolor, xaxis = xax, yaxis = yax) %>%
-      #         add_lines(line = list(width = 0.75)))
-      #      
-      #   }     
+      if(Debug) {
+         assign('Spec', Spec, pos = 1)
+         assign('colorGroup', colorGroup, pos = 1)
+         assign('numColors', numColors, pos = 1)
+         assign('alpha', alpha, pos = 1)
+         assign('main', main, pos = 1)
+      }  
+     
       if(plot)  {  
          if(contColorVar)
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ggtitle(main)))
-         else    
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + 
-                    scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha)) + ggtitle(main)))
-                    
-            # print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + 
+             print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ggtitle(main)))
+         else {  
+             cat("\n\tUsing ggplot() with facetGroup null and contColorVar = FALSE\n\n")         
+             print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ylim(ylim[1], ylim[2]) + 
+                            scale_color_manual(values = {if(all(is.na(Spec$Color))) NA
+                              else rainbow(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(as.numeric(Spec$Color), na.rm = TRUE):(max(as.numeric(Spec$Color), na.rm = TRUE) + 1)]}) + ggtitle(main)))
+        }           
+            # print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + 
             #           scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = c(1, rep(alpha, length(unique(Spec$Color)) - 1))))))           
       }
       
@@ -138,12 +133,12 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
       Spectra <- spectraMeta[sampRows, -c(1, ncol(spectraMeta) - 1, ncol(spectraMeta))] 
       
       Spec <- renum(data.frame(as.matrix(data.frame(Scan = rep(spectraMeta[sampRows, scanUniqueName], each = freqNum.Subset),  # Double use of  data.frame() is needed
-                    Band = rep(as.numeric(names(Spectra)), N_Samp), Value = c(as.matrix(t(Spectra))), 
+                    Waveband = rep(as.numeric(names(Spectra)), N_Samp), Absorbance = c(as.matrix(t(Spectra))), 
                     Color = rep(spectraMeta[sampRows, grep(colorGroup, names(spectraMeta))[1]], each = freqNum.Subset),
                     Facet = rep(spectraMeta[sampRows, grep(facetGroup, names(spectraMeta))[1]], each = freqNum.Subset)
                     )))) 
-      Spec$Band <- as.numeric(Spec$Band)
-      Spec$Value <- as.numeric(Spec$Value)
+      Spec$Waveband <- as.numeric(Spec$Waveband)
+      Spec$Absorbance <- as.numeric(Spec$Absorbance)
       
       if(contColorVar)
          Spec$Color <- as.numeric(Spec$Color)    
@@ -155,10 +150,13 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
      
       if(plot) {
           if(contColorVar)
-             print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + ggtitle(main))) 
-          else 
-            print(ggplotly(ggplot(data = Spec, aes(x = Band, y = Value, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + 
-                       scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = alpha)) + ggtitle(main)))            
+             print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) + ggtitle(main))) 
+          else {
+            cat("\n\nUsing ggplot() with facetGroup not null and contColorVar = FALSE\n\n")
+            print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) +
+                       scale_color_manual(values = {if(all(is.na(Spec$Color))) NA
+                              else rainbow(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(Spec$Color, na.rm = TRUE):max(Spec$Color, na.rm = TRUE)]}) + ggtitle(main)))        
+          }                       
       }                  
                
       # if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
@@ -195,4 +193,5 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
     
   invisible(Spec)       
 }  
+
 
