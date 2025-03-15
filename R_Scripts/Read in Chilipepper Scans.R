@@ -240,7 +240,7 @@ for(i in c(2010, 2014:2016, 2018:2019, 2021:2024)[2:10]) {
     if(is.null(Model_Spectra_Meta$Month_Sep))  Model_Spectra_Meta$Month_Sep <- 0
     if(is.null(Model_Spectra_Meta$Month_Oct))  Model_Spectra_Meta$Month_Oct <- 0
     if(i == 2018)
-      plotly.Spec(Model_Spectra_Meta, N_Samp = min(c(nrow(Model_Spectra_Meta), 'All')), colorGroup = 'TMA')  
+      plotly.Spec(Model_Spectra_Meta, N_Samp = min(c(nrow(Model_Spectra_Meta), 50)), colorGroup = 'TMA')  
     Model_Spectra_Meta_All <- rbind(Model_Spectra_Meta_All, Model_Spectra_Meta[, Columns])
 }
 
@@ -399,21 +399,66 @@ Model_Spectra_Meta <- rbind(Model_Spectra_Meta_SWFSC_2010__2024, Model_Spectra_M
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 
 
-Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$structure_weight_dg), ]
-
 save(Model_Spectra_Meta, file = "CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 
+# ==================================================================================================================
+
+setwd("C:/SIDT/Chilipepper")
+
+sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
+           " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+           if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
+           File.ASCII <- tempfile()
+           if(type == "function")
+             on.exit(file.remove(File.ASCII))
+           getTMP <- httr::GET(gsub(' ', '%20', URL))
+           
+           if(type == "function") {
+             write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+             source(File.ASCII)
+           } 
+           if(type == "script") {
+             fileName <- strsplit(URL, "/")[[1]]
+             fileName <- rev(fileName)[1]
+             write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
+           }  
+    }
+	
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+
+
+# ***** CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData moved to CLPR_Combo_1985__2024 ****
+load("C:\\SIDT\\CLPR_Combo_1985__2024\\CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+
+dir.create("Figs_Global", showWarnings = FALSE)
+
+
+source("C:\\SIDT\\Chilipepper\\plotly.Spec.R")
+
+
+(ylimGlobal <- c(0, max(Model_Spectra_Meta[, 2:grep("X3952", names(Model_Spectra_Meta))])))
+(numColorGlobal <- ifelse(any(is.na(Model_Spectra_Meta$TMA)), length(0:max(Model_Spectra_Meta$TMA, na.rm = TRUE)) + 1, length(0:max(Model_Spectra_Meta$TMA, na.rm = TRUE))))
+# (numColorGlobal <- length(0:max(Model_Spectra_Meta$TMA, na.rm = TRUE)))
+
+
+for( i in sort(unique(Model_Spectra_Meta$sample_year))) {
+  
+  cat(paste0("\n\n", i, ": "))
+  MSM <- Model_Spectra_Meta[Model_Spectra_Meta$sample_year %in% i, ]
+  plotly.Spec(MSM, N_Samp = nrow(MSM), colorGroup = 'TMA', numColors = numColorGlobal, ylim = ylimGlobal, main = i, scanUniqueName = 'filenames', Debug = FALSE) 
+  dir.create(paste0("Figs_Global/", i), showWarnings = FALSE)
+  saveHtmlFolder(paste0("Figs_Global/", i), view = !interactive())
+}
 
 
 
 
+(ylimGlobal <- c(0, max(Model_Spectra_Meta[, 2:grep("X3952", names(Model_Spectra_Meta))])))
 
 
-
-
-
-
+plotly.Spec(Model_Spectra_Meta, N_Samp = "All", colorGroup = 'sample_year', ylim = ylimGlobal, main = "All Year Groups", scanUniqueName = 'filenames', Debug = FALSE) 
 
 
 
