@@ -1,5 +1,5 @@
 plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htmlPlotFolder = NULL, randomAfterSampNum = NULL, colorGroup = 'TMA', contColorVar = FALSE, facetGroup = NULL, WaveRange = c(0, 8000), 
-                  scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, alpha = 1, numColors = NULL,
+                  scanUniqueName = 'shortName', freqNum = NULL, xlab = "Wavenumber", ylab = "Absorbance", plot = TRUE, paletteFunc = rainbow, alpha = 1, numColors = NULL,
                   bgcolor = "#e5ecf6", main = NULL, xlim = NULL, ylim = NULL, verbose = FALSE, Debug = FALSE, ...) {
    
    if (!any(installed.packages()[, 1] %in% "ggplot2")) 
@@ -104,10 +104,10 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
              cat("\n\tUsing ggplot() with facetGroup null and contColorVar = FALSE\n\n")         
              print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ylim(ylim[1], ylim[2]) + 
                             scale_color_manual(values = {if(all(is.na(Spec$Color))) NA
-                              else rainbow(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(as.numeric(Spec$Color), na.rm = TRUE):(max(as.numeric(Spec$Color), na.rm = TRUE) + 1)]}) + ggtitle(main)))
+                              else paletteFunc(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(as.numeric(Spec$Color), na.rm = TRUE):(max(as.numeric(Spec$Color), na.rm = TRUE) + 1)]}) + ggtitle(main)))
         }           
             # print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + 
-            #           scale_color_manual(values=rainbow(length(unique(Spec$Color)), alpha = c(1, rep(alpha, length(unique(Spec$Color)) - 1))))))           
+            #           scale_color_manual(values=paletteFunc(length(unique(Spec$Color)), alpha = c(1, rep(alpha, length(unique(Spec$Color)) - 1))))))           
       }
       
       #  if(sum(is.na(as.numeric(Spec$Color))) < 0.20 * length(Spec$Color))
@@ -155,7 +155,7 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
             cat("\n\nUsing ggplot() with facetGroup not null and contColorVar = FALSE\n\n")
             print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + facet_grid(Facet ~ .) + labs(colour = colorGroup) +
                        scale_color_manual(values = {if(all(is.na(Spec$Color))) NA
-                              else rainbow(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(Spec$Color, na.rm = TRUE):max(Spec$Color, na.rm = TRUE)]}) + ggtitle(main)))        
+                              else paletteFunc(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(Spec$Color, na.rm = TRUE):max(Spec$Color, na.rm = TRUE)]}) + ggtitle(main)))        
           }                       
       }                  
                
