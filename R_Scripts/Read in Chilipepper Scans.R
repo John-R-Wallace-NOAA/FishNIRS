@@ -443,32 +443,59 @@ source("C:\\SIDT\\Chilipepper\\plotly.Spec.R")
 # (numColorGlobal <- length(0:max(Model_Spectra_Meta$TMA, na.rm = TRUE)))
 
 
-for( i in sort(unique(Model_Spectra_Meta$sample_year))) {
+for( i in sort(unique(Model_Spectra_Meta$sample_year))[4]) {
   
   cat(paste0("\n\n", i, ": "))
   MSM <- Model_Spectra_Meta[Model_Spectra_Meta$sample_year %in% i, ]
-  plotly.Spec(MSM, N_Samp = nrow(MSM), colorGroup = 'TMA', numColors = numColorGlobal, ylim = ylimGlobal, main = i, scanUniqueName = 'filenames', Debug = FALSE) 
+  plotly.Spec(MSM, N_Samp = nrow(MSM), colorGroup = 'TMA', numColors = numColorGlobal, ylim = ylimGlobal, main = i, scanUniqueName = 'filenames', Debug = FALSE, 
+              paletteFunc = function(n, alpha) hcl.colors(n, "Zissou 1", alpha = alpha, rev = TRUE)) 
   dir.create(paste0("Figs_Global/", i), showWarnings = FALSE)
   saveHtmlFolder(paste0("Figs_Global/", i), view = !interactive())
 }
 
 
+# ========================================= All Year Groups =========================================================================
+
+setwd("C:/SIDT/Chilipepper")
+
+library(JRWToolBox)
+library(ggplot2)
+
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
+# source("C:\\SIDT\\Chilipepper\\plotly.Spec.R")
+
+load("C:\\SIDT\\CLPR_Combo_1985__2024\\CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 
 (ylimGlobal <- c(0, max(Model_Spectra_Meta[, 2:grep("X3952", names(Model_Spectra_Meta))])))
 
+set.seed(c(707, 747)[2])
+plotly.Spec(Model_Spectra_Meta, N_Samp = 750, colorGroup = 'sample_year', ylim = ylimGlobal, main = "All Year Groups", scanUniqueName = 'filenames', Debug = TRUE) 
 
-plotly.Spec(Model_Spectra_Meta, N_Samp = "All", colorGroup = 'sample_year', ylim = ylimGlobal, main = "All Year Groups", scanUniqueName = 'filenames', Debug = FALSE) 
+names(Spec)[4] <- "Sample_Year"
 
+#  # https://r-graph-gallery.com/color-palette-finder
+#  scale_colour_paletteer_d("vapoRwave::vapoRwave")
+#  # scale_fill_paletteer_d("vapoRwave::vapoRwave")
+#  
+#  # vapoRwave
+#  Colors <- colorRampPalette(c("#20DE8BFF", "#CCDE8BFF", "#FFDE8BFF", "#FFA88BFF", "#FF6A8BFF", "#FF6AD5FF", "#C874AAFF", "#C774E7FF", "#AD8CFFFF", "#966BFFFF", "#90CFFFFF"))(16)
+#  
+#  # GravityFalls
+#  # Colors <- colorRampPalette(c("#417BA1FF", "#FF1493FF", "#FFFF2EFF", "#345634FF", "#8B0000FF", "#FF6700FF", "#93C0D5FF", "#8B4513FF", "#9248A7FF", "#1C8859FF", "#474747FF", "#8FBC8FFF", "#D2B48CFF", "#000000FF"))(16)
+#  
+#  print(ggplotly(ggplot(Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Sample_Year), linewidth = 0.2) + labs(colour = "Sample_Year") + 
+#        ylim(ylimGlobal[1], ylimGlobal[2]) + scale_color_manual(values = Colors) + ggtitle("All Year Groups (750 random samples)")))
+ 
 
+ 
+# Just stuck with rainbos() - sigh.....
+color.palette <- list(function(n) hcl.colors(n, "Zissou 1", rev = FALSE), rainbow, heat.colors, terrain.colors, topo.colors, cm.colors)[[2]]
 
+print(ggplotly(ggplot(Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Sample_Year), linewidth = 0.2) + labs(colour = "Sample_Year") + 
+      ylim(ylimGlobal[1], ylimGlobal[2]) + scale_color_manual(values = color.palette(length(unique(Spec$Sample_Year)))) + ggtitle("All Year Groups (750 random samples)")))
 
-
-
-
-
-
-
+saveHtmlFolder(paste0("All Year Groups"), view = !interactive())  
 
 
 
