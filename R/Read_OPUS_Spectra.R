@@ -402,7 +402,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     
     # -- structure_weight_dg --
     if(!is.null(Model_Spectra_Meta$structure_weight_g))  {  # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
-           Model_Spectra_Meta$structure_weight_dg = 10 * as.numeric(Model_Spectra_Meta$structure_weight_g) # dg = decigram
+           Model_Spectra_Meta$structure_weight_g <- as.numeric(Model_Spectra_Meta$structure_weight_g)
+           Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
            Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$structure_weight_dg), ]
 	}
     
@@ -559,11 +560,6 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
 }   
       
      
-      
-      
-      
-      
-      
       
       
       
