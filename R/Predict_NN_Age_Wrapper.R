@@ -5,7 +5,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                            Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Max_N_Spectra = list(50, 200, 'All')[[2]], 
                            Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Bias_Reduction_Factor = 1, Lowess_smooth_para = 2/3,
                            Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Meta_Data_Factors = NULL, Graph_Metadata = NULL, Metadata_Extra_File = NULL, 
-                           TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, scanUniqueName = 'shortName', Debug_plotly.Spec = FALSE, plot = TRUE, main = "") {
+                           TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, scanUniqueName = 'shortName', F_vonBert = NULL, M_vonBert = NULL, Debug_plotly.Spec = FALSE, plot = TRUE, main = "") {
 
     '  ################################################################################################################################################################                             '
     '  #       Need >= R ver 3.0                                                                                                                                      #                             '
@@ -958,9 +958,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                                      pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F[!New_Ages_Year$Used_NN_Model] + New_Ages_Year$Sex_M[!New_Ages_Year$Used_NN_Model] * 4) # Sex_U will be zeros which are squares
                              points(New_Ages_Year$NN_Pred_Median[New_Ages_Year$Used_NN_Model], New_Ages_Year[New_Ages_Year$Used_NN_Model, i],
                                  pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F[New_Ages_Year$Used_NN_Model] + New_Ages_Year$Sex_M[New_Ages_Year$Used_NN_Model] * 4)
-                             if(i == "Length_cm") {
-                                lines(sort(New_Ages_Year$NN_Pred_Median), 48.4385574  * (1 - exp(-0.2063962 * sort(New_Ages_Year$NN_Pred_Median) - 0.28)), col = "green", lwd = 1.5)
-                                lines(sort(New_Ages_Year$NN_Pred_Median), 35.6959143  * (1 - exp(-0.3156431 * sort(New_Ages_Year$NN_Pred_Median) - 0.3796227)), col = "dodgerblue", lwd = 1.5)
+                             if(i == "Length_cm" & !is.null(F_vonBert)) {
+                               lines(sort(New_Ages_Year$NN_Pred_Median), F_vonBert$Linf  * (1 - exp(-F_vonBert$k * sort(New_Ages_Year$NN_Pred_Median) - F_vonBert$t0)), col = "green", lwd = 1.5)
+                               lines(sort(New_Ages_Year$NN_Pred_Median), M_vonBert$Linf  * (1 - exp(-M_vonBert$k * sort(New_Ages_Year$NN_Pred_Median) - M_vonBert$t0)), col = "dodgerblue", lwd = 1.5)
                              }
                           }
                           if(is.factor(New_Ages_Year[, i])) 
