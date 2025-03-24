@@ -633,7 +633,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
          
-            for(Year in  unique(New_Ages$Year[!is.na(New_Ages$TMA)])) {
+            for(Year in  sort(unique(New_Ages$Year[!is.na(New_Ages$TMA)]))) {
                main <- ifelse(is.null(Bias_Adj_Factor_Ages), paste0(Year, "; Training N = ", Training_N), main <- paste0(Year, "; Training N = ", Training_N, "; Bias Corr"))
                assign('main', main, pos = 1)
                assign('Year', Year, pos = 1)
