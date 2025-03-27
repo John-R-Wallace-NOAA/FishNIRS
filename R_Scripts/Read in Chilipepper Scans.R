@@ -152,18 +152,18 @@ save(Model_Spectra_Meta, file = paste0("CLPR_CACOMM_1986_Model_Spectra_Meta_ALL_
 
 
 
-# --- OR Commercial 2023, 2024 ---
+# --- OR Commercial 2022, 2023, 2024 ---
 
-#  !!!!!! Capitalize the first letter of "length_cm", weight_kg", and "sex" in the Excel file !!!!!!
+#  !!!!!! Change age-best to TMA and capitalize the first letter of "length_cm", weight_kg", and "sex" in the Excel file !!!!!!
 
-Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = "CLPR_ORCOMM_2023_2024", Spectra_Path = "2023_2024_ORCOMM_Scans", htmlPlotFolder = "Figures_CLPR_ORCOMM_2023_2024", 
-                                        shortNameSegments = 6, shortNameSuffix = 'OR_Comm', Static_Figure = "CLPR_ORCOMM_2023_2024.png",
-                                        Meta_Path = "C:/SIDT/Chilipepper/CLPR_ORCOMM_2023_2024_Scanning_Session_Report_For_NWC.xlsx", Debug = TRUE)
+Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = "CLPR_ORCOMM_2022__2024", Spectra_Path = "2022__2024_ORCOMM_Scans", htmlPlotFolder = "Figures_CLPR_ORCOMM_2022__2024", 
+                                        shortNameSegments = 6, shortNameSuffix = 'OR_Comm', Static_Figure = "CLPR_ORCOMM_2022__2024.png",
+                                        Meta_Path = "C:/SIDT/Chilipepper/CLPR_ORCOMM_2022__2024_Scanning_Session_Report_For_NWC.xlsx", Debug = TRUE)
 		
 headTail(Model_Spectra_Meta, 3, 3, 3, 55)
 Table(Model_Spectra_Meta$TMA)
 	     
-save(Model_Spectra_Meta, file = paste0("CLPR_ORCOMM_2023_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData"))
+save(Model_Spectra_Meta, file = paste0("CLPR_ORCOMM_2022__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")) # Was "CLPR_ORCOMM_2023__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData"
 
  
        
@@ -267,6 +267,13 @@ load("CLPR_SWFSC_2010_2018_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 Table(Model_Spectra_Meta$ sample_year, Model_Spectra_Meta$TMA)
 Model_Spectra_Meta_SWFSC_2010_2018_2024 <- Model_Spectra_Meta
 
+
+# -------- Update for sparse TMA results --------
+load("C:\\SIDT\\CLPR_Combo_1985__2024\\CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_SWFSC_1985__2024 <- Model_Spectra_Meta[!Model_Spectra_Meta$sample_year %in% c("2023_OR_Comm", "2024_OR_Comm"), ]
+Table(Model_Spectra_Meta_SWFSC_1985__2024$sample_year)
+# --------------------------------
+
 load("CLPR_CACOMM_2019_2020_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 # Model_Spectra_Meta$TMA <- NA
@@ -316,8 +323,15 @@ load("CLPR_SWFSC_2010__2024_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 Model_Spectra_Meta_SWFSC_2010__2024 <- Model_Spectra_Meta
 
+# -------- Update for sparse TMA results --------
+load("C:\\SIDT\\CLPR_Combo_1985__2024\\CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_SWFSC_1985__2024 <- Model_Spectra_Meta[!Model_Spectra_Meta$sample_year %in% c("2023_OR_Comm", "2024_OR_Comm"), ]
+Table(Model_Spectra_Meta_SWFSC_1985__2024$sample_year)
+# --------------------------------
 
 load("CLPR_ORCOMM_2023_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Table(Model_Spectra_Meta$sample_year)
+
 
 Model_Spectra_Meta$Depth_m <- NA
 Model_Spectra_Meta$Latitude_dd <- NA
@@ -341,14 +355,24 @@ if(is.null(Model_Spectra_Meta$Month_Sep))  Model_Spectra_Meta$Month_Sep <- 0
 if(is.null(Model_Spectra_Meta$Month_Oct))  Model_Spectra_Meta$Month_Oct <- 0
 
 Model_Spectra_Meta$sample_year <- paste0(Model_Spectra_Meta$sample_year, "_OR_Comm")
-Table(Model_Spectra_Meta$sample_year)
-
 headTail(Model_Spectra_Meta,3,3,3,62)
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 
+                           
 Model_Spectra_Meta <- rbind(Model_Spectra_Meta_SWFSC_2010__2024, Model_Spectra_Meta[, Columns])  
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 
 save(Model_Spectra_Meta, file = "CLPR_SWFSC_2010__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+# ----------- Update for TMA with 1985+ data ---------------
+Model_Spectra_Meta <- rbind( Model_Spectra_Meta_SWFSC_1985__2024, Model_Spectra_Meta[, Columns])  
+# Model_Spectra_Meta <- rbind( Model_Spectra_Meta_SWFSC_1985__2024, Model_Spectra_Meta[, names(Model_Spectra_Meta_SWFSC_1985__2024)])  
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+save(Model_Spectra_Meta, file = "CLPR_SWFSC_1985__2024_CA_OR_Comm_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+# !!!!!!!!!!!!!!! Find the column names that are missing !!!!!!!!!!!!!
+ Columns[!Columns %in% names(Model_Spectra_Meta)]
 
 
 
