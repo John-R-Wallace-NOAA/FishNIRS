@@ -785,7 +785,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                           max(c(New_Ages$TMA, New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded[!is.na(New_Ages$TMA)]), na.rm = TRUE) + 1.25), pos = 1) 
          New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA <- New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded - New_Ages$TMA
          assign('New_Ages', New_Ages, pos = 1)
-          
+         assign('NN_Pred_Median_TMA', NN_Pred_Median_TMA, pos = 1)
          
          # -- Plot, using ALL THE DATA, TMA minus rounded age vs TMA, highlighting those oties that were left out of the NN model - if any --
          
@@ -806,11 +806,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          browsePlot('
              set.seed(Seed_Plot)
-             gPlot(New_Ages_Good, "TMA", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", xFunc = jitter, ylab = paste0("Jittered: TMA - round(NN Predicted Age + Delta), Delta = ", Delta), xlab = "TMA (jittered)",
+             gPlot(New_Ages_Good, "TMA", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", xFunc = jitter, ylab = paste0("Jittered: round(NN Predicted Age + Delta) minus TMA, Delta = ", Delta), xlab = "TMA (jittered)",
                         ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00")
              set.seed(Seed_Plot)
              if(any(!is.na(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model])))
-                points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), jitter(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[!New_Ages_Good$Used_NN_Model]), col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
+                points(jitter(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model]), jitter(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[!New_Ages_Good$Used_NN_Model]), col = "red", 
+                       pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
              points(jitter(New_Ages_Good$TMA[New_Ages_Good$Used_NN_Model]), jitter(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[New_Ages_Good$Used_NN_Model]))
              lowess.line(New_Ages_Good$TMA, New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA, col = "green", smoothing.param = 0.1, lwd = 1) # Was smoothing.param = 0.05
              lowess.line(New_Ages_Good$TMA, New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA, col = "green", smoothing.param = 1/3, lty = 2, lwd = 2) 
@@ -820,13 +821,11 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          ', file = paste0(Predicted_Ages_Path, '/NN_Age_Rd_minus_TMA_vs_TMA_Jittered_Left_Out_Oties_Highlighted.png')) 
          
          
-         # Plot TMA minus rounded age vs the predicted "Pred_Age_Bias_Corr_plus_Delta_rounded" with oties left out of the NN model highlighted (if present)
-         New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA <- New_Ages_Good$TMA - New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded
-         assign('New_Ages_Good', New_Ages_Good, pos = 1)
+         # Plot rounded age minus TMA vs the predicted "Pred_Age_Bias_Corr_plus_Delta_rounded" with oties left out of the NN model highlighted (if present)
          browsePlot('
              set.seed(Seed_Plot)
-             gPlot(New_Ages_Good, "Pred_Age_Bias_Corr_plus_Delta_rounded", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", xFunc = jitter, ylab = paste0("Jittered: TMA - round(Bias Corrected NN Predicted Age + Delta), Delta = ", Delta), 
-                        xlab = paste0("round(Bias Corrected NN Predicted Age + Delta), Delta = ", Delta, " (jittered)"), ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00")
+             gPlot(New_Ages_Good, "Pred_Age_Bias_Corr_plus_Delta_rounded", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", xFunc = jitter, ylab = paste0("Jittered: round(NN Predicted Age + Delta) minus TMA, Delta = ", Delta), 
+                        xlab = paste0("round(NN Predicted Age + Delta), Delta = ", Delta, " (jittered)"), ylim = c(-xlim[2], xlim[2]), xlim = xlim, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00")
              set.seed(Seed_Plot)
              if(any(!is.na(New_Ages_Good$TMA[!New_Ages_Good$Used_NN_Model])))
                points(jitter(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Good$Used_NN_Model]), jitter(New_Ages_Good$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[!New_Ages_Good$Used_NN_Model]), col = "red", pch = ifelse(sum(!New_Ages_Good$Used_NN_Model) > 100, 1, 19))
@@ -853,7 +852,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                  par_mfr_row <- 3; par_mfr_col <- 3
          } else if(N_TMA_Years > 9 & N_TMA_Years <= 12) {  
                  par_mfr_row <- 4; par_mfr_col <- 3    # row:3 - col:4 below
-         } else if(N_Years > 12) {  
+         } else if(N_TMA_Years > 12) {  
                     par_mfr_row <- 4; par_mfr_col <- 4                 
          }        
          
@@ -863,8 +862,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                 for(Year in sort(TMA_Years)) {
                     print(Year)
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
-                    gPlot(New_Ages_Year, "TMA", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = paste0("TMA - rnd(NN Pred Age + Delta), Delta:", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                               main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00") #   < #ffffff00 > color is transparent
+                    gPlot(New_Ages_Year, "TMA", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = paste0("rnd(NN Pred Age + Delta) - TMA, Delta:", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlab = "TMA (jittered)", xlim = xlim,
+                             main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00") #   < #ffffff00 > color is transparent
                     points(jitter(New_Ages_Year$TMA[New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[New_Ages_Year$Used_NN_Model])
                     if(any(!is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model])))
                        points(jitter(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
@@ -878,8 +877,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                par(mfrow = c(par_mfr_row, par_mfr_col))        
                for(Year in sort(TMA_Years)) {
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
-                    gPlot(New_Ages_Year, "Pred_Age_Bias_Corr_plus_Delta_rounded", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = paste0("TMA - rnd(NN Pred Age + Delta), Delta:", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                               main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00")
+                    gPlot(New_Ages_Year, "Pred_Age_Bias_Corr_plus_Delta_rounded", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = paste0("rnd(NN Pred Age + Delta) - TMA, Delta:", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                               xlab = paste0("rnd(NN Pred Age + Delta), Delta = ", Delta, " (jittered)"), main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00")
                     points(jitter(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[New_Ages_Year$Used_NN_Model])
                     if(any(!is.na(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Year$Used_NN_Model])))
                        points(jitter(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
@@ -896,6 +895,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         
             # Restrict new ages to those that have predictions from the NN model         
             New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
+            if(!is.null(New_Ages_Good$Sex))  New_Ages_Good$Sex <- factor(New_Ages_Good$Sex)
+            if(!is.null(New_Ages_Good$Month))  New_Ages_Good$Month <- factor(New_Ages_Good$Month)
+            
             print(dim(New_Ages_Good))
             
             # Find those oties that were left out of the NN model for testing - if any.
@@ -929,8 +931,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                     par_mfr_row <- 3; par_mfr_col <- 3
             } else if(N_Years > 9 & N_Years <= 12) {  
                     par_mfr_row <- 3; par_mfr_col <- 4   # 4 - 3 above
-            } else if(N_Years > 12) {  
-                    par_mfr_row <- 4; par_mfr_col <- 4            
+            } else if(N_Years > 12 & N_Years <= 16) {  
+                    par_mfr_row <- 4; par_mfr_col <- 4    
+            } else if(N_Years > 16 ) {  
+                    par_mfr_row <- 4; par_mfr_col <- 5                     
             }
         }   
             if(!is.null(Meta_Data_Factors)) {
@@ -954,7 +958,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                              ylim <- c(min(New_Ages_Good[, i], na.rm = TRUE) - 0.2, max(New_Ages_Good[, i], na.rm = TRUE) + 0.2)                         
                              gPlot(New_Ages_Year, "NN_Pred_Median", i, xlab = "NN Predicted Median", ylab = i, ylim = ylim , xlim = xlim, main = paste0(Year, ": ", i, " vs NN Pred Median"), Type = "n")                        
                              if(any(!is.na(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model])))                            
-                                 points(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model], New_Ages_Year[!New_Ages_Year$Used_NN_Model, i], col = ifelse(is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), "red", "dodgerblue"),
+                                 points(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model], New_Ages_Year[!New_Ages_Year$Used_NN_Model, i], col = ifelse(is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), "red", "purple"),
                                      pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F[!New_Ages_Year$Used_NN_Model] + New_Ages_Year$Sex_M[!New_Ages_Year$Used_NN_Model] * 4) # Sex_U will be zeros which are squares
                              points(New_Ages_Year$NN_Pred_Median[New_Ages_Year$Used_NN_Model], New_Ages_Year[New_Ages_Year$Used_NN_Model, i],
                                  pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F[New_Ages_Year$Used_NN_Model] + New_Ages_Year$Sex_M[New_Ages_Year$Used_NN_Model] * 4)
