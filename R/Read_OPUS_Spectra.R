@@ -350,7 +350,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
            
            Model_Spectra_Meta <- match.f(data.frame(filenames = fileNames, newScans.RAW, specimen_id = substring(fileNames, 13)), metadata,  "specimen_id",  "specimen_id")    
               
-        } else if(grepl("CLPR_NWFSC", Spectra_Set) | grepl("CLPR_CACOMM_2019_2020", Spectra_Set) | grepl("CLPR_ORCOMM_2023_2024", Spectra_Set)) {  
+        } else if(grepl("CLPR_NWFSC", Spectra_Set) | grepl("CLPR_CACOMM_2019_2020", Spectra_Set) | grepl("CLPR_ORCOMM_2022__2024", Spectra_Set)) {  
            
            cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
            Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
