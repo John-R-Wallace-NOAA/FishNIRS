@@ -105,12 +105,17 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
              if(is.null(ylim))
                 print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + 
                             scale_color_manual(values = {if(all(is.na(Spec$Color))) NA
-                              else paletteFunc(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(as.numeric(Spec$Color), na.rm = TRUE):(max(as.numeric(Spec$Color), na.rm = TRUE) + 1)]}) + ggtitle(main)))
-
-             else 
-               print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ylim(ylim[1], ylim[2]) + 
+                              else paletteFunc(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)}) + ggtitle(main)))
+             else  {
+               if(all(is.na(as.numeric(Spec$Color))))
+                  print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ylim(ylim[1], ylim[2]) + 
                             scale_color_manual(values = {if(all(is.na(Spec$Color))) NA
                               else paletteFunc(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(as.numeric(Spec$Color), na.rm = TRUE):(max(as.numeric(Spec$Color), na.rm = TRUE) + 1)]}) + ggtitle(main)))
+               else
+                  print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + labs(colour = colorGroup) + ylim(ylim[1], ylim[2]) + 
+                            scale_color_manual(values = {if(all(is.na(Spec$Color))) NA
+                              else paletteFunc(ifelse(is.null(numColors), length(unique(Spec$Color)), numColors), alpha = alpha)[min(as.numeric(Spec$Color), na.rm = TRUE):(max(as.numeric(Spec$Color), na.rm = TRUE) + 1)]}) + ggtitle(main)))
+             }                 
         }           
             # print(ggplotly(ggplot(data = Spec, aes(x = Waveband, y = Absorbance, z = Scan)) + geom_line(aes(colour = Color), linewidth = 0.2) + 
             #           scale_color_manual(values=paletteFunc(length(unique(Spec$Color)), alpha = c(1, rep(alpha, length(unique(Spec$Color)) - 1))))))           
@@ -199,5 +204,6 @@ plotly.Spec <- function(spectraMeta, N_Samp = min(c(nrow(spectraMeta), 50)), htm
     
   invisible(Spec)       
 }  
+
 
 
