@@ -3,7 +3,7 @@
 Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019", "Sable_Combo_2022", "Sable_Combo_2021", "Sable_Combo_2019", "Sable_Combo_Multi_17_21")[3], 
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
                            Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Max_N_Spectra = list(50, 200, 'All')[[2]], 
-                           Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Bias_Reduction_Factor = 1, Lowess_smooth_para = 2/3,
+                           Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Bias_Reduction_Factor = 1, Lowess_smooth_para = 2/3, Corr_Calc = TRUE,
                            Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Meta_Data_Factors = NULL, Graph_Metadata = NULL, Metadata_Extra_File = NULL, 
                            TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, scanUniqueName = 'shortName', F_vonBert = NULL, M_vonBert = NULL, Debug_plotly.Spec = FALSE, plot = TRUE, main = "") {
 
@@ -122,7 +122,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
     
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
@@ -325,11 +325,11 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
      cat("\n\nMAIN CALL to Predict_NN_Age() function starting\n\n")
      
-     New_Ages_Pred <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'),
+     New_Ages_Pred <- Predict_NN_Age(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'), Corr_Calc = Corr_Calc, 
                                          Predicted_Ages_Path = Predicted_Ages_Path, opusReader = opusReader, verbose = verbose, Folds_Num = Folds_Num) # This call uses the max number of random model replicates available (the default for arg 'NumRdmModels')
      
      
-     # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = 200    
+     # For testing Predict_NN_Age(): plot = TRUE; NumRdmModels = c(1, 20)[2];  htmlPlotFolder = paste0(Predicted_Ages_Path, '/Spectra Figure for New Ages'); N_Samp = 200; Corr_Calc = c(TRUE, FALSE)[1]
      
      New_Ages <- New_Ages_Pred[['New_Ages']]
      

@@ -44,7 +44,7 @@
 
 
 Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_Model, plot = TRUE, htmlPlotFolder = NULL, NumRdmModels = NULL, Extra_Meta_Path = Extra_Meta_Path,
-                            Predicted_Ages_Path = NULL, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], verbose = FALSE, Folds_Num = 10) {
+                            Predicted_Ages_Path = NULL, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Corr_Calc = TRUE, verbose = FALSE, Folds_Num = 10) {
    
     sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
            " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
@@ -240,15 +240,17 @@ Predict_NN_Age <- function(Conda_TF_Eniv, Spectra_Path, Model_Spectra_Meta, NN_M
        Fold_models <- Rdm_models[[j]]
        for (i in 1:length(Fold_models)) {      
              newScans.pred <- as.vector(predict(keras::unserialize_model(Fold_models[[i]], custom_objects = NULL, compile = TRUE), as.matrix(1000 * newScans)))
-             Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA, use = "complete.obs")
-             if(all(newScans.pred == 0) || Corr < 0.85) {
-                if(verbose)
-                   cat(paste0("\nRandom Model ", j, "; Fold ", i, " NOT accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
-                next
-             } else {
-                 if(verbose)
-                   cat(paste0("\nRandom Model ", j, "; Fold ", i, " accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
-             }  
+             if(Corr_Calc) {
+                Corr <- cor(newScans.pred, Model_Spectra_Meta$TMA, use = "complete.obs")
+                if(all(newScans.pred == 0) || Corr < 0.85) {
+                   if(verbose)
+                      cat(paste0("\nRandom Model ", j, "; Fold ", i, " NOT accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
+                   next
+                } else {
+                    if(verbose)
+                      cat(paste0("\nRandom Model ", j, "; Fold ", i, " accepted with a correlation of ", round(Corr, 4), "\n\n\n"))
+                } 
+             }                
              newScans.pred.ALL <- rbind(newScans.pred.ALL, data.frame(Index = 1:nrow(newScans), newScans.pred = newScans.pred))
       }
     } 
