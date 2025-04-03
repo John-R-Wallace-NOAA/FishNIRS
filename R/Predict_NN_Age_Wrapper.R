@@ -122,7 +122,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      
     
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly.Spec.R")
-     # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
+     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
@@ -895,8 +895,6 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         
             # Restrict new ages to those that have predictions from the NN model         
             New_Ages_Good <- New_Ages[!is.na(New_Ages$NN_Pred_Median), ]
-            if(!is.null(New_Ages_Good$Sex))  New_Ages_Good$Sex <- factor(New_Ages_Good$Sex)
-            if(!is.null(New_Ages_Good$Month))  New_Ages_Good$Month <- factor(New_Ages_Good$Month)
             
             print(dim(New_Ages_Good))
             
@@ -909,6 +907,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           
         New_Ages <- match.f(New_Ages, Model_Spectra_Meta, "specimen_id", "specimen_id", SG_Variables_Selected[metaDataVar])  
         New_Ages_Good <- match.f(New_Ages_Good, Model_Spectra_Meta, "specimen_id", "specimen_id", SG_Variables_Selected[metaDataVar])
+        
+        if(!is.null(New_Ages_Good$Sex))  New_Ages_Good$Sex <- factor(New_Ages_Good$Sex)
+        if(!is.null(New_Ages_Good$Month))  New_Ages_Good$Month <- factor(New_Ages_Good$Month)
                 
         if(!is.null(Metadata_Extra))  {
             file_name_loaded <- load(Metadata_Extra_File)  # JRWToolBox's load() - not base::load()
@@ -933,8 +934,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                     par_mfr_row <- 3; par_mfr_col <- 4   # 4 - 3 above
             } else if(N_Years > 12 & N_Years <= 16) {  
                     par_mfr_row <- 4; par_mfr_col <- 4    
-            } else if(N_Years > 16 ) {  
-                    par_mfr_row <- 4; par_mfr_col <- 5                     
+            } else if(N_Years > 16 & N_Years <= 20) {  
+                    par_mfr_row <- 4; par_mfr_col <- 5    
+            } else if(N_Years > 20 ) {  
+                    par_mfr_row <- 4; par_mfr_col <- 6                       
             }
         }   
             if(!is.null(Meta_Data_Factors)) {
@@ -956,7 +959,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                               New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, c("NN_Pred_Median", "Used_NN_Model", "Sex_F", "Sex_M", "TMA", i)] # Sex_U will be zeros for both Sex_F & Sex_M
                           if(is.numeric(New_Ages_Year[, i]))  { 
                              ylim <- c(min(New_Ages_Good[, i], na.rm = TRUE) - 0.2, max(New_Ages_Good[, i], na.rm = TRUE) + 0.2)                         
-                             gPlot(New_Ages_Year, "NN_Pred_Median", i, xlab = "NN Predicted Median", ylab = i, ylim = ylim , xlim = xlim, main = paste0(Year, ": ", i, " vs NN Pred Median"), Type = "n")                        
+                             gPlot(New_Ages_Year, "NN_Pred_Median", i, xlab = "NN Predicted Median", ylab = i, ylim = ylim , xlim = xlim, main = list(paste0(Year, ": ", i, " vs NN Pred"), cex = 0.95), Type = "n")                        
                              if(any(!is.na(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model])))                            
                                  points(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model], New_Ages_Year[!New_Ages_Year$Used_NN_Model, i], col = ifelse(is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), "red", "purple"),
                                      pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F[!New_Ages_Year$Used_NN_Model] + New_Ages_Year$Sex_M[!New_Ages_Year$Used_NN_Model] * 4) # Sex_U will be zeros which are squares
@@ -968,9 +971,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                              }
                           }
                           if(is.factor(New_Ages_Year[, i])) 
-                             plot(as.formula(paste0("NN_Pred_Median", " ~ ", i)), data = New_Ages_Year, ylab = "NN Predicted Median", xlab = i, main = paste0(Year, ": NN Pred Median vs ", i)) 
+                             plot(as.formula(paste0("NN_Pred_Median", " ~ ", i)), data = New_Ages_Year, ylab = "NN Predicted Median", xlab = i, main = list(paste0(Year, ": NN Pred Median vs ", i), cex = 0.95)) 
                         } else {
-                          plot(0, 1, xlab = "", ylab = "", type = "n", xaxt = "n", yaxt = "n", bty = "n", main = Year)
+                          plot(0, 1, xlab = "", ylab = "", type = "n", xaxt = "n", yaxt = "n", bty = "n", main = list(Year, cex = 0.95))
                           box()
                           text(0, 1, paste0("No ", i, " Currently Available"))                           
                         }                        
