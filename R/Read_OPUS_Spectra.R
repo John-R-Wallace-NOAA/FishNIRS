@@ -89,7 +89,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
      }  
     
     # Sablefish Combo survey
-    if(Spectra_Set %in% c("Sable_Combo_2017", "Sable_Combo_2018", "Sable_Combo_2019", "Sable_Combo_2021", "Sable_Combo_2022", "Sable_Combo_2023")) { 
+    if(Spectra_Set %in% paste0("Sable_Combo_", c(2017:2019, 2021:2023))) { 
         Year <- get.subs(Spectra_Set, sep = "_")[3]
         if(is.null(Spectra_Path)) 
           Spectra_Path <- paste0('C:/SIDT/Sable_Combo_', Year, '/Sable_Combo_', Year, '_Scans')
@@ -100,7 +100,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         if(!is.null(Extra_Meta_Path) && Extra_Meta_Path == "No_Default") # Special execption e.g. reference scans 
            Extra_Meta_Path <- NULL
         else   
-           Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2024.RData"    
+           Extra_Meta_Path <- "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2025.RData"    
         
         shortNameSegments <- c(1, 5) 
         shortNameSuffix <- 'Combo'
@@ -212,12 +212,22 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
   
     # --- Create a character vector of all spectral files within 'Spectra_Path'---   
     if(verbose)
-       cat(paste("\nSpectra_Path =", Spectra_Path, "\n"))
+       cat("\nSpectra_Path =", Spectra_Path, "\n")
     
     if(is.null(Spectra_Path)) 
        fileNames.0 <- dir()
-    else   
+    else 
        fileNames.0 <- dir(path = Spectra_Path)
+    
+    if(length(grep("xlsx", fileNames.0) ) != 0)  { 
+       Session_Report_Name <- fileNames.0[grep("xlsx", fileNames.0)]
+       fileNames.0 <- fileNames.0[-grep("xlsx", fileNames.0)] 
+       if(is.null(Meta_Path)) {
+          if(verbose)
+             cat("\n\nMeta_Path created with Spectra_Path and Session_Report_Name\n\n")
+          Meta_Path <- paste0(Spectra_Path, Session_Report_Name)
+       }   
+    }    
        
     if(verbose) {
        cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
@@ -231,10 +241,18 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         
     fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
     
-    # Read in metadata
+    # -- Read in metadata --
+    
     if(verbose)
-       cat(paste("\nMeta_Path =", Meta_Path, "\n\n"))
+       cat("\nMeta_Path =", Meta_Path, "\n\n")
+       
     metadata <- openxlsx::read.xlsx(Meta_Path, sheet = excelSheet, detectDates = TRUE) # Load in ancillary data 
+    
+    if(grepl("Sable", Spectra_Set) | grepl("PWHT", Spectra_Set)) {
+       names(metadata)[grep('age_best', names(metadata))] <- "TMA"
+       names(metadata)[grep('sex', names(metadata))] <- "Sex"
+    }
+    
     
     if(Debug) {
        assign('shortName', shortName, pos = 1) 
@@ -341,6 +359,16 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
            Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[2,]), 
               metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
               
+        } else if(grepl("CLPR_Triennial_2004", Spectra_Set) | grepl("CLPR_CA_Rec_2023_2024", Spectra_Set)) {      
+        
+            cat("\n\nModel_Spectra_Meta$specimen_id = ", paste(get.subs(fileNames, '_')[2,], get.subs(fileNames, '_')[3,], get.subs(fileNames, '_')[4,], sep = "_")[1:4], "\n\n")
+            Model_Spectra_Meta <- match.f(data.frame(filenames = fileNames, newScans.RAW, specimen_id = paste(get.subs(fileNames, '_')[2,], get.subs(fileNames, '_')[3,], get.subs(fileNames, '_')[4,], sep = "_")),
+                                    metadata, "specimen_id", "specimen_id")
+            
+            # Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = paste(get.subs(fileNames, '_')[2,], get.subs(fileNames, '_')[3,], get.subs(fileNames, '_')[4,], sep = "_")), 
+            # metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
+              
+           
         } else if(grepl("CLPR_CACOMM_1985", Spectra_Set) | grepl("CLPR_CACOMM_1986", Spectra_Set)) { 
         
            # metadata$specimen_id <- get.subs(metadata$specimen_id, sep = "_")[1, ]
@@ -386,12 +414,12 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
     
-    if(!(grepl("CLPR_SWFSC", Spectra_Set) | grepl("CLPR_CACOMM_1985", Spectra_Set) | grepl("CLPR_CACOMM_1986", Spectra_Set))) {
+    if(!(grepl("CLPR_SWFSC", Spectra_Set) | grepl("CLPR_Triennial_2004", Spectra_Set) | grepl("CLPR_CA_Rec_2023_2024", Spectra_Set) | grepl("CLPR_CACOMM_1985", Spectra_Set) | grepl("CLPR_CACOMM_1986", Spectra_Set))) {
        Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
        Model_Spectra_Meta$percent_missing_scan <- as.numeric(Model_Spectra_Meta$percent_missing_scan)
        Model_Spectra_Meta$percent_missing_scan[is.na(Model_Spectra_Meta$percent_missing_scan)] <- 0  # Change NA to zero so that a numerical test can be done.
        Model_Spectra_Meta$tissue_level_scan[is.na(Model_Spectra_Meta$tissue_level_scan)] <- 'none' # Change NA to 'none' tissue level.
-    }     
+    }    
      
     Model_Spectra_Meta <- data.frame(Model_Spectra_Meta, shortName = shortName)  
      
@@ -421,8 +449,9 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         
         else  {
         
-            Object_Name <- JRWToolBox::load(Extra_Meta_Path) # 'DW' is NWFSC Data Warehouse
-            assign('metadata_DW', eval(parse(text = Object_Name[grep("Metadata", Object_Name)])))
+            Object_Name <- JRWToolBox::load(Extra_Meta_Path) 
+            assign('metadata_DW', eval(parse(text = Object_Name[grep("SpAges", Object_Name)])))   # 'DW' is NWFSC Data Warehouse
+            # assign('metadata_DW', eval(parse(text = Object_Name[grep("Metadata", Object_Name)])))   # ??????? Metadata that is saved in a list ?????
             
             if(Debug)
                assign('metadata_DW', metadata_DW, pos = 1)
