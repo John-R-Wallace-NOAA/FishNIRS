@@ -385,19 +385,23 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
               metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id      
               
         } else {
-        
-            cat("\n\nmetadata$specimen_id = ", metadata$specimen_id[1:4], "\n\n")
+                    
+            # if(length(get.subs(metadata$specimen_id[1], sep = "_")) == 1) {
+            #    cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
+            #    Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
+            #       metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
+            # 
+            # } else {
+            #    cat("\n\nModel_Spectra_Meta$specimen_id = ", paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")[1:4], "\n\n")
+            #    Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")), 
+            #         metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
+            # }    
             
-            if(length(get.subs(metadata$specimen_id[1], sep = "_")) == 1) {
-               cat("\n\nModel_Spectra_Meta$specimen_id = ", get.subs(fileNames, '_')[6,][1:4], "\n\n")
-               Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = get.subs(fileNames, '_')[6,]), 
-                  metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
+            cat("\n\nmetadata$NWFSC_NIR_Filename = ", metadata$NWFSC_NIR_Filename[1:4], "\n\n")
+            cat("\n\nModel_Spectra_Meta$NWFSC_NIR_Filename = ", fileNames[1:4], "\n\n")
+            Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, NWFSC_NIR_Filename = fileNames), 
+                    metadata, dplyr::join_by("NWFSC_NIR_Filename" == "NWFSC_NIR_Filename")) # Match by NWFSC_NIR_Filename
             
-            } else {
-               cat("\n\nModel_Spectra_Meta$specimen_id = ", paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")[1:4], "\n\n")
-               Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, specimen_id = paste(get.subs(fileNames, '_')[6,], get.subs(fileNames, '_')[7,], sep = "_")), 
-                    metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
-            }        
         }    
     }     
     
@@ -413,6 +417,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     headTail(Model_Spectra_Meta, 3, 3, 3, 80)
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
+    names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'sex'] <- "Sex"
     
     if(!(grepl("CLPR_SWFSC", Spectra_Set) | grepl("CLPR_Triennial_2004", Spectra_Set) | grepl("CLPR_CA_Rec_2023_2024", Spectra_Set) | grepl("CLPR_CACOMM_1985", Spectra_Set) | grepl("CLPR_CACOMM_1986", Spectra_Set))) {
        Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
@@ -429,11 +434,12 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     #  }
     
     # -- structure_weight_dg --
-    if(!is.null(Model_Spectra_Meta$structure_weight_g))  {  # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
+    if(!(is.null(Model_Spectra_Meta$structure_weight_g) | all(is.na(Model_Spectra_Meta$structure_weight_g))))  {  # line 290 of 2019 has "N/A" in "CLPR_NWFSC"
            Model_Spectra_Meta$structure_weight_g <- as.numeric(Model_Spectra_Meta$structure_weight_g)
            Model_Spectra_Meta$structure_weight_dg = 10 * Model_Spectra_Meta$structure_weight_g # dg = decigram
            Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$structure_weight_dg), ]
-	}
+	} else 
+       warning("No otolith weights")
     
     if(Debug)
        assign('Model_Spectra_Meta_D1', Model_Spectra_Meta, pos = 1)
