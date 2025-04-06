@@ -6,7 +6,7 @@
 
 
 Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acoustic2023", "Sable_2017_2019", "Sable_Combo_2022")[2], Spectra_Path = NULL, 
-                         shortNameSegments = NULL, shortNameSuffix = 'COMBO', yearPosition = 6, fineFreqAdj = 0,
+                         shortNameSegments = NULL, shortNameSuffix = 'COMBO', yearPosition = 6, fileNames_Sort_Seqment = NULL, fineFreqAdj = 0,
                          Meta_Path = NULL, Extra_Meta_Path = NULL, TMA_Ages_Only = c(TRUE, FALSE)[2], 
                          excelSheet = 3, Max_N_Spectra = list(50, 200, 'All')[[3]], OR_2008_2011 = FALSE,
                          verbose = c(TRUE, FALSE)[1], plot = c(TRUE, FALSE)[1], Static_Figure = NULL, htmlPlotFolder = NULL, 
@@ -41,7 +41,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")      
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")   
-    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")      
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")  
+    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Column_Move.R")    
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/recode.simple.R")  
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Months.POSIXt.R") 
     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/predict.lowess.R")  
@@ -54,7 +55,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        ifelse(e1%%e2 == 0, e2, e1%%e2)
     }
      
-
+    
 # ------------------------------------ Main User Setup ------------------------------------------------------------
    
     # Hake 2019, BMS
@@ -218,7 +219,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
        fileNames.0 <- dir()
     else 
        fileNames.0 <- dir(path = Spectra_Path)
-    
+       
     if(length(grep("xlsx", fileNames.0) ) != 0)  { 
        Session_Report_Name <- fileNames.0[grep("xlsx", fileNames.0)]
        fileNames.0 <- fileNames.0[-grep("xlsx", fileNames.0)] 
@@ -227,7 +228,10 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
              cat("\n\nMeta_Path created with Spectra_Path and Session_Report_Name\n\n")
           Meta_Path <- paste0(Spectra_Path, Session_Report_Name)
        }   
-    }    
+    }
+
+    if(!is.null(fileNames_Sort_Seqment))    
+       fileNames.0 <- fileNames.0[order(as.numeric(get.subs(fileNames.0, sep = "_")[fileNames_Sort_Seqment, ]))]
        
     if(verbose) {
        cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
@@ -240,7 +244,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         shortName <- paste0(shortName, "_", shortNameSuffix)
         
     fileNames <- get.subs(fileNames.0, sep = ".")[1, ]  # No '.0' in the metadata xlsx
-    
+   
+
     # -- Read in metadata --
     
     if(verbose)
@@ -282,6 +287,25 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                                           DUR = ifelse(is.null(Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value), NA, Opus_Single[["instrument_ref"]]$parameters$DUR$parameter_value))) # Scan time (sec)
            }   
         }
+        
+         
+        Scan_Diff <- NULL
+        for(i in (1:length(newScans.ADJ))) 
+           Scan_Diff <- data.frame(rbind(Scan_Diff, c(Index = i, fileNames = newScans_meta$filenames[i], Diff = diff(head(as.numeric(colnames(newScans.ADJ[[i]])), 2)))))
+        if(verbose)    
+          headTail(Scan_Diff, 40, 0)   
+        Scan_Diff <- Scan_Diff[abs(as.numeric(Scan_Diff$Diff)) == 8, ]
+        if(verbose) {
+          headTail(Scan_Diff, 40, 0) 
+          cat("\n\nNumber of scans removed where difference in wavebands was not '8': ", length(fileNames) - length(Scan_Diff$fileNames), "\n\n")  
+        }  
+        
+        fileNames <- Scan_Diff$fileNames
+        Scan_Diff$Index <- as.numeric(Scan_Diff$Index)
+        fileNames.0 <- fileNames.0[Scan_Diff$Index]
+        shortName <- shortName[Scan_Diff$Index]
+        newScans.ADJ <- newScans.ADJ[Scan_Diff$Index]
+        newScans_meta <- newScans_meta[Scan_Diff$Index, ]
         
         
         wavebandsToUse <- as.numeric(colnames(newScans.ADJ[[1]]))
@@ -401,7 +425,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
             cat("\n\nModel_Spectra_Meta$NWFSC_NIR_Filename = ", fileNames[1:4], "\n\n")
             Model_Spectra_Meta <- dplyr::left_join(data.frame(filenames = fileNames, newScans.RAW, NWFSC_NIR_Filename = fileNames), 
                     metadata, dplyr::join_by("NWFSC_NIR_Filename" == "NWFSC_NIR_Filename")) # Match by NWFSC_NIR_Filename
-            
+                    
+            Model_Spectra_Meta <- Column_Move(Model_Spectra_Meta, "NWFSC_NIR_Filename", "sample_year")  # Code expects 'project' to be the first column in the metadata - so move 'NWFSC_NIR_Filename' back    
         }    
     }     
     
@@ -412,8 +437,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
                metadata, dplyr::join_by("specimen_id" == "specimen_id")) # Match by specimen_id
     }     
     
-    SPECIMEN_ID <- Model_Spectra_Meta$specimen_id
-    Model_Spectra_Meta$specimen_id <- NULL; Model_Spectra_Meta$specimen_id <- SPECIMEN_ID # Code expects 'project' to be the first column in the metadata - so move 'specimen_id' to the back    
+    Model_Spectra_Meta <- Column_Move(Model_Spectra_Meta, "specimen_id", "sample_year")  # Code expects 'project' to be the first column in the metadata - so move 'specimen_id' back  
     headTail(Model_Spectra_Meta, 3, 3, 3, 80)
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
