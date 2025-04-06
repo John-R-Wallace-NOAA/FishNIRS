@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------------------
 
 
-setwd("C:/SIDT/Sable_CA_Comm_2018")
+setwd("C:/SIDT/Sable_Comm")
 library(JRWToolBox)
 
   
@@ -170,8 +170,8 @@ save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_OR_Comm_2020__2024_Mod
 
 # =================== WA Comm 2020-2023 ============================================
 
-for(i in (2020:2023)[-4]) {  # Bad waveband splits in 2023
-    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), 
+for(i in (2020:2023)[4]) {  
+    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), fileNames_Sort_Seqment = 5,
                                 Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/", i, "/"),
                                 htmlPlotFolder = paste0("Figures_Sable_WA_Comm_", i), Static_Figure = paste0("Sable_WA_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
                                 shortNameSegments = 6, shortNameSuffix = 'WA_Comm', Debug = TRUE)
@@ -180,6 +180,15 @@ for(i in (2020:2023)[-4]) {  # Bad waveband splits in 2023
     
     assign(paste0("Model_Spectra_Meta_", i), Model_Spectra_Meta_YR)
 }    
+
+
+# Bad waveband splits in 2023
+
+# First scan file: SABL_WACOMM2023_NIR0066A_PRD_1_WA23001-SABL-1_O1.0  Tabulation of differences not all 8's
+# -8.20051608310132  -8.2005160830995  -8.2005160830613  -8.2005160830513 
+#                23                65                 1  
+
+
 
 
 
@@ -210,7 +219,7 @@ for(i in (2020:2023)[-4]) {  # Bad waveband splits in 2023
 dim(Model_Spectra_Meta_2020)
 dim(Model_Spectra_Meta_2021)
 dim(Model_Spectra_Meta_2022)
-
+dim(Model_Spectra_Meta_2023)
 
 # Use the least common column set
 
@@ -220,16 +229,17 @@ Columns <- names(Model_Spectra_Meta_2021)
 
 Columns[!Columns %in% names(Model_Spectra_Meta_2020)]
 Columns[!Columns %in% names(Model_Spectra_Meta_2022)]
-
+Columns[!Columns %in% names(Model_Spectra_Meta_2023)]
                 
-Model_Spectra_Meta <- rbind(Model_Spectra_Meta_2020[, Columns], Model_Spectra_Meta_2021[, Columns], Model_Spectra_Meta_2022[, Columns])
+                
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_2020[, Columns], Model_Spectra_Meta_2021[, Columns], Model_Spectra_Meta_2022[, Columns], Model_Spectra_Meta_2023[, Columns])
         
         
 headTail(Model_Spectra_Meta, 3, 3, 3, 55)
 Table( Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 
 
-save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_WA_Comm_2020__2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_WA_Comm_2020__2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 
 
