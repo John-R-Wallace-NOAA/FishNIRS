@@ -1,0 +1,239 @@
+
+
+# ----------------------------- PacFIN BDS for Commercial Data ------------------------------------------------
+
+# Run C:\SIDT\Sable_CA_Comm_2018\SABL PacFIN MetaData.R after importing scans
+
+# -----------------------------------------------------------------------------
+
+
+setwd("C:/SIDT/Sable_CA_Comm_2018")
+library(JRWToolBox)
+
+  
+sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
+       " # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git() "
+       if (!any(installed.packages()[, 1] %in% "httr"))  install.packages("httr") 
+       File.ASCII <- tempfile()
+       if(type == "function")
+         on.exit(file.remove(File.ASCII))
+       getTMP <- httr::GET(gsub(' ', '%20', URL))
+       
+       if(type == "function") {
+         write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), File.ASCII)
+         source(File.ASCII)
+       } 
+       if(type == "script") {
+         fileName <- strsplit(URL, "/")[[1]]
+         fileName <- rev(fileName)[1]
+         write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
+       }  
+}
+
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R") 
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/replaceString.R")     
+# sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+
+source("C:\\SIDT\\Train_NN_Model\\Read_OPUS_Spectra.R")
+
+
+#  !!!!!! "project" ** lower case 'p' ** needs to be in the first column, and there needs to be "TMA", "specimen_id", "sample_year", and "structure_weight_g" columns. !!!!!!
+
+
+# =================== CA Comm 2018, 2020 - 2024 ============================================
+
+for(i in c(2018, 2020:2024)) {
+    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_CA_Comm_", i), 
+                                Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/CA_COMM/SABL/", i, "/"),
+                                htmlPlotFolder = paste0("Figures_Sable_CA_Comm_", i), Static_Figure = paste0("Sable_CA_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
+                                shortNameSegments = 6, shortNameSuffix = 'CA_Comm', Debug = TRUE)
+    dim(Model_Spectra_Meta_YR)          
+    Table(Model_Spectra_Meta_YR$TMA)
+    
+    assign(paste0("Model_Spectra_Meta_", i), Model_Spectra_Meta_YR)
+}    
+          
+
+
+# -- Find the column names that are missing --
+
+dim(Model_Spectra_Meta_2018)
+dim(Model_Spectra_Meta_2020)
+dim(Model_Spectra_Meta_2021)
+dim(Model_Spectra_Meta_2022)
+dim(Model_Spectra_Meta_2024)
+
+# Use the least common column set
+Columns <- names(Model_Spectra_Meta_2023)
+
+Columns[!Columns %in% names(Model_Spectra_Meta_2018)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2020)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2021)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2022)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2024)]
+                
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_2018[,Columns], Model_Spectra_Meta_2020[, Columns], Model_Spectra_Meta_2021[, Columns], Model_Spectra_Meta_2022[, Columns], Model_Spectra_Meta_2024[, Columns])
+        
+        
+headTail(Model_Spectra_Meta, 3, 3, 3, 55)
+Table( Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+
+save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_CA_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+
+
+# =================== OR Comm 2018, 2020 - 2024 ============================================
+
+for(i in c("2018", "2020", "2021", "2022", "2023", "2024/NIR0090 Report", "2024/NIR0091 Report", "2024/NIR0092 Report")[2:8]) {  # No otie weight for 2018
+    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_OR_Comm_", i), 
+                                Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/OR_COMM/Sable/", i, "/"), # need the last "/"
+                                htmlPlotFolder = paste0("Figures_Sable_OR_Comm_", i), Static_Figure = paste0("Sable_OR_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
+                                shortNameSegments = 6, shortNameSuffix = 'OR_Comm', Debug = TRUE)
+    dim(Model_Spectra_Meta_YR)          
+    Table(Model_Spectra_Meta_YR$TMA)
+    
+    if(grepl("2024", i))
+       assign(paste0("Model_Spectra_Meta_", paste(get.subs(i, sep = "/")[1], get.subs(get.subs(i, sep = "/")[2], sep = " ")[1], sep = "_")), Model_Spectra_Meta_YR)
+    
+    if(!grepl("2024", i))
+       assign(paste0("Model_Spectra_Meta_", i), Model_Spectra_Meta_YR)
+    
+}    
+                 
+ 
+
+for(i in "2020") {  
+    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_OR_Comm_", i), 
+                                Spectra_Path = "C:/SIDT/Sable_Comm/2020_Scans/",
+                                htmlPlotFolder = paste0("Figures_Sable_OR_Comm_", i), Static_Figure = paste0("Sable_OR_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
+                                shortNameSegments = 6, shortNameSuffix = 'OR_Comm', Debug = TRUE)
+    dim(Model_Spectra_Meta_YR)          
+    Table(Model_Spectra_Meta_YR$TMA)
+  
+    assign(paste0("Model_Spectra_Meta_", i), Model_Spectra_Meta_YR)
+    
+}    
+                 
+  
+ 
+ 
+
+# -- Find the column names that are missing --
+
+
+# dim(Model_Spectra_Meta_2018)
+dim(Model_Spectra_Meta_2020)
+dim(Model_Spectra_Meta_2021)
+dim(Model_Spectra_Meta_2022)
+dim(Model_Spectra_Meta_2023)
+dim(Model_Spectra_Meta_2024_NIR0090)
+dim(Model_Spectra_Meta_2024_NIR0091)
+dim(Model_Spectra_Meta_2024_NIR0092)
+
+
+Model_Spectra_Meta_2020$Sex_1 <- Model_Spectra_Meta_2020$Sex_2 <- Model_Spectra_Meta_2020$Sex_3 <- Model_Spectra_Meta_2020$Sex_9 <- Model_Spectra_Meta_2020$Sex_U <- NULL
+Model_Spectra_Meta_2021$Sex_1 <- Model_Spectra_Meta_2021$Sex_2 <- Model_Spectra_Meta_2021$Sex_3 <- Model_Spectra_Meta_2021$Sex_9 <- Model_Spectra_Meta_2021$Sex_U <- NULL
+Model_Spectra_Meta_2022$Sex_1 <- Model_Spectra_Meta_2022$Sex_2 <- Model_Spectra_Meta_2022$Sex_3 <- Model_Spectra_Meta_2022$Sex_9 <- Model_Spectra_Meta_2022$Sex_U <- NULL
+Model_Spectra_Meta_2023$Sex_1 <- Model_Spectra_Meta_2023$Sex_2 <- Model_Spectra_Meta_2023$Sex_3 <- Model_Spectra_Meta_2023$Sex_9 <- Model_Spectra_Meta_2023$Sex_U <- NULL
+Model_Spectra_Meta_2024_NIR0090$Sex_1 <- Model_Spectra_Meta_2024_NIR0090$Sex_2 <- Model_Spectra_Meta_2024_NIR0090$Sex_3 <- Model_Spectra_Meta_2024_NIR0090$Sex_9 <- Model_Spectra_Meta_2024_NIR0090$Sex_U <- NULL
+Model_Spectra_Meta_2024_NIR0091$Sex_1 <- Model_Spectra_Meta_2024_NIR0091$Sex_2 <- Model_Spectra_Meta_2024_NIR0091$Sex_3 <- Model_Spectra_Meta_2024_NIR0091$Sex_9 <- Model_Spectra_Meta_2024_NIR0091$Sex_U <- NULL
+Model_Spectra_Meta_2024_NIR0092$Sex_1 <- Model_Spectra_Meta_2024_NIR0092$Sex_2 <- Model_Spectra_Meta_2024_NIR0092$Sex_3 <- Model_Spectra_Meta_2024_NIR0092$Sex_9 <- Model_Spectra_Meta_2024_NIR0092$Sex_U <- NULL
+
+
+Model_Spectra_Meta_2021$NWFSC_NIR_Scan_Session <- NA
+Model_Spectra_Meta_2021$NWFSC_NIR_Filename <- NA
+
+
+# Use the least common column set
+Columns <- names(Model_Spectra_Meta_2023)
+
+# Columns[!Columns %in% names(Model_Spectra_Meta_2018)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2020)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2021)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2022)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2024_NIR0090)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2024_NIR0091)]        
+Columns[!Columns %in% names(Model_Spectra_Meta_2024_NIR0092)]
+
+        
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_2020[,Columns], Model_Spectra_Meta_2021[, Columns], Model_Spectra_Meta_2022[, Columns], Model_Spectra_Meta_2023[, Columns], Model_Spectra_Meta_2024_NIR0090[, Columns],
+             Model_Spectra_Meta_2024_NIR0091[, Columns], Model_Spectra_Meta_2024_NIR0092[, Columns])
+        
+        
+headTail(Model_Spectra_Meta, 3, 3, 3, 55)
+Table( Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_OR_Comm_2020__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+
+
+# =================== WA Comm 2020-2023 ============================================
+
+for(i in (2020:2023)[-4]) {  # Bad waveband splits in 2023
+    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), 
+                                Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/", i, "/"),
+                                htmlPlotFolder = paste0("Figures_Sable_WA_Comm_", i), Static_Figure = paste0("Sable_WA_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
+                                shortNameSegments = 6, shortNameSuffix = 'WA_Comm', Debug = TRUE)
+    dim(Model_Spectra_Meta_YR)          
+    Table(Model_Spectra_Meta_YR$TMA)
+    
+    assign(paste0("Model_Spectra_Meta_", i), Model_Spectra_Meta_YR)
+}    
+
+
+
+#  "SABL_WA_OnBoardObserver2020_NIR0088A_PRD_2_100397691_O1"
+#  SABL_WACOMM2020_NIR0088D_PRD_1_WA20011-SABL-1_O1
+#            
+#  specimen_id <- NULL   
+#  for(i in  metadata$NWFSC_NIR_Filename[1:10])
+#    specimen_id <- c(specimen_id, paste(get.subs(i, sep = "_")[3:5], collapse = "_"))
+#  
+#  
+#  
+#  "SABL_WACOMM2020_NIR0088E_PRD_100_WA20061-SABL-40_O1"
+#  
+#           
+#  fileName_Short <- NULL   
+#  for(i in  metadata$NWFSC_NIR_Filename[1:10])
+#    fileName_Short <- c(fileName_Short, paste(get.subs(i, sep = "_")[3:5], collapse = "_"))
+
+
+
+
+
+
+# -- Find the column names that are missing --
+
+
+dim(Model_Spectra_Meta_2020)
+dim(Model_Spectra_Meta_2021)
+dim(Model_Spectra_Meta_2022)
+
+
+# Use the least common column set
+
+ Model_Spectra_Meta_2021$gear_type <- Model_Spectra_Meta_2021$state_sample_number <- Model_Spectra_Meta_2021$sample_type <- Model_Spectra_Meta_2021$catch_date <- NULL
+
+Columns <- names(Model_Spectra_Meta_2021)
+
+Columns[!Columns %in% names(Model_Spectra_Meta_2020)]
+Columns[!Columns %in% names(Model_Spectra_Meta_2022)]
+
+                
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_2020[, Columns], Model_Spectra_Meta_2021[, Columns], Model_Spectra_Meta_2022[, Columns])
+        
+        
+headTail(Model_Spectra_Meta, 3, 3, 3, 55)
+Table( Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+
+save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_WA_Comm_2020__2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+
+
+
+
+
+
