@@ -170,8 +170,8 @@ save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_OR_Comm_2020__2024_Mod
 
 # =================== WA Comm 2020-2023 ============================================
 
-for(i in (2020:2023)[4]) {  
-    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), fileNames_Sort_Seqment = 5,
+for(i in (2020:2023)[2:4]) {  
+    Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), fileNames_Sort_Seqment = NULL,
                                 Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/", i, "/"),
                                 htmlPlotFolder = paste0("Figures_Sable_WA_Comm_", i), Static_Figure = paste0("Sable_WA_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
                                 shortNameSegments = 6, shortNameSuffix = 'WA_Comm', Debug = TRUE)
@@ -190,29 +190,6 @@ for(i in (2020:2023)[4]) {
 
 
 
-
-
-#  "SABL_WA_OnBoardObserver2020_NIR0088A_PRD_2_100397691_O1"
-#  SABL_WACOMM2020_NIR0088D_PRD_1_WA20011-SABL-1_O1
-#            
-#  specimen_id <- NULL   
-#  for(i in  metadata$NWFSC_NIR_Filename[1:10])
-#    specimen_id <- c(specimen_id, paste(get.subs(i, sep = "_")[3:5], collapse = "_"))
-#  
-#  
-#  
-#  "SABL_WACOMM2020_NIR0088E_PRD_100_WA20061-SABL-40_O1"
-#  
-#           
-#  fileName_Short <- NULL   
-#  for(i in  metadata$NWFSC_NIR_Filename[1:10])
-#    fileName_Short <- c(fileName_Short, paste(get.subs(i, sep = "_")[3:5], collapse = "_"))
-
-
-
-
-
-
 # -- Find the column names that are missing --
 
 
@@ -221,9 +198,12 @@ dim(Model_Spectra_Meta_2021)
 dim(Model_Spectra_Meta_2022)
 dim(Model_Spectra_Meta_2023)
 
+Table(Model_Spectra_Meta_2021$Sex)
+Table(Model_Spectra_Meta_2021$Length_cm)
+
 # Use the least common column set
 
- Model_Spectra_Meta_2021$gear_type <- Model_Spectra_Meta_2021$state_sample_number <- Model_Spectra_Meta_2021$sample_type <- Model_Spectra_Meta_2021$catch_date <- NULL
+Model_Spectra_Meta_2021$gear_type <- Model_Spectra_Meta_2021$state_sample_number <- Model_Spectra_Meta_2021$sample_type <- Model_Spectra_Meta_2021$catch_date <- NULL
 
 Columns <- names(Model_Spectra_Meta_2021)
 
@@ -237,6 +217,10 @@ Model_Spectra_Meta <- rbind(Model_Spectra_Meta_2020[, Columns], Model_Spectra_Me
         
 headTail(Model_Spectra_Meta, 3, 3, 3, 55)
 Table( Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+Table( Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Sex)
+Table( Model_Spectra_Meta$sample_year, round(Model_Spectra_Meta$Length_cm))
+
+Model_Spectra_Meta$Sex <- recode.simple(Model_Spectra_Meta$Sex, cbind(c(1, 2, 3, 9, NA), c("M", "F", "U", "U", "U"))) 
 
 
 save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_WA_Comm_2020__2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData")

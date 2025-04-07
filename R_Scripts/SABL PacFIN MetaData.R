@@ -1,5 +1,8 @@
 
-library(JRWtoolBox)
+
+setwd("C:/SIDT/Sable_Comm")
+
+library(JRWToolBox)
 
 
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
@@ -93,11 +96,12 @@ save(PacFIN_SABL_Age, file = 'PacFIN_SABL_Age.RData')
 # ==========================================================================================================================================================================================
 # ==========================================================================================================================================================================================
  
-
+setwd("C:/SIDT/Sable_Comm")
+library(JRWToolBox)
  
 
 
-load("C:\\SIDT\\Sable_CA_Comm_2018\\PacFIN_SABL_Age.RData")
+load("C:\\SIDT\\Sable_Comm\\PacFIN_SABL_Age.RData")
 
  
 PacFIN_SABL_Age.NN <- PacFIN_SABL_Age[, c("BDS_ID", "SAMPLE_ID", "SAMPLE_NUMBER", "CLUSTER_SEQUENCE_NUMBER", "AGENCY_CODE", "PACFIN_SPECIES_CODE", "FISH_SEQUENCE_NUMBER", "FINAL_FISH_AGE_IN_YEARS", "Year", "Month", "SAMPLE_DAY", "Length_cm", "Weight_kg", "Sex", "Depth")]
@@ -107,76 +111,259 @@ Columns <- c("BDS_ID", "SAMPLE_ID", "SAMPLE_NUMBER", "CLUSTER_SEQUENCE_NUMBER", 
 Columns[!Columns %in% names(PacFIN_SABL_Age)]
 
 
-# Load Model_Spectra_Meta data 
-base::load("C:/SIDT/Sable_CA_Comm_2018/Sable_CA_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")  
-headTail(Model_Spectra_Meta, 2,2, 2, 70)
+
+
+# --- Load Model_Spectra_Meta data ---
+load("C:\\SIDT\\Sable_Comm\\Sable_CA_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_CA <-  Model_Spectra_Meta
+
+load("C:\\SIDT\\Sable_Comm\\Sable_OR_Comm_2020__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_OR <-  Model_Spectra_Meta
+
+load("C:\\SIDT\\Sable_Comm\\Sable_WA_Comm_2020__2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_WA <-  Model_Spectra_Meta
+
+Table(Model_Spectra_Meta_CA$Sex)
+Table(Model_Spectra_Meta_OR$Sex)
+Table(Model_Spectra_Meta_WA$Sex)
+
+Model_Spectra_Meta_CA$Sex <- NA
+
+dim(Model_Spectra_Meta_CA)
+dim(Model_Spectra_Meta_OR)
+dim(Model_Spectra_Meta_WA)
+
+
+# Use the least common column set
+Columns <- names(Model_Spectra_Meta_CA)
+
+Columns[!Columns %in% names(Model_Spectra_Meta_OR)]
+Columns[!Columns %in% names(Model_Spectra_Meta_WA)]
+
+              
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_CA[, Columns], Model_Spectra_Meta_OR[, Columns], Model_Spectra_Meta_WA[, Columns])
+        
+Model_Spectra_Meta$Sex <- recode.simple(Model_Spectra_Meta$Sex, cbind(c(1, 2, 3, 9, NA), c("M", "F", "U", "U", "U"))) 
+
+Table(Model_Spectra_Meta$Sex, Model_Spectra_Meta$sample_year)       
+
+# ---------------------------------------------------------------------------------
+
+
+Table(!is.na(Model_Spectra_Meta$structure_weight_dg))
+ TRUE 
+11034
+
+# -- Sex, One hot encoding --
+if(!is.null(Model_Spectra_Meta$Sex)) {
+    Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+    Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
+    Sex_ <- Model_Spectra_Meta$Sex
+    Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+    if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
+}   
+
+headTail(Model_Spectra_Meta, 2, 2, 2, 70)
+
+save(Model_Spectra_Meta, file = 'SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA_SR_Sex.RData')
+
+ #--------------------------------------------------------------------
+ 
+Model_Spectra_Meta$Sex_SR <- Model_Spectra_Meta$Sex
+
+
+headTail(Model_Spectra_Meta, 2, 2, 2, 70)
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+sum(table(Model_Spectra_Meta$TMA))
+100 * sum(table(Model_Spectra_Meta$TMA))/nrow(Model_Spectra_Meta)
+
 
 Model_Spectra_Meta$age_structure_id[1:5]
 [1] "CA1870028-SABL-1-1-O"  "CA1870232-SABL-1-1-O"  "CA1870028-SABL-1-10-O" "CA1870232-SABL-2-1-O"  "CA1870028-SABL-2-1-O" 
 
+
 tail(Model_Spectra_Meta$age_structure_id)
-[1] "CA202470092-SABL-2-6-O" "CA202470182-SABL-2-6-O" "CA202470092-SABL-2-7-O" "CA202470182-SABL-2-7-O" "CA202470092-SABL-2-8-O" "CA202470092-SABL-2-9-O"
+[1] "WA23001-SABL-98-O"  "WA23078-SABL-18-O"  "WA23001-SABL-99-O"  "WA23078-SABL-19-O"  "WA23001-SABL-100-O" "WA23078-SABL-20-O" 
+
+
+Model_Spectra_Meta$Agency_ID <- substr(Model_Spectra_Meta$age_structure_id,1,2)
+Model_Spectra_Meta$Agency_ID[Model_Spectra_Meta$Agency_ID %in% '10'] <- "WA"
+Table(Model_Spectra_Meta$Agency_ID)
+
 
 
 # !!!!!!!!!!!!!!!!!!! At some point in 2021, Patrick's 'age_structure_id' switched from a 2 digit year to a 4 digit year !!!!!!!!!!!!!!!
 
-PacFIN_SABL_Age.NN$SAMPLE_NUMBER[1:5]
+# PacFIN_SABL_Age.NN$SAMPLE_NUMBER[1:5]
+# PacFIN_SABL_Age.NN$AGENCY_ID <- recode.simple(PacFIN_SABL_Age.NN$AGENCY_CODE, cbind(c('W', 'O', 'C'), c('WA', 'OR', 'CA')))
+# Table(PacFIN_SABL_Age.NN$AGENCY_ID, PacFIN_SABL_Age.NN$AGENCY_CODE)
 
-PacFIN_SABL_Age.NN$age_structure_id <- paste0("CA", substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 3, 4), substring(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 9), "-", PacFIN_SABL_Age.NN$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age.NN$CLUSTER_SEQUENCE_NUMBER, "-", PacFIN_SABL_Age.NN$FISH_SEQUENCE_NUMBER, "-O")
+# --- CA ---
+
+PacFIN_SABL_Age.NN$age_structure_id_CA_1 <- paste0('CA', substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 3, 4), substring(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 9), "-", PacFIN_SABL_Age.NN$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age.NN$CLUSTER_SEQUENCE_NUMBER, "-", PacFIN_SABL_Age.NN$FISH_SEQUENCE_NUMBER, "-O")
 PacFIN_SABL_Age.NN$age_structure_id[1:5]
-[1] "CA67010001-SABL-1-1-O" "CA67010001-SABL-1-2-O" "CA67010001-SABL-1-3-O" "CA67010001-SABL-1-4-O" "CA67010001-SABL-1-5-O"
+# [1] "CA67010001-SABL-1-1-O" "CA67010001-SABL-1-2-O" "CA67010001-SABL-1-3-O" "CA67010001-SABL-1-4-O" "CA67010001-SABL-1-5-O"
+
+Model_Spectra_Meta.xx <- Model_Spectra_Meta
+Model_Spectra_Meta.xx$Length_cm <- Model_Spectra_Meta.xx$Weight_kg <- Model_Spectra_Meta.xx$Sex <- Model_Spectra_Meta.xx$Depth <- NULL
+Model_Spectra_Meta_CA_1 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_CA_1', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Table(!is.na(Model_Spectra_Meta_CA_1$Length_cm), Model_Spectra_Meta_CA_1$sample_year, Model_Spectra_Meta_CA_1$Agency_ID)
 
 
-PacFIN_SABL_Age.NN$age_structure_id_2 <- paste0("CA", substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 1, 4), substring(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 9), "-", PacFIN_SABL_Age.NN$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age.NN$CLUSTER_SEQUENCE_NUMBER, "-", PacFIN_SABL_Age.NN$FISH_SEQUENCE_NUMBER, "-O")
+PacFIN_SABL_Age.NN$age_structure_id_CA_2 <- paste0('CA', substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 1, 4), substring(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 9), "-", PacFIN_SABL_Age.NN$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age.NN$CLUSTER_SEQUENCE_NUMBER, "-", PacFIN_SABL_Age.NN$FISH_SEQUENCE_NUMBER, "-O")
 tail(PacFIN_SABL_Age.NN$age_structure_id_2)
-[1] "CA2025010010-SABL-1-18-O" "CA2025010010-SABL-1-19-O" "CA2025010010-SABL-1-20-O" "CA2025010010-SABL-1-21-O" "CA2025010010-SABL-1-22-O" "CA2025010010-SABL-1-23-O"
+# [1] "CA2025010010-SABL-1-18-O" "CA2025010010-SABL-1-19-O" "CA2025010010-SABL-1-20-O" "CA2025010010-SABL-1-21-O" "CA2025010010-SABL-1-22-O" "CA2025010010-SABL-1-23-O"
+
+Model_Spectra_Meta.xx <- Model_Spectra_Meta
+Model_Spectra_Meta.xx$Length_cm <- Model_Spectra_Meta.xx$Weight_kg <- Model_Spectra_Meta.xx$Sex <- Model_Spectra_Meta.xx$Depth <- NULL
+Model_Spectra_Meta_CA_2 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_CA_2', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Table(!is.na(Model_Spectra_Meta_CA_2$Length_cm), Model_Spectra_Meta_CA_2$sample_year, Model_Spectra_Meta_CA_2$Agency_ID)
 
 
+
+
+# --- WA ---
+
+Model_Spectra_Meta$age_structure_id[Model_Spectra_Meta$Agency_ID %in% 'WA'][1:5]
+[1] "100397679-SABL-O" "100397685-SABL-O" "100397681-SABL-O" "100397686-SABL-O" "100397697-SABL-O"
+
+tail(Model_Spectra_Meta$age_structure_id[Model_Spectra_Meta$Agency_ID %in% 'WA'], 50)
+[1]  "WA23001-SABL-98-O"  "WA23078-SABL-18-O"  "WA23001-SABL-99-O"  "WA23078-SABL-19-O"  "WA23001-SABL-100-O" "WA23078-SABL-20-O" 
+
+
+PacFIN_SABL_Age.NN$age_structure_id_WA_1 <- paste0(substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 10, 14), substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 2, 5), "-", PacFIN_SABL_Age.NN$PACFIN_SPECIES_CODE, "-O")
+# PacFIN_SABL_Age.NN$age_structure_id_WA_1 <- paste0(substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 3, 4), substring(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 9), "-O")
+PacFIN_SABL_Age.NN$age_structure_id_WA_1[PacFIN_SABL_Age.NN$AGENCY_CODE %in% 'W'][1:5]
+tail(PacFIN_SABL_Age.NN$age_structure_id_WA_1[PacFIN_SABL_Age.NN$AGENCY_CODE %in% 'W'])
+
+
+Model_Spectra_Meta.xx <- Model_Spectra_Meta
+Model_Spectra_Meta.xx$Length_cm <- Model_Spectra_Meta.xx$Weight_kg <- Model_Spectra_Meta.xx$Sex <- Model_Spectra_Meta.xx$Depth <- NULL
+Model_Spectra_Meta_WA_1 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_WA_1', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Table(!is.na(Model_Spectra_Meta_WA_1$Length_cm), Model_Spectra_Meta_WA_1$sample_year, Model_Spectra_Meta_WA_1$Agency_ID)
+
+
+
+
+PacFIN_SABL_Age.NN$age_structure_id_WA_2 <- paste0('WA', substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 8, 12), "-",  PacFIN_SABL_Age.NN$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age.NN$FISH_SEQUENCE_NUMBER, "-O")
+PacFIN_SABL_Age.NN$age_structure_id_WA_2[PacFIN_SABL_Age.NN$AGENCY_CODE %in% 'W'][1:5]
+# [1] "WA20674-SABL-1-O" "WA20674-SABL-2-O" "WA20674-SABL-3-O" "WA20674-SABL-4-O" "WA20674-SABL-5-O"
+
+tail(PacFIN_SABL_Age.NN$age_structure_id_WA_2[PacFIN_SABL_Age.NN$AGENCY_CODE %in% 'W'])
+# [1] "WA20254-SABL-18-O" "WA20254-SABL-19-O" "WA20254-SABL-20-O" "WA20254-SABL-21-O" "WA20254-SABL-22-O" "WA20254-SABL-23-O"
+
+
+Model_Spectra_Meta.xx <- Model_Spectra_Meta
+Model_Spectra_Meta.xx$Length_cm <- Model_Spectra_Meta.xx$Weight_kg <- Model_Spectra_Meta.xx$Sex <- Model_Spectra_Meta.xx$Depth <- NULL
+Model_Spectra_Meta_WA_2 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_WA_2', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Table(!is.na(Model_Spectra_Meta_WA_2$Length_cm), Model_Spectra_Meta_WA_2$sample_year, Model_Spectra_Meta_WA_2$Agency_ID)
+Table(!is.na(Model_Spectra_Meta_WA_2$TMA), Model_Spectra_Meta_WA_2$sample_year, Model_Spectra_Meta_WA_2$Agency_ID)
+
+Table(!is.na(Model_Spectra_Meta_WA_2$TMA), round(Model_Spectra_Meta_WA_2$Length_cm), Model_Spectra_Meta_WA_2$Agency_ID)
+
+
+
+# --- OR ---
+
+Model_Spectra_Meta$age_structure_id[Model_Spectra_Meta$Agency_ID %in% 'OR'][1:5]
+[1] "OR2076798-SABL-20-O" "OR2076637-SABL-1-O"  "OR2076637-SABL-2-O"  "OR2076637-SABL-3-O"  "OR2076637-SABL-4-O" 
+
+tail(Model_Spectra_Meta$age_structure_id[Model_Spectra_Meta$Agency_ID %in% 'OR'])
+[1] "OR2494375-SABL-19-O" "OR2495171-SABL-5-O"  "OR2494960-SABL-1-O"  "OR2496595-SABL-27-O" "OR2494960-SABL-2-O"  "OR2495171-SABL-9-O" 
+
+Model_Spectra_Meta$age_structure_id[Model_Spectra_Meta$Agency_ID %in% 'OR' & Model_Spectra_Meta$sample_year %in% 2018][1:5]
+
+
+PacFIN_SABL_Age.NN$age_structure_id_OR_1 <- paste0(substr(PacFIN_SABL_Age.NN$SAMPLE_NUMBER, 1, 9), "-",  PacFIN_SABL_Age.NN$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age.NN$FISH_SEQUENCE_NUMBER, "-O")
+PacFIN_SABL_Age.NN$age_structure_id_OR_1[PacFIN_SABL_Age.NN$AGENCY_CODE %in% 'O'][1:5]
+tail(PacFIN_SABL_Age.NN$age_structure_id_OR_1[PacFIN_SABL_Age.NN$AGENCY_CODE %in% 'O'])
+
+
+Model_Spectra_Meta.xx <- Model_Spectra_Meta
+Model_Spectra_Meta.xx$Length_cm <- Model_Spectra_Meta.xx$Weight_kg <- Model_Spectra_Meta.xx$Sex <- Model_Spectra_Meta.xx$Depth <- NULL
+Model_Spectra_Meta_OR_1 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_OR_1', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Table(!is.na(Model_Spectra_Meta_OR_1$Length_cm), Model_Spectra_Meta_OR_1$sample_year, Model_Spectra_Meta_OR_1$Agency_ID)
+
+
+
+# ===================================================
+
+headTail(PacFIN_SABL_Age.NN)
 
 
 Model_Spectra_Meta.xx <- Model_Spectra_Meta
 Model_Spectra_Meta.xx$Length_cm <- Model_Spectra_Meta.xx$Weight_kg <- Model_Spectra_Meta.xx$Sex <- Model_Spectra_Meta.xx$Depth <- NULL
 
-Model_Spectra_Meta_1 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
-Model_Spectra_Meta_2 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_2', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
-
-Model_Spectra_Meta <- rbind(Model_Spectra_Meta_1[!is.na(Model_Spectra_Meta_1$Length_cm), ], Model_Spectra_Meta_2[!is.na(Model_Spectra_Meta_2$Length_cm), ])
-
-Table(!is.na(Model_Spectra_Meta$Sex), Model_Spectra_Meta$sample_year)
-      
-       2018 2020 2021 2022 2024
-  TRUE  197   24   46  442  631
+Model_Spectra_Meta_CA_1 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_CA_1', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Model_Spectra_Meta_CA_2 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_CA_2', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Model_Spectra_Meta_OR_1 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_OR_1', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
+Model_Spectra_Meta_WA_2 <- match.f(Model_Spectra_Meta.xx, PacFIN_SABL_Age.NN, 'age_structure_id', 'age_structure_id_WA_2', c("Month", "Length_cm", "Weight_kg", "Sex", "Depth"))
 
 
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta_CA_1[!is.na(Model_Spectra_Meta_CA_1$Length_cm), ], Model_Spectra_Meta_CA_2[!is.na(Model_Spectra_Meta_CA_2$Length_cm), ],
+                            Model_Spectra_Meta_OR_1[!is.na(Model_Spectra_Meta_OR_1$Length_cm), ], Model_Spectra_Meta_WA_2[!is.na(Model_Spectra_Meta_WA_2$Length_cm), ])
+
+Table(round(Model_Spectra_Meta$Length_cm))
 
 headTail(Model_Spectra_Meta, 2, 2, 2, 70)
+
+
+Table(Model_Spectra_Meta$sample_year, round(Model_Spectra_Meta$Length_cm))
+
+Table(Model_Spectra_Meta$TMA, Model_Spectra_Meta$sample_year)
+sum(table(Model_Spectra_Meta$TMA))
+1647
+100 * sum(table(Model_Spectra_Meta$TMA))/nrow(Model_Spectra_Meta)
+18.6% (= 1647/8858)
+
+Table(Model_Spectra_Meta$Sex, Model_Spectra_Meta$sample_year)
+      
+    2018 2020 2021 2022 2023 2024
+  F  155  782  315 2848  748  965
+  M   40  469  172 1093  408  336
+  U    2    0   41  290  194    0
+
+
+Table(Model_Spectra_Meta$Sex_SR, Model_Spectra_Meta$sample_year)
+
+    2018 2020 2021 2022 2023 2024
+  F    0  760  277 2693  940  438
+  M    0  467  164 1069  298  163
+  U  197   24   87  469  112  700
+
+Table(Model_Spectra_Meta$Sex, Model_Spectra_Meta$Sex_SR)
+
+       F    M    U
+  F 4686   21 1106
+  M  139 2056  323
+  U  283   84  160
 
 
 
 Table(!is.na(Model_Spectra_Meta$Month))
 TRUE 
-1340 
+8858
 
 Table(!is.na(Model_Spectra_Meta$Length_cm))
 TRUE 
-1340 
+8858
 
 Table(!is.na(Model_Spectra_Meta$Weight_kg))
-FALSE 
- 1340 
+FALSE  TRUE 
+ 2104  6754 
 
 Table(!is.na(Model_Spectra_Meta$Sex))
 TRUE 
-1340 
+8859
 
 Table(!is.na(Model_Spectra_Meta$Depth))
-FALSE 
- 1340 
+FALSE  TRUE 
+ 8167   691 
+
 
 Table(!is.na(Model_Spectra_Meta$structure_weight_dg))
 TRUE 
-1340 
-
+8858
 
 # Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$structure_weight_dg), ]
 # headTail(Model_Spectra_Meta, 2, 2, 2, 70)
@@ -222,6 +409,11 @@ if(!is.null(Model_Spectra_Meta$Month) & !all(is.na(Model_Spectra_Meta$Month))) {
  
 
 headTail(Model_Spectra_Meta, 2, 2, 2, 70)
+
+browsePlot('plot(Model_Spectra_Meta$TMA, Model_Spectra_Meta$structure_weight_dg)')
+browsePlot('plot(Model_Spectra_Meta$TMA, Model_Spectra_Meta$Length_cm)')
+browsePlot('print(lattice::xyplot(Length_cm ~ TMA, groups = Sex, data = Model_Spectra_Meta))')
+
 
 save(Model_Spectra_Meta, file = 'SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData')
 
