@@ -530,7 +530,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                        file = paste0(Predicted_Ages_Path, '/Agreement_Figure_No_Bias_Corr.png'))
          }    
          
-         cat("\n\nLooking for a Delta that gives an improved fit based on SAD with ties broken by APE:\n")  # R Squared)
+         cat("\n\nLooking for a Delta that gives an improved fit based on SAD with ties broken by APE:\n")  # R Squared
          
          if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
               # What is the best Delta (by SAD, with ties broken by APE) on the median over all, Rdm_reps, full k-folds. A new Delta (perhaps the same value) can be found here since TMA ages are available.
@@ -597,7 +597,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          headTail(New_Ages, 3)
          Table(New_Ages$Year)
           
-         Training_N <- length(unlist(Rdm_folds_index[[1]])) 
+        
+         # Training_N <- length(unlist(Rdm_folds_index[[1]])) 
+         Training_N <- nrow(NN_Pred_Median_TMA)
          
          assign('Spectra_Set', Spectra_Set, pos = 1) 
          assign('New_Ages', New_Ages, pos = 1)
