@@ -1,5 +1,7 @@
 
 
+# ===============  Import the PacFIN Sablefish metadata =============================
+
 setwd("C:/SIDT/Sable_Comm")
 
 library(JRWToolBox)
@@ -31,9 +33,9 @@ GitHub_File_Download("John-R-Wallace-NOAA/PacFIN.Data.Extraction/master/R/PacFIN
 
 
 PacFIN.Login <- UID <- "wallacej"  
-PacFIN.PW <- PWD <- "Do3rj4$jrw"
+PacFIN.PW <- PWD <- "*********"
 DSN <- "PacFIN"
-import.sql("Select * from pacfin.bds_sp where rownum < 11", dsn="PacFIN", uid="wallacej", pwd=PacFIN.PW)
+import.sql("Select * from pacfin.bds_sp where rownum < 11", dsn="PacFIN", uid="wallacej", pwd=PacFIN.PW) # Test
 
 
 PacFIN_SABL_Age <- PacFIN.BDS.Extraction("'SABL'")
@@ -93,13 +95,11 @@ save(PacFIN_SABL_Age, file = 'PacFIN_SABL_Age.RData')
 
 
 
-# ==========================================================================================================================================================================================
-# ==========================================================================================================================================================================================
- 
+# ==================================== Match the PacFIN Metadata onto the combined  WA, OR, CA  commercial Model_Spectra_Meta ========================================================================================
+
 setwd("C:/SIDT/Sable_Comm")
 library(JRWToolBox)
  
-
 
 load("C:\\SIDT\\Sable_Comm\\PacFIN_SABL_Age.RData")
 
@@ -115,13 +115,13 @@ Columns[!Columns %in% names(PacFIN_SABL_Age)]
 
 # --- Load Model_Spectra_Meta data ---
 load("C:\\SIDT\\Sable_Comm\\Sable_CA_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-Model_Spectra_Meta_CA <-  Model_Spectra_Meta
+Model_Spectra_Meta_CA <- Model_Spectra_Meta
 
 load("C:\\SIDT\\Sable_Comm\\Sable_OR_Comm_2020__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-Model_Spectra_Meta_OR <-  Model_Spectra_Meta
+Model_Spectra_Meta_OR <- Model_Spectra_Meta
 
 load("C:\\SIDT\\Sable_Comm\\Sable_WA_Comm_2020__2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-Model_Spectra_Meta_WA <-  Model_Spectra_Meta
+Model_Spectra_Meta_WA <- Model_Spectra_Meta
 
 Table(Model_Spectra_Meta_CA$Sex)
 Table(Model_Spectra_Meta_OR$Sex)
@@ -419,6 +419,212 @@ save(Model_Spectra_Meta, file = 'SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOO
 
 
 
+load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+headTail(Model_Spectra_Meta,2,2,2,55)
+
+Model_Spectra_Meta_PF <- Model_Spectra_Meta
+Model_Spectra_Meta_PF$Sex_PF <- Model_Spectra_Meta_PF$Sex
+Table(Model_Spectra_Meta_PF$Sex_PF)
+
+load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA_SR_Sex.RData")
+headTail(Model_Spectra_Meta,2,2,2,55)
+
+Model_Spectra_Meta <- match.f(Model_Spectra_Meta, Model_Spectra_Meta_PF, 'filenames', 'filenames', 'Sex_PF')
+change(Model_Spectra_Meta)
+Table(Sex, Sex_PF)
+Table(Sex)
+Table(Sex_PF)
+
+Model_Spectra_Meta$Sex[Model_Spectra_Meta$Sex %in% 'U'] <- Model_Spectra_Meta$Sex_PF[Model_Spectra_Meta$Sex %in% 'U']
+Table(Model_Spectra_Meta$Sex)
+   F    M    U <NA> 
+7593 2873  160  408 
+
+
+Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- 'U'
+   F    M    U 
+7593 2873  568 
+
+Model_Spectra_Meta$Sex_PF <- NULL
+
+
+Model_Spectra_Meta$Sex_F <- Model_Spectra_Meta$Sex_M <- Model_Spectra_Meta$Sex_U <- NULL
+Model_Spectra_Meta$Sex_F.1 <- Model_Spectra_Meta$Sex_M.1 <- Model_Spectra_Meta$Sex_U.1 <- NULL
+
+# -- Sex, One hot encoding --
+if(!is.null(Model_Spectra_Meta$Sex)) {
+    Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+    Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
+    Sex_ <- Model_Spectra_Meta$Sex
+    Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+    if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
+}   
+
+headTail(Model_Spectra_Meta,2,2,2,55)
+Table(Model_Spectra_Meta$Sex)
+
+
+save(Model_Spectra_Meta,  file = "C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA_SR_Sex.RData")
+
+# ------------------------------
+
+
+load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA_SR_Sex.RData")
+
+sum(table(Model_Spectra_Meta$TMA))
+2600
+
+
+
+Table(Model_Spectra_Meta$sample_year, !is.na(Model_Spectra_Meta$TMA))
+     FALSE TRUE
+  2018    96  101
+  2020     0 1773
+  2021   450  390
+  2022  4535  336
+  2023  2052    0
+  2024  1301    0
+
+
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+
+      
+          0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   30   31   32   33   34   37   38   40   41   43   47   48   52   53   54 <NA>
+  2018    0    0    4    7   15   34    4    3   14    5    0    2    1    0    1    0    2    1    1    0    0    0    2    0    1    0    0    2    1    0    0    1    0    0    0    0    0    0    0    0    0    0    0    0   96
+  2020    0    5   45   67  884   99  121  288   50   33   34   34   33   10    9    5    6    1    5    5    8    5    2    2    1    1    2    2    2    1    1    2    1    1    1    1    0    1    1    0    1    1    1    1    0
+  2021    1   27   11   18   17  238   27   18   14    4    3    7    0    0    3    0    0    0    0    0    0    1    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    1    0    0    0    0  450
+  2022    0   14  113   60    7   10   61   23    4   10    9    4    3    1    2    3    3    2    0    0    1    1    0    0    0    0    0    0    0    0    0    1    2    0    0    1    1    0    0    0    0    0    0    0 4535
+  2023    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0 2052
+  2024    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0    0 1301
+
+
+load("C:\\SIDT\\Sablefish Combo Multi Year\\Sable_Combo_All_Oties_2017_18_19_21_22\\Sable_Combo_Multi_17_22_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+      
+  
+         0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  78  88
+  2017   9 211  50 116 189  66  52  46  45  35  25  13  15   9   8  18  17  14  16   8   6   7   7   6   7   4   6   4   4   3   4   1   2   2   2   5   2   0   3   4   2   4   3   0   1   3   2   8   3   3   2   1   0   1   1   1   2   4   2   2   1   1   1   2   2   1   0   2   0   1   0   2   0   0   0
+  2018  19  41 312  73 102 173  87  82  58  47  50  18  16   9  12  14  15  14  11  12  13  14   7   5   2   3   2   4   6   8   4   7   5   4   1   5   2   3   5   6   3   0   0   2   4   2   2   1   3   3   1   5   3   1   2   2   4   3   1   1   0   1   4   0   1   0   1   0   0   1   0   0   0   0   0
+  2019  30  71  13 180  45  41 116  36  29  24  16  19   6   6  11   5   6   3   9  11  12   3   3   4   1   2   2   1   5   2   3   1   2   1   0   2   1   1   3   3   1   1   0   0   0   0   0   2   0   2   2   1   1   0   1   1   0   1   0   2   0   2   2   0   0   0   1   0   1   0   0   0   0   0   0
+  2021 213 450 130  65  60 300  94  76  80  64  66  60  60  41  29  21  23   9  11   6  10  17  17  17   7  12   9  10   9   3   3   2   4   7   3   6   1   3   3   5   3   2   4   6   2   3   0   2   0   1   2   1   3   2   4   1   2   1   2   1   1   2   0   1   1   0   1   1   3   0   1   2   2   0   1
+  2022  26 332 368 110  41  29 170  42  36  43  36  33  39  32  22  19  15   6  11   9  11  10   5   6  10   5   6   3   5   0   1   2   2   1   6   2   5   2   3   1   0   2   4   1   2   2   4   0   2   1   0   1   2   2   2   0   4   0   0   1   3   6   1   1   0   2   1   1   0   1   1   0   0   1   0
+
+
+
+Table(Model_Spectra_Meta$sample_year, !is.na(Model_Spectra_Meta$TMA))
+      
+       TRUE
+  2017 1099
+  2018 1322
+  2019  750
+  2021 2064
+  2022 1553
+  
+  # All Commercial plus 2017, 2019, 2022
+
+2600 + 1099 + 750 + 1553 + 1032 
+
+
+# -- Just non-missing TMA for model training  --
+load("C:\\SIDT\\Sablefish Combo Multi Year\\Sable_Combo_All_Oties_2017_18_19_21_22\\Sable_Combo_Multi_17_22_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_Combo <- Model_Spectra_Meta[Model_Spectra_Meta$sample_year %in% c(2017, 2019, 2022), ]
+dim(Model_Spectra_Meta_Combo)
+
+
+load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA_SR_Sex.RData")
+headTail(Model_Spectra_Meta,2,2,2,55)
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Comm", sep = "_")
+
+Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$TMA), ]
+dim(Model_Spectra_Meta)
+
+
+
+Model_Spectra_Meta$age_structure_side <- Model_Spectra_Meta$NWFSC_NIR_Filename <- Model_Spectra_Meta$unscannable_other <- Model_Spectra_Meta$Sex_F <- Model_Spectra_Meta$Sex_M <- Model_Spectra_Meta$Sex_U <- NULL
+
+Columns <- names(Model_Spectra_Meta)
+
+Columns[!Columns %in% names(Model_Spectra_Meta_Combo)]
+                
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta[, Columns], Model_Spectra_Meta_Combo[, Columns])
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+
+
+# -- Sex, One hot encoding --
+if(!is.null(Model_Spectra_Meta$Sex)) {
+    Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+    Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
+    Sex_ <- Model_Spectra_Meta$Sex
+    Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+    if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
+}   
+
+headTail(Model_Spectra_Meta, 2,2,2,55)
+
+save(Model_Spectra_Meta, file = "C:\\SIDT\\Sable_Comm\\SABL_Combo_Comm_2017__2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+
+
+# -- All the data for prediction --
+
+load("C:\\SIDT\\Sablefish Combo Multi Year\\Sable_Combo_All_Oties_2017_18_19_21_22\\Sable_Combo_Multi_17_22_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_Combo <- Model_Spectra_Meta[Model_Spectra_Meta$sample_year %in% c(2017, 2019, 2022), ]
+dim(Model_Spectra_Meta_Combo)
+headTail(Model_Spectra_Meta_Combo,2,2,2,55)
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+
+load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta_Comm_Len_Month <- Model_Spectra_Meta
+headTail(Model_Spectra_Meta_Comm_Len_Month,2,2,2,55)
+
+
+load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA_SR_Sex.RData")
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Comm", sep = "_")
+headTail(Model_Spectra_Meta,2,2,2,55)
+
+Model_Spectra_Meta <- match.f(Model_Spectra_Meta, Model_Spectra_Meta_Comm_Len_Month, 'filenames', 'filenames', c('Length_cm', 'Month'))
+
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+Table(Model_Spectra_Meta$sample_year, round(Model_Spectra_Meta$Length_cm))
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Month)
+
+
+
+
+
+Model_Spectra_Meta$age_structure_side <- Model_Spectra_Meta$NWFSC_NIR_Filename <- Model_Spectra_Meta$unscannable_other <- Model_Spectra_Meta$Sex_F <- Model_Spectra_Meta$Sex_M <- Model_Spectra_Meta$Sex_U <- NULL
+
+Columns <- names(Model_Spectra_Meta)
+Columns[!Columns %in% names(Model_Spectra_Meta_Combo)]
+                
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta[, Columns], Model_Spectra_Meta_Combo[, Columns])
+
+# -- Sex, One hot encoding --
+if(!is.null(Model_Spectra_Meta$Sex)) {
+    Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+    Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
+    Sex_ <- Model_Spectra_Meta$Sex
+    Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+    if(is.null(Model_Spectra_Meta$Sex_U))  Model_Spectra_Meta$Sex_U <- 0
+}   
+
+headTail(Model_Spectra_Meta,2,2,2,55)  # Look for one hot encoding sex and structure_weight_dg for the NN model
+
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$structure_weight_g)  
+Table(Model_Spectra_Meta$sample_year, round(Model_Spectra_Meta$Length_cm))
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Month)
+Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Sex)
+
+
+save(Model_Spectra_Meta, file = "C:\\SIDT\\Sable_Comm\\SABL_Combo_Comm_2017__2022_Model_Spectra_Meta_ALL_GOOD_DATA_TMA_NAs.RData")
+
+
+
+
+
 
 # =================================================
 
@@ -446,6 +652,67 @@ PacFIN_SABL_Age[PacFIN_SABL_Age$BDS_ID %in% 2469163, ]
 
       FISH_LENGTH_UNITS FISH_WEIGHT_UNITS FISH_LENGTH_IS_ESTIMATED FISH_WEIGHT_UNITS_NAME all_cluster_sum_kg DAHL_GROUNDFISH_CODE Length_cm Weight_kg Sex Year Depth Month
 44149                MM                                      FALSE                                  36.28739                   NA      48.8        NA   M 1989    NA     3
+
+
+
+
+No_NA <- PacFIN_SABL_Age[!is.na(PacFIN_SABL_Age$AGE_IN_YEARS) & !is.na(PacFIN_SABL_Age$FINAL_FISH_AGE_IN_YEARS), ]
+renum(No_NA[No_NA$AGE_IN_YEARS > 65| No_NA$FINAL_FISH_AGE_IN_YEARS > 65, 
+  c("AGENCY_CODE", "SAMPLE_YEAR", "SAMPLE_MONTH", "SAMPLE_DAY", "BDS_ID", "SAMPLE_ID", "SAMPLE_NUMBER", "CLUSTER_SEQUENCE_NUMBER", "FISH_SEQUENCE_NUMBER", 
+    "AGE_SEQUENCE_NUMBER", "PERSON_WHO_AGED", "AGE_IN_YEARS", "FINAL_FISH_AGE_IN_YEARS")])
+
+   AGENCY_CODE SAMPLE_YEAR SAMPLE_MONTH SAMPLE_DAY  BDS_ID SAMPLE_ID  SAMPLE_NUMBER CLUSTER_SEQUENCE_NUMBER FISH_SEQUENCE_NUMBER AGE_SEQUENCE_NUMBER      PERSON_WHO_AGED AGE_IN_YEARS FINAL_FISH_AGE_IN_YEARS 
+1            C        1989            9         25 4553212  63738574  1989201330766                       2                    1                   1              Pearson           32                      98 
+2            C        1989            9         25 4553213  63738574  1989201330766                       2                    1                   2              McBride           98                      98 
+
+3            C        1989            3         31 2469163  63753579  1989220130744                       1                   16                   2              McBride           98                      14 
+4            W        1992            1         22 3090557  63725717 20924301010009                       1                   10                   1              SWFC/JO           68                      68 
+5            O        1996            6          4 4641375  63491683       OR960031                       1                    9                   1                                76                      76 
+6            O        1997            7          7  515848  63480810       OR970104                       1                    6                   1                                92                      92 
+7            O        1997            8         31 4005968  63492217       OR970644                       1                    6                   1                                87                      87 
+8            C        2000            4         14 1549261  63784801  2000400230305                       2                   10                   1 PJM - CAP                      67                      67 
+9            W        2006            5         22 3911216  63714208 20064301010114                       1                   80                   1              NWFC/PM          102                     102 
+10           O        2007           11          9 3511361  63484683       OR072118                       2                   21                   1                                66                      66 
+11           O        2013            7         14 2496972  63472358       OR130227                       1                   45                   1                                71                      71 
+12           W        2013            4         15 1481477  63725518 20134301010022                       1                   21                   1              NMFS IS           66                      66 
+13           O        2014            2         12 3699983  62906135       OR142262                       2                   12                   1       Lance Sullivan           70                      70 
+14           O        2017            8         31 3844013  62694790      OR1762861                       1                    2                   1          Nikki Paige           70                      70 
+15           O        2017            9         20  429333  62695622      OR1763382                       2                   24                   1           James Hale           75                      75 
+16           O        2017           10         27 3469521  62697029      OR1764090                       1                    1                   1     Patrick McDonald           68                      68 
+17           O        2018           10          1   46946  62639196      OR1869074                       1                   18                   1     Patrick McDonald           82                      82 
+18           O        2018           11         20   45733  62639116      OR1869956                       2                   15                   1     Patrick McDonald           73                      73 
+19           O        2018           12         10   47203  62638513      OR1870085                       1                    3                   1     Patrick McDonald           69                      69 
+
+
+
+
+
+renum(PacFIN_SABL_Age[PacFIN_SABL_Age$SAMPLE_NUMBER == 1989220130744 & PacFIN_SABL_Age$CLUSTER_SEQUENCE_NUMBER == 1 & PacFIN_SABL_Age$FISH_SEQUENCE_NUMBER == 16, 
+             c("AGENCY_CODE", "SAMPLE_YEAR", "SAMPLE_MONTH", "SAMPLE_DAY", "BDS_ID", "SAMPLE_ID", "SAMPLE_NUMBER", "CLUSTER_SEQUENCE_NUMBER", 
+               "FISH_SEQUENCE_NUMBER", "AGE_SEQUENCE_NUMBER", "PERSON_WHO_AGED", "AGE_IN_YEARS", "FINAL_FISH_AGE_IN_YEARS")])
+
+   AGENCY_CODE SAMPLE_YEAR SAMPLE_MONTH SAMPLE_DAY  BDS_ID SAMPLE_ID SAMPLE_NUMBER CLUSTER_SEQUENCE_NUMBER FISH_SEQUENCE_NUMBER AGE_SEQUENCE_NUMBER      PERSON_WHO_AGED AGE_IN_YEARS FINAL_FISH_AGE_IN_YEARS 
+1           C        1989            3         31 2469162  63753579 1989220130744                       1                   16                   1               Pearson           14                      14 
+2           C        1989            3         31 2469163  63753579 1989220130744                       1                   16                   2               McBride           98                      14 
+
+
+
+PacFIN_SABL_Age$age_structure_id_CA_1 <- paste0('CA', substr(PacFIN_SABL_Age$SAMPLE_NUMBER, 3, 4), substring(PacFIN_SABL_Age$SAMPLE_NUMBER, 9), "-", PacFIN_SABL_Age$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age$CLUSTER_SEQUENCE_NUMBER, "-", PacFIN_SABL_Age$FISH_SEQUENCE_NUMBER, "-O")
+PacFIN_SABL_Age$age_structure_id_CA_2 <- paste0('CA', substr(PacFIN_SABL_Age$SAMPLE_NUMBER, 1, 4), substring(PacFIN_SABL_Age$SAMPLE_NUMBER, 9), "-", PacFIN_SABL_Age$PACFIN_SPECIES_CODE, "-" , PacFIN_SABL_Age$CLUSTER_SEQUENCE_NUMBER, "-", PacFIN_SABL_Age$FISH_SEQUENCE_NUMBER, "-O")
+
+
+
+
+renum(PacFIN_SABL_Age[PacFIN_SABL_Age$SAMPLE_NUMBER == 1989220130744 & PacFIN_SABL_Age$CLUSTER_SEQUENCE_NUMBER == 1 & PacFIN_SABL_Age$FISH_SEQUENCE_NUMBER == 16, 
+             c("AGENCY_CODE", "SAMPLE_YEAR", "SAMPLE_MONTH", "SAMPLE_DAY", "BDS_ID", "SAMPLE_ID", "SAMPLE_NUMBER", "CLUSTER_SEQUENCE_NUMBER", 
+               "FISH_SEQUENCE_NUMBER", "AGE_SEQUENCE_NUMBER", "PERSON_WHO_AGED", "AGE_IN_YEARS", "FINAL_FISH_AGE_IN_YEARS", "age_structure_id_CA_1", "age_structure_id_CA_2")])
+
+
+
+
+
+
+
 
 
 

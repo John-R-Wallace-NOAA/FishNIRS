@@ -2,7 +2,7 @@
 
 # ----------------------------- PacFIN BDS for Commercial Data ------------------------------------------------
 
-# Run C:\SIDT\Sable_CA_Comm_2018\SABL PacFIN MetaData.R after importing scans
+# NOTE: Run C:\SIDT\Sable_CA_Comm_2018\SABL PacFIN MetaData.R after importing commercial Data scans
 
 # -----------------------------------------------------------------------------
 
@@ -224,7 +224,7 @@ Model_Spectra_Meta$Sex <- recode.simple(Model_Spectra_Meta$Sex, cbind(c(1, 2, 3,
 
 
 save(Model_Spectra_Meta, file = "C:/SIDT/Sable_Comm/Sable_WA_Comm_2020__2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-
+save(Model_Spectra_Meta, file = 'SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData')
 
 
 
