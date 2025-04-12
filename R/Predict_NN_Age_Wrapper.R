@@ -4,7 +4,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                            Train_Result_Path = "C:/SIDT/Train_NN_Model", Model_Spectra_Meta_Path = NULL, Meta_Path = NULL, Use_Session_Report_Meta = !grepl('Multi', Spectra_Set),
                            Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Max_N_Spectra = list(50, 200, 'All')[[2]], 
                            Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Bias_Reduction_Factor = 1, Lowess_smooth_para = 2/3, Corr_Calc = TRUE,
-                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Meta_Data_Factors = NULL, Graph_Metadata = NULL, Metadata_Extra_File = NULL, 
+                           Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Meta_Data_Factors = NULL, Graph_Metadata = NULL, Metadata_Extra_File = NULL, Delta_Given = NULL,
                            TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, scanUniqueName = 'shortName', F_vonBert = NULL, M_vonBert = NULL, Debug_plotly.Spec = FALSE, plot = TRUE, main = "") {
 
     '  ################################################################################################################################################################                             '
@@ -532,25 +532,31 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          cat("\n\nLooking for a Delta that gives an improved fit based on SAD with ties broken by APE:\n")  # R Squared
          
-         if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
-              # What is the best Delta (by SAD, with ties broken by APE) on the median over all, Rdm_reps, full k-folds. A new Delta (perhaps the same value) can be found here since TMA ages are available.
-              Delta_Table <- NULL
-              for (Delta. in seq(0, -0.45, by  = -0.05)) {
-                cat("\n\n")
-                print(data.frame(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
-                Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
-              }
-              
-              print(Delta_Table <- data.frame(Delta_Table)) 
+         if(is.null(Delta_Given)) {
+            
+           if(nrow(New_Ages) > nrow(NN_Pred_Median_TMA)) {
+                # What is the best Delta (by SAD, with ties broken by APE) on the median over all, Rdm_reps, full k-folds. A new Delta (perhaps the same value) can be found here since TMA ages are available.
+                Delta_Table <- NULL
+                for (Delta. in seq(0, -0.45, by  = -0.05)) {
+                  cat("\n\n")
+                  print(data.frame(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
+                  Delta_Table <- rbind(Delta_Table, c(Delta = Delta., Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta.))))
+                }
                 
-              # Best Delta from table above
-               (Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$APE))[1]])
-               cat("\nBest Delta from the table above", Delta, "\n\n")
-          
-          } else {
-             # ----- Extract the rounding Delta -----
-             Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
-         }
+                print(Delta_Table <- data.frame(Delta_Table)) 
+                  
+                # Best Delta from table above
+                 (Delta <- as.numeric(Delta_Table$Delta)[order(as.numeric(Delta_Table$SAD), as.numeric(Delta_Table$APE))[1]])
+                 cat("\nBest Delta from the table above", Delta, "\n\n")
+            
+           } else {
+               # ----- Extract the rounding Delta -----
+               Delta <- extractRData('roundingDelta', file = NN_Model) # e.g. the rounding Delta for 2019 Hake is zero.  
+           }
+           
+         } else 
+            Delta <- Delta_Given
+         
          
          New_Ages$Delta <- Delta
          New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded <- round(New_Ages$NN_Pred_Median + Delta)
@@ -842,30 +848,38 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          # The same as above by year, if there is more than one year and Multi_Year is TRUE
          
-         TMA_Years <- unique(New_Ages$Year[!is.na(New_Ages$TMA)])
-         N_TMA_Years <- length(TMA_Years)
-         if(N_TMA_Years == 2) {
+        TMA_Years <- unique(New_Ages$Year[!is.na(New_Ages$TMA)])
+        N_TMA_Years <- length(TMA_Years)
+        if(N_TMA_Years == 2) {
                  par_mfr_row <- 2; par_mfr_col <- 1
-         } else if(N_TMA_Years >  2 & N_TMA_Years <= 4) {
+        } else if(N_TMA_Years > 2 & N_TMA_Years <= 4) {
                  par_mfr_row <- 2; par_mfr_col <- 2
-         } else if(N_TMA_Years >  4 & N_TMA_Years <= 6) {     
+        } else if(N_TMA_Years > 4 & N_TMA_Years <= 6) {     
                  par_mfr_row <- 3; par_mfr_col <- 2
-         } else if(N_TMA_Years > 6 & N_TMA_Years <= 9) {  
+        } else if(N_TMA_Years > 6 & N_TMA_Years <= 9) {  
                  par_mfr_row <- 3; par_mfr_col <- 3
-         } else if(N_TMA_Years > 9 & N_TMA_Years <= 12) {  
-                 par_mfr_row <- 4; par_mfr_col <- 3    # row:3 - col:4 below
-         } else if(N_TMA_Years > 12) {  
-                    par_mfr_row <- 4; par_mfr_col <- 4                 
-         }        
+        } else if(N_TMA_Years > 9 & N_TMA_Years <= 12) {  
+                 par_mfr_row <- 4; par_mfr_col <- 3    # row:3 - col:4 below, i.e. bigger on the left here
+        } else if(N_TMA_Years > 12 & N_TMA_Years <= 16) {  
+                 par_mfr_row <- 4; par_mfr_col <- 4    
+        } else if(N_TMA_Years > 16 & N_TMA_Years <= 20) {  
+                 par_mfr_row <- 5; par_mfr_col <- 4
+        } else if(N_TMA_Years > 20 & N_TMA_Years <= 24) {  
+                 par_mfr_row <- 6; par_mfr_col <- 4 
+        } else if(N_TMA_Years > 24 & N_TMA_Years <= 30) {  
+                 par_mfr_row <- 6; par_mfr_col <- 5
+        } else if(N_TMA_Years > 30) {  
+                 par_mfr_row <- 6; par_mfr_col <- 6                      
+        }        
          
-         if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
+        if(length(unique(New_Ages$Year)) > 1 & Multi_Year) {
             browsePlot('
                 par(mfrow = c(par_mfr_row, par_mfr_col))        
                 for(Year in sort(TMA_Years)) {
                     print(Year)
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
-                    gPlot(New_Ages_Year, "TMA", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = paste0("rnd(NN Pred Age + Delta) - TMA, Delta:", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlab = "TMA (jittered)", xlim = xlim,
-                             main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00") #   < #ffffff00 > color is transparent
+                    gPlot(New_Ages_Year, "TMA", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = "rnd(NN Pred Age + Delta)-TMA", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlab = "TMA (jittered)", xlim = xlim,
+                             main = paste0(Year, ", Delta: ", Delta), grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00") #   < #ffffff00 > color is transparent
                     points(jitter(New_Ages_Year$TMA[New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[New_Ages_Year$Used_NN_Model])
                     if(any(!is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model])))
                        points(jitter(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
@@ -879,8 +893,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                par(mfrow = c(par_mfr_row, par_mfr_col))        
                for(Year in sort(TMA_Years)) {
                     New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, ]
-                    gPlot(New_Ages_Year, "Pred_Age_Bias_Corr_plus_Delta_rounded", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = paste0("rnd(NN Pred Age + Delta) - TMA, Delta:", Delta), xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
-                               xlab = paste0("rnd(NN Pred Age + Delta), Delta = ", Delta, " (jittered)"), main = Year, grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00")
+                    gPlot(New_Ages_Year, "Pred_Age_Bias_Corr_plus_Delta_rounded", "Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA", ylab = "rnd(NN Pred Age + Delta)-TMA", xFunc = jitter, ylim = c(-xlim[2], xlim[2]), xlim = xlim,
+                               xlab = "rnd(NN Pred Age + Delta) (jittered)", main = paste0(Year, ", Delta: ", Delta), grid = FALSE, vertLineEachPoint = TRUE, col = "#ffffff00")
                     points(jitter(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[New_Ages_Year$Used_NN_Model])
                     if(any(!is.na(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Year$Used_NN_Model])))
                        points(jitter(New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded[!New_Ages_Year$Used_NN_Model]), New_Ages_Year$Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA[!New_Ages_Year$Used_NN_Model], col = "red", pch = ifelse(sum(!New_Ages_Year$Used_NN_Model) > 100, 1, 19))
@@ -925,22 +939,26 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
             All_Years <- unique(New_Ages_Good$Year)
             N_Years <- length(All_Years)
             if(N_Years == 2) {
-                    par_mfr_row <- 2; par_mfr_col <- 1
+                     par_mfr_row <- 2; par_mfr_col <- 1
             } else if(N_Years > 2 & N_Years <= 4) {
-                    par_mfr_row <- 2; par_mfr_col <- 2
+                     par_mfr_row <- 2; par_mfr_col <- 2
             } else if(N_Years > 4 & N_Years <= 6) {    
-                    par_mfr_row <- 3; par_mfr_col <- 2
+                     par_mfr_row <- 3; par_mfr_col <- 2
             } else if(N_Years > 6 & N_Years <= 9) {  
-                    par_mfr_row <- 3; par_mfr_col <- 3
+                     par_mfr_row <- 3; par_mfr_col <- 3
             } else if(N_Years > 9 & N_Years <= 12) {  
-                    par_mfr_row <- 3; par_mfr_col <- 4   # 4 - 3 above
+                     par_mfr_row <- 3; par_mfr_col <- 4   # 4 - 3 above
             } else if(N_Years > 12 & N_Years <= 16) {  
-                    par_mfr_row <- 4; par_mfr_col <- 4    
+                     par_mfr_row <- 4; par_mfr_col <- 4    
             } else if(N_Years > 16 & N_Years <= 20) {  
-                    par_mfr_row <- 4; par_mfr_col <- 5    
-            } else if(N_Years > 20 ) {  
-                    par_mfr_row <- 4; par_mfr_col <- 6                       
-            }
+                     par_mfr_row <- 4; par_mfr_col <- 5    
+            } else if(N_Years > 20 & N_Years <= 24) {  
+                     par_mfr_row <- 4; par_mfr_col <- 6 
+            } else if(N_Years > 24 & N_Years <= 30) {  
+                     par_mfr_row <- 5; par_mfr_col <- 6                      
+            } else if(N_Years > 30) {  
+                     par_mfr_row <- 6; par_mfr_col <- 6                      
+            } 
         }   
             if(!is.null(Meta_Data_Factors)) {
                   for(i in Meta_Data_Factors)
@@ -960,7 +978,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                           else
                               New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, c("NN_Pred_Median", "Used_NN_Model", "Sex_F", "Sex_M", "TMA", i)] # Sex_U will be zeros for both Sex_F & Sex_M
                           if(is.numeric(New_Ages_Year[, i]))  { 
-                             ylim <- c(min(New_Ages_Good[, i], na.rm = TRUE) - 0.2, max(New_Ages_Good[, i], na.rm = TRUE) + 0.2)                         
+                             ylim <- c(min(New_Ages_Good[, i], na.rm = TRUE) - 0.1, max(New_Ages_Good[, i], na.rm = TRUE) + 0.1)                         
                              gPlot(New_Ages_Year, "NN_Pred_Median", i, xlab = "NN Predicted Median", ylab = i, ylim = ylim , xlim = xlim, main = list(paste0(Year, ": ", i, " vs NN Pred"), cex = 0.95), Type = "n")                        
                              if(any(!is.na(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model])))                            
                                  points(New_Ages_Year$NN_Pred_Median[!New_Ages_Year$Used_NN_Model], New_Ages_Year[!New_Ages_Year$Used_NN_Model, i], col = ifelse(is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), "red", "purple"),
@@ -973,6 +991,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                              }
                           }
                           if(is.factor(New_Ages_Year[, i])) 
+                          
+                          
+                          
                              plot(as.formula(paste0("NN_Pred_Median", " ~ ", i)), data = New_Ages_Year, ylab = "NN Predicted Median", xlab = i, main = list(paste0(Year, ": NN Pred Median vs ", i), cex = 0.95)) 
                         } else {
                           plot(0, 1, xlab = "", ylab = "", type = "n", xaxt = "n", yaxt = "n", bty = "n", main = list(Year, cex = 0.95))
