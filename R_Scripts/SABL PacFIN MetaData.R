@@ -566,25 +566,45 @@ headTail(Model_Spectra_Meta, 2,2,2,55)
 save(Model_Spectra_Meta, file = "C:\\SIDT\\Sable_Comm\\SABL_Combo_Comm_2017__2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 
 
-# -- All the data for prediction --
 
-load("C:\\SIDT\\Sablefish Combo Multi Year\\Sable_Combo_All_Oties_2017_18_19_21_22\\Sable_Combo_Multi_17_22_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
-Model_Spectra_Meta_Combo <- Model_Spectra_Meta[Model_Spectra_Meta$sample_year %in% c(2017, 2019, 2022), ]
+
+# ========================= All the data for prediction ===============================
+
+load("C:\\SIDT\\Sablefish Combo Multi Year\\Sable_Combo_All_Oties_2017_18_19_21_22\\Sable_Combo_Multi_17_22_Model_Spectra_Meta_ALL_GOOD_DATA.RData") 
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Combo_survey", sep = "_")
+Model_Spectra_Meta_Combo <- Model_Spectra_Meta
 dim(Model_Spectra_Meta_Combo)
 headTail(Model_Spectra_Meta_Combo,2,2,2,55)
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
+
+
+base::load("C:\\SIDT\\Sablefish\\Sable_Combo_2015_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Combo_survey", sep = "_")
+Model_Spectra_Meta_Combo_2015 <- Model_Spectra_Meta
+
+base::load("C:\\SIDT\\Sablefish\\Sable_Combo_2016_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Combo_survey", sep = "_")
+Model_Spectra_Meta_Combo_2016 <- Model_Spectra_Meta
+
+base::load("C:\\SIDT\\Sablefish\\Sable_Combo_2023_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Combo_survey", sep = "_")
+Model_Spectra_Meta_Combo_2023 <- Model_Spectra_Meta
+
+base::load("C:\\SIDT\\Sablefish\\Sable_Combo_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Combo_survey", sep = "_")
+Model_Spectra_Meta_Combo_2024 <- Model_Spectra_Meta
+
+
 
 
 load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData")
 Model_Spectra_Meta_Comm_Len_Month <- Model_Spectra_Meta
 headTail(Model_Spectra_Meta_Comm_Len_Month,2,2,2,55)
 
-
 load("C:\\SIDT\\Sable_Comm\\SABL_Comm_2018__2024_Model_Spectra_Meta_ALL_GOOD_DATA_SR_Sex.RData")
-Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, "Comm", sep = "_")
+Model_Spectra_Meta <- match.f(Model_Spectra_Meta, Model_Spectra_Meta_Comm_Len_Month, 'filenames', 'filenames', c('Length_cm', 'Month', 'Agency_ID'))
+Model_Spectra_Meta$sample_year <- paste(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Agency_ID, "Comm", sep = "_")
 headTail(Model_Spectra_Meta,2,2,2,55)
-
-Model_Spectra_Meta <- match.f(Model_Spectra_Meta, Model_Spectra_Meta_Comm_Len_Month, 'filenames', 'filenames', c('Length_cm', 'Month'))
 
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
 Table(Model_Spectra_Meta$sample_year, round(Model_Spectra_Meta$Length_cm))
@@ -592,14 +612,18 @@ Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Month)
 
 
 
-
-
-Model_Spectra_Meta$age_structure_side <- Model_Spectra_Meta$NWFSC_NIR_Filename <- Model_Spectra_Meta$unscannable_other <- Model_Spectra_Meta$Sex_F <- Model_Spectra_Meta$Sex_M <- Model_Spectra_Meta$Sex_U <- NULL
+Model_Spectra_Meta$age_structure_side <- Model_Spectra_Meta$NWFSC_NIR_Filename <- Model_Spectra_Meta$unscannable_other <- Model_Spectra_Meta$Sex_F <- Model_Spectra_Meta$Sex_M <- Model_Spectra_Meta$Sex_U <- Model_Spectra_Meta$Agency_ID <- NULL
 
 Columns <- names(Model_Spectra_Meta)
 Columns[!Columns %in% names(Model_Spectra_Meta_Combo)]
+Columns[!Columns %in% names(Model_Spectra_Meta_Combo_2015)]
+Columns[!Columns %in% names(Model_Spectra_Meta_Combo_2016)]
+Columns[!Columns %in% names(Model_Spectra_Meta_Combo_2023)]
+Columns[!Columns %in% names(Model_Spectra_Meta_Combo_2024)]
                 
-Model_Spectra_Meta <- rbind(Model_Spectra_Meta[, Columns], Model_Spectra_Meta_Combo[, Columns])
+Model_Spectra_Meta <- rbind(Model_Spectra_Meta[, Columns], Model_Spectra_Meta_Combo[, Columns], Model_Spectra_Meta_Combo_2015[, Columns], Model_Spectra_Meta_Combo_2016[, Columns],
+                             Model_Spectra_Meta_Combo_2023[, Columns],  Model_Spectra_Meta_Combo_2024[, Columns])
+   
 
 # -- Sex, One hot encoding --
 if(!is.null(Model_Spectra_Meta$Sex)) {
@@ -613,13 +637,17 @@ if(!is.null(Model_Spectra_Meta$Sex)) {
 headTail(Model_Spectra_Meta,2,2,2,55)  # Look for one hot encoding sex and structure_weight_dg for the NN model
 
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$TMA)
-Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$structure_weight_g)  
+Table(Model_Spectra_Meta$sample_year, !is.na(Model_Spectra_Meta$structure_weight_g))
 Table(Model_Spectra_Meta$sample_year, round(Model_Spectra_Meta$Length_cm))
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Month)
 Table(Model_Spectra_Meta$sample_year, Model_Spectra_Meta$Sex)
 
 
-save(Model_Spectra_Meta, file = "C:\\SIDT\\Sable_Comm\\SABL_Combo_Comm_2017__2022_Model_Spectra_Meta_ALL_GOOD_DATA_TMA_NAs.RData")
+save(Model_Spectra_Meta, file = "C:\\SIDT\\Sable_Comm\\SABL_Combo_Comm_2017__2024_Model_Spectra_Meta_ALL_GOOD_DATA_TMA_NAs.RData")
+
+
+
+
 
 
 
