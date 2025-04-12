@@ -90,7 +90,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
      }  
     
     # Sablefish Combo survey
-    if(Spectra_Set %in% paste0("Sable_Combo_", c(2017:2019, 2021:2023))) { 
+    if(Spectra_Set %in% paste0("Sable_Combo_", c(2017:2019, 2021:2022))) { 
         Year <- get.subs(Spectra_Set, sep = "_")[3]
         if(is.null(Spectra_Path)) 
           Spectra_Path <- paste0('C:/SIDT/Sable_Combo_', Year, '/Sable_Combo_', Year, '_Scans')
@@ -229,15 +229,17 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
           Meta_Path <- paste0(Spectra_Path, Session_Report_Name)
        }   
     }
-
-    if(!is.null(fileNames_Sort_Seqment))    
-       fileNames.0 <- fileNames.0[order(as.numeric(get.subs(fileNames.0, sep = "_")[fileNames_Sort_Seqment, ]))]
-       
+    
     if(verbose) {
        cat(paste0("\nNumber of spectral files to be read in: ", length(fileNames.0), "\n\n"))
        print(fileNames.0[1:10])
        cat("\n\n")
     }
+
+    if(!is.null(fileNames_Sort_Seqment))    
+       fileNames.0 <- fileNames.0[order(as.numeric(get.subs(fileNames.0, sep = "_")[fileNames_Sort_Seqment, ]))]
+       
+    
     
     shortName <- apply(matrix(fileNames.0, ncol = 1), 1, function(x) paste(get.subs(x, sep = "_")[shortNameSegments], collapse = "_"))
     if(!is.null(shortNameSuffix))
@@ -442,6 +444,8 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'age_best'] <- "TMA" 
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'WA_age_best'] <- "TMA"
     names(Model_Spectra_Meta)[names(Model_Spectra_Meta) %in% 'sex'] <- "Sex"
+    if(is.null(Model_Spectra_Meta$Sex)) Model_Spectra_Meta$Sex <- NA
+    if(is.null(Model_Spectra_Meta$Length_cm)) Model_Spectra_Meta$Length_cm <- NA
     
     if(!(grepl("CLPR_SWFSC", Spectra_Set) | grepl("CLPR_Triennial_2004", Spectra_Set) | grepl("CLPR_CA_Rec_2023_2024", Spectra_Set) | grepl("CLPR_CACOMM_1985", Spectra_Set) | grepl("CLPR_CACOMM_1986", Spectra_Set))) {
        Model_Spectra_Meta$percent_crystallized_scan[is.na(Model_Spectra_Meta$percent_crystallized_scan)] <- 0 # Change NA to zero so that a numerical test can be done.
@@ -541,8 +545,10 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
         
     
     # -- Sex, One hot encoding --
-    if(!is.null(Model_Spectra_Meta$Sex)) {
+    if(!is.null(Model_Spectra_Meta$Sex) & !all(is.na(Model_Spectra_Meta$Month))) {
         Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
+        if(all(!is.na(as.numeric(Model_Spectra_Meta_2020$Sex))))
+            Model_Spectra_Meta$Sex <- recode.simple(Model_Spectra_Meta$Sex, cbind(c(1, 2, 3, 9, NA), c("M", "F", "U", "U", "U")))  # !!! Ager coding - not legacy assessment coding !!!
         Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
         Sex_ <- Model_Spectra_Meta$Sex
         Model_Spectra_Meta <- cbind(Model_Spectra_Meta, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
