@@ -67,7 +67,7 @@ agreementFigure <- function(Observed, Predicted, Rdm_Reps = NULL, Folds = NULL, 
 
    cat("\n\n")
    Stats <- Cor_R_squared_RMSE_MAE_SAD_APE(Obs, Predicted.rd)  
-   Stats <- signif(Stats, digits = 4) # Less digits for the figure
+   Stats[1:6] <- signif(Stats[1:6], digits = 4) # Less digits for the figure
    
    if(!is.null(Delta))
        cat(paste0("(Prediction has been rounded to the nearest integer after adding a Delta of ", Delta, ")\n\n"))
