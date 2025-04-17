@@ -924,6 +924,19 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         New_Ages <- match.f(New_Ages, Model_Spectra_Meta, "specimen_id", "specimen_id", SG_Variables_Selected[metaDataVar])  
         New_Ages_Good <- match.f(New_Ages_Good, Model_Spectra_Meta, "specimen_id", "specimen_id", SG_Variables_Selected[metaDataVar])
         
+        
+        if(is.null(New_Ages_Good$Sex_F)) {
+
+           # -- Sex, One hot encoding --   # If sex was not fit in the model, this needs to done here for the graphing below.
+           if(!is.null(New_Ages_Good$Sex)) {
+               New_Ages_Good$Sex <- as.character(New_Ages_Good$Sex)
+               New_Ages_Good$Sex[is.na(New_Ages_Good$Sex)] <- "U"
+               Sex_ <- New_Ages_Good$Sex
+               New_Ages_Good <- cbind(New_Ages_Good, as.data.frame(model.matrix(formula(~ -1 + Sex_))))  # Three indicator columns added: Sex_F, Sex_M, Sex_U
+               if(is.null(New_Ages_Good$Sex_U))  New_Ages_Good$Sex_U <- 0
+           }   
+        }
+        
         if(!is.null(New_Ages_Good$Sex))  New_Ages_Good$Sex <- factor(New_Ages_Good$Sex)
         if(!is.null(New_Ages_Good$Month))  New_Ages_Good$Month <- factor(New_Ages_Good$Month)
                 
