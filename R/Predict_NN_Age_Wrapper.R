@@ -1012,6 +1012,35 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                   }       
                 ', file = if(is.numeric(New_Ages_Good[, i])) paste0(Predicted_Ages_Path, "/Metadata_", i, "_vs_NN_Pred_Median.png") else paste0(Predicted_Ages_Path, "/Metadata_NN_Pred_Median_vs_", i, ".png"))
             }
+            
+            # Length by TMA
+            if(!is.null(New_Ages_Good$Length_cm) & !all(is.na(New_Ages_Good$Length_cm)) & !all(is.na(New_Ages_Good$TMA))) {
+               browsePlot('
+                 par(mfrow = c(par_mfr_row, par_mfr_col))  
+                 xlim <- c(min(New_Ages_Good$TMA, na.rm = TRUE) - 1, max(New_Ages_Good$TMA, na.rm = TRUE) + 1)
+                 for(Year in sort(All_Years)) {
+                       if(!all(is.na(New_Ages_Good[New_Ages_Good$Year %in% Year, "Length_cm"]))) {
+                         if(is.null(New_Ages_Good$Sex_F))
+                             New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, c("TMA", "Used_NN_Model", "TMA", "Length_cm")]
+                         else
+                             New_Ages_Year <- New_Ages_Good[New_Ages_Good$Year %in% Year, c("TMA", "Used_NN_Model", "Sex_F", "Sex_M", "TMA", "Length_cm")] # Sex_U will be zeros for both Sex_F & Sex_M
+                         if(is.numeric(New_Ages_Year$Length_cm))  { 
+                            ylim <- c(min(New_Ages_Good$Length_cm, na.rm = TRUE) - 0.1, max(New_Ages_Good$Length_cm, na.rm = TRUE) + 0.1)                         
+                            gPlot(New_Ages_Year, "TMA", "Length_cm", xlab = "TMA", ylab = "Length_cm", ylim = ylim , xlim = xlim, main = list(paste0(Year, ": Length_cm vs TMA"), cex = 0.95), Type = "n")                        
+                            if(any(!is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model])))                            
+                                points(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model], New_Ages_Year[!New_Ages_Year$Used_NN_Model, "Length_cm"], col = ifelse(is.na(New_Ages_Year$TMA[!New_Ages_Year$Used_NN_Model]), "red", "purple"),
+                                    pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F[!New_Ages_Year$Used_NN_Model] + New_Ages_Year$Sex_M[!New_Ages_Year$Used_NN_Model] * 4) # Sex_U will be zeros which are squares
+                            points(New_Ages_Year$TMA[New_Ages_Year$Used_NN_Model], New_Ages_Year[New_Ages_Year$Used_NN_Model, "Length_cm"],
+                                pch = if(is.null(New_Ages_Year$Sex_F)) 19 else New_Ages_Year$Sex_F[New_Ages_Year$Used_NN_Model] + New_Ages_Year$Sex_M[New_Ages_Year$Used_NN_Model] * 4)
+                            if(!is.null(F_vonBert)) {
+                              lines(sort(New_Ages_Year$TMA), F_vonBert$Linf  * (1 - exp(-F_vonBert$k * sort(New_Ages_Year$TMA) - F_vonBert$t0)), col = "green", lwd = 1.5)
+                              lines(sort(New_Ages_Year$TMA), M_vonBert$Linf  * (1 - exp(-M_vonBert$k * sort(New_Ages_Year$TMA) - M_vonBert$t0)), col = "dodgerblue", lwd = 1.5)
+                            }
+                         }
+                       }                          
+                 }       
+               ', file = paste0(Predicted_Ages_Path, "/Metadata_Length_cm_vs_TMA.png"))
+            }
         }
         
         
