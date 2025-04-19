@@ -109,10 +109,12 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/load.R") # This load() not only shows a summary of what was loaded but also invisible() returns the names of the objects loaded; to be saved and used in the code
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Date.R") 
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/gPlot.R")
+     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/sort.f.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/match.f.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/get.subs.R")
+     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/plotCI.jrw3.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Column_Move.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/lowess.line.R")
@@ -125,14 +127,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/plotly_spectra.R")
      # sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
+     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
      sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Cor_R_squared_RMSE_MAE_SAD_APE.R")
      
     
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/Table.R")
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/browsePlot.R") 
-     sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/agreementFigure.R")
-     
-     
      getwd()
      Spectra_Set
      
@@ -805,7 +803,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          NN_Pred_Median_TMA$Used_NN_Model <- TRUE # Used in the NN model
          New_Ages_Good <- match.f(New_Ages_Good, NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
          New_Ages_Good$Used_NN_Model[is.na(New_Ages_Good$Used_NN_Model)] <- FALSE 
-         assign('New_Ages_Good', New_Ages_Good, pos = 1)
+         assign('New_Ages_Good_Early', New_Ages_Good, pos = 1)
          
          if(verbose) {
             headTail(New_Ages_Good)
@@ -923,10 +921,14 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           
         New_Ages <- match.f(New_Ages, Model_Spectra_Meta, "specimen_id", "specimen_id", SG_Variables_Selected[metaDataVar])  
         New_Ages_Good <- match.f(New_Ages_Good, Model_Spectra_Meta, "specimen_id", "specimen_id", SG_Variables_Selected[metaDataVar])
+       
+        if(!is.null(Metadata_Extra))  {
+            file_name_loaded <- load(Metadata_Extra_File)  # JRWToolBox's load() - not base::load()
+            New_Ages <- match.f(New_Ages, eval(parse(text = file_name_loaded)), "specimen_id", "specimen_id", Metadata_Extra)
+            New_Ages_Good <- match.f(New_Ages_Good, eval(parse(text = file_name_loaded)), "specimen_id", "specimen_id", Metadata_Extra)
+        }
         
-        
-        if(is.null(New_Ages_Good$Sex_F)) {
-
+         if(is.null(New_Ages_Good$Sex_F)) {
            # -- Sex, One hot encoding --   # If sex was not fit in the model, this needs to done here for the graphing below.
            if(!is.null(New_Ages_Good$Sex)) {
                New_Ages_Good$Sex <- as.character(New_Ages_Good$Sex)
@@ -937,15 +939,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
            }   
         }
         
-        if(!is.null(New_Ages_Good$Sex))  New_Ages_Good$Sex <- factor(New_Ages_Good$Sex)
-        if(!is.null(New_Ages_Good$Month))  New_Ages_Good$Month <- factor(New_Ages_Good$Month)
-                
-        if(!is.null(Metadata_Extra))  {
-            file_name_loaded <- load(Metadata_Extra_File)  # JRWToolBox's load() - not base::load()
-            New_Ages <- match.f(New_Ages, eval(parse(text = file_name_loaded)), "specimen_id", "specimen_id", Metadata_Extra)
-            New_Ages_Good <- match.f(New_Ages_Good, eval(parse(text = file_name_loaded)), "specimen_id", "specimen_id", Metadata_Extra)
-        }
-        
+        if(verbose)
+          headTail(New_Ages_Good)
+          
         assign("New_Ages_Good", New_Ages_Good, pos = 1)
         
         if(!is.null(Graph_Metadata)) {
