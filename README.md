@@ -29,18 +29,19 @@ A TensorFlow Conda environment setup under Windows 10 also works under Windows 1
 <h3>Steps for reading in spectra, running the NN model, and predicting ages from the NN model </h3>
 
 Preliminary information:
-     - This code is optimized for Notepads++ ability to minimize any code seqment surrounded by curly brackets, this is often 'if' and 'for'
-      statements, but any code seqment (often quite large) can be surrounded by extra curly brackets and be minimized by the user. 
+
+  - This code is optimized for Notepad++ ability to minimize any code seqment surrounded by curly brackets, this is often 'if' and 'for'
+    statements, but any code seqment (often quite large) can be surrounded by extra curly brackets and be minimized by the user. 
 
 1. Reading in spectra using Read_OPUS_Spectra.R()
-     Example using the script: FishNIRS/R_Scripts/Read in Sable Comm 2018__2024 Scans.R
+  - Example using the script: FishNIRS/R_Scripts/Read in Sable Comm 2018__2024 Scans.R
 
 Code snippet:
 
      for(i in (2020:2023)) {  
          Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), fileNames_Sort_Seqment = NULL,
                                      Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/", i, "/"),
-                                     htmlPlotFolder = paste0("Figures_Sable_WA_Comm_", i), Static_Figure = paste0("Sable_WA_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
+                                     htmlPlotFolder = paste0("Figures_Sable_WA_Comm_", i), Static_Figure = paste0("Sable_WA_Comm_", i, ".png"), Meta_Path = NULL, Extra_Meta_Path = NULL, excelSheet = 3, 
                                      shortNameSegments = 6, shortNameSuffix = 'WA_Comm', Debug = TRUE)
          dim(Model_Spectra_Meta_YR)          
          Table(Model_Spectra_Meta_YR$TMA)
@@ -59,9 +60,16 @@ and the 2020 spectra and session report information is in:
 
 The Excel session report's main data sheet that lists metadata for each otolith in on sheet 3.
 
+For the above example there was no extra metadata available, when there is metadata availble in the Data Warehouse, then the function: R/Import_Species_Metadata_from_NWFSC_Warehouse.R() can be run to extract that data and the argument would look something like:
+
+     Extra_Meta_Path = "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2025.RData"  
+
 3. Setup and run the NN model batch script which calls itself to reset R's memory leak issue: R_Scripts/iPLS, NN Model Batch Self Call Loop.R
-     This code id
-4.           
+  - sdf
+  - 
+
+4.
+           
 5. 
      
    
