@@ -28,8 +28,12 @@ A TensorFlow Conda environment setup under Windows 10 also works under Windows 1
 
 <h3>Steps for reading in spectra, running the NN model, and predicting ages from the NN model </h3>
 
+Preliminary information:
+     - This code is optimized for Notepads++ ability to minimize any code seqment surrounded by curly brackets, this is often 'if' and 'for'
+      statements, but any code seqment (often quite large) can be surrounded by extra curly brackets and be minimized by the user. 
+
 1. Reading in spectra using Read_OPUS_Spectra.R()
-     Example: FishNIRS/R_Scripts/Read in Sable Comm 2018__2024 Scans.R
+     Example using the script: FishNIRS/R_Scripts/Read in Sable Comm 2018__2024 Scans.R
 
 Code snippet:
 
@@ -45,9 +49,9 @@ Code snippet:
      }      
 
 
-For example, the 2020 spectra set name is:
+The first spectra set name is:
 
-    Sable_WA_Comm_2020
+     Sable_WA_Comm_2020
 
 and the 2020 spectra and session report information is in:
 
@@ -55,10 +59,9 @@ and the 2020 spectra and session report information is in:
 
 The Excel session report's main data sheet that lists metadata for each otolith in on sheet 3.
 
-
-   
-3. 
-4.      
+3. Setup and run the NN model batch script which calls itself to reset R's memory leak issue: R_Scripts/iPLS, NN Model Batch Self Call Loop.R
+     This code id
+4.           
 5. 
      
    
