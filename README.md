@@ -60,17 +60,25 @@ and the 2020 spectra and session report information is in:
 
 The Excel session report's main data sheet that lists metadata for each otolith in on sheet 3.
 
-For the above example there was no extra metadata available, when there is metadata availble in the Data Warehouse, then the function: R/Import_Species_Metadata_from_NWFSC_Warehouse.R() can be run to extract that data and the argument would look something like:
+For the above example there was no extra metadata available except what was in the session report. When there is metadata availble in the Data Warehouse, then the function: R/Import_Species_Metadata_from_NWFSC_Warehouse.R() can be run to extract that data and the argument would look something like:
 
      Extra_Meta_Path = "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2025.RData"  
+     Extra_Meta_Path = "C:/SIDT/Get Otie Info from Data Warehouse/Chilipepper_Combo_Metadata.RData"
 
-3. Setup and run the NN model batch script which calls itself to reset R's memory leak issue: R_Scripts/iPLS, NN Model Batch Self Call Loop.R
+
+If you have metadata in a CSV or Excel file, convert it to a 'RData' file and use that file: 
+     
+    PWHT_Acoustic2019_Extra_Metadata <- openxlsx::read.xlsx("C:/SIDT/PWHT_Acoustic2019/SH201906_Hake_Ages.xlsx")
+    save(PWHT_Acoustic2019_Extra_Metadata, file = 'PWHT_Acoustic2019_Extra_Metadata.Rdata')  # Used 'Rdata' not 'RData', I'll leave it for now.
+
+    Extra_Meta_Path = "C:/PWHT_Acoustic2019/PWHT_Acoustic2019_Extra_Metadata.RData"
+     
+
+2. Setup and run the NN model batch script which calls itself to reset R's memory leak issue: R_Scripts/iPLS, NN Model Batch Self Call Loop.R
   - sdf
   - 
 
-4.
-           
-5. 
+
      
    
 
