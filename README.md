@@ -45,11 +45,15 @@ Code snippet:
      }      
 
 
-For example the 2020 spectra and session report is in:
+For example, the 2020 spectra set name is:
+
+    Sable_WA_Comm_2020
+
+and the 2020 spectra and session report information is in:
 
      //nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/2020
 
-
+The Excel session report's main data sheet that lists metadata for each otolith in on sheet 3.
 
 
    
