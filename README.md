@@ -26,6 +26,42 @@ A TensorFlow Conda environment setup under Windows 10 also works under Windows 1
 
 ---
 
+<h3>Steps for reading in spectra, running the NN model, and predicting ages from the NN model </h3>
+
+1. Reading in spectra using Read_OPUS_Spectra.R()
+     Example: FishNIRS/R_Scripts/Read in Sable Comm 2018__2024 Scans.R
+
+Code snippet:
+
+     for(i in (2020:2023)) {  
+         Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), fileNames_Sort_Seqment = NULL,
+                                     Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/", i, "/"),
+                                     htmlPlotFolder = paste0("Figures_Sable_WA_Comm_", i), Static_Figure = paste0("Sable_WA_Comm_", i, ".png"), Meta_Path = NULL, excelSheet = 3, 
+                                     shortNameSegments = 6, shortNameSuffix = 'WA_Comm', Debug = TRUE)
+         dim(Model_Spectra_Meta_YR)          
+         Table(Model_Spectra_Meta_YR$TMA)
+         
+         assign(paste0("Model_Spectra_Meta_", i), Model_Spectra_Meta_YR)
+     }      
+
+
+For example the 2020 spectra and session report is in:
+
+     //nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/2020
+
+
+
+
+   
+3. 
+4.      
+5. 
+     
+   
+
+
+---
+
 <h3> Notes for the readSpectraData() Function </h3>
 
 The directory structure used by readSpectraData() is for the R working directory to be directly below the current directory:
