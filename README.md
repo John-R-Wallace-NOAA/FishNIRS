@@ -90,7 +90,8 @@ If you have metadata in a CSV or Excel file, convert it to a 'RData' file and us
         #  *** Code to edit/add for specific datasets when < !is.null(Extra_Meta_Path) or (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra) > ***
 
      add any code specific to a particular spectra set that meets the conditions listed in the comment.
-   
+
+     Run each section in turn looking for errors.  Once 'Model_Spectra.sg.iPLS' is calculated it is saved to the working directory and that section can be skipped if the model is restartd after correcting for errors. < Spectra_set > "_Model_Spectra_Meta_ALL_GOOD_DATA.RData", e.g. ("Sable_WA_Comm_2020_Model_Spectra_Meta_ALL_GOOD_DATA.RData") is also saved; those two files should be kept together as a pair.
 ---
 
 <h3> Notes for the readSpectraData() Function </h3>
