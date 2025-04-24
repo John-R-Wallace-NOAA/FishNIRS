@@ -30,7 +30,7 @@ A TensorFlow Conda environment setup under Windows 10 also works under Windows 1
 
 Preliminary information:
 
-  - This code is optimized for Notepad++ ability to minimize any code seqment surrounded by curly brackets, this is often 'if' and 'for'
+  - This code is optimized for Notepad++ ability to minimize any code segment surrounded by curly brackets, this is often 'if' and 'for'
     statements, but any code seqment (often quite large) can be surrounded by extra curly brackets and be minimized by the user. 
 
 1. Reading in spectra using Read_OPUS_Spectra.R()
@@ -61,7 +61,7 @@ and the 2020 spectra and session report Excel file is in:
 
 The Excel session report's main data sheet that lists metadata for each otolith in on sheet 3 (from the argument 'excelSheet = 3').
 
-For the above example there was no extra metadata available except what was in the session report. When there is metadata availble in the Data Warehouse, then the function: R/Import_Species_Metadata_from_NWFSC_Warehouse.R() can be run to extract that data and the argument would look something like:
+For the above example there was no extra metadata available except what was in the session report. When there is metadata available in the Data Warehouse, then the function: R/Import_Species_Metadata_from_NWFSC_Warehouse.R() can be run to extract that data and the argument would look something like:
 
      Extra_Meta_Path = "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2025.RData"  
      Extra_Meta_Path = "C:/SIDT/Get Otie Info from Data Warehouse/Chilipepper_Combo_Metadata.RData"
