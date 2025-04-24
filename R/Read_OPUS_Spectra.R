@@ -547,7 +547,7 @@ Read_OPUS_Spectra <- function(Spectra_Set = c("PWHT_Acoustic2019", "PWHT_Acousti
     # -- Sex, One hot encoding --
     if(!is.null(Model_Spectra_Meta$Sex) & !all(is.na(Model_Spectra_Meta$Month))) {
         Model_Spectra_Meta$Sex <- as.character(Model_Spectra_Meta$Sex)
-        if(all(!is.na(as.numeric(Model_Spectra_Meta_2020$Sex))))
+        if(all(!is.na(as.numeric(Model_Spectra_Meta$Sex))))
             Model_Spectra_Meta$Sex <- recode.simple(Model_Spectra_Meta$Sex, cbind(c(1, 2, 3, 9, NA), c("M", "F", "U", "U", "U")))  # !!! Ager coding - not legacy assessment coding !!!
         Model_Spectra_Meta$Sex[is.na(Model_Spectra_Meta$Sex)] <- "U"
         Sex_ <- Model_Spectra_Meta$Sex
