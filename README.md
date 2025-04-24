@@ -40,7 +40,8 @@ Code snippet:
 
      for(i in (2020:2023)) {  
          Model_Spectra_Meta_YR <- Read_OPUS_Spectra(Spectra_Set = paste0("Sable_WA_Comm_", i), fileNames_Sort_Seqment = NULL,
-                                     Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/", i, "/"),
+                                     Spectra_Path = paste0("//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning 
+                                     Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/", i, "/"),
                                      htmlPlotFolder = paste0("Figures_Sable_WA_Comm_", i), Static_Figure = paste0("Sable_WA_Comm_", i, ".png"), Meta_Path = NULL, Extra_Meta_Path = NULL, excelSheet = 3, 
                                      shortNameSegments = 6, shortNameSuffix = 'WA_Comm', Debug = TRUE)
          dim(Model_Spectra_Meta_YR)          
@@ -50,15 +51,15 @@ Code snippet:
      }      
 
 
-The first spectra set name is:
+The first spectra set name for this code snipper is:
 
      Sable_WA_Comm_2020
 
-and the 2020 spectra and session report information is in:
+and the 2020 spectra and session report Excel file is in:
 
      //nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/WA_COMM/SABL_Sablefish/2020
 
-The Excel session report's main data sheet that lists metadata for each otolith in on sheet 3.
+The Excel session report's main data sheet that lists metadata for each otolith in on sheet 3 (from the argument 'excelSheet = 3').
 
 For the above example there was no extra metadata available except what was in the session report. When there is metadata availble in the Data Warehouse, then the function: R/Import_Species_Metadata_from_NWFSC_Warehouse.R() can be run to extract that data and the argument would look something like:
 
@@ -75,14 +76,21 @@ If you have metadata in a CSV or Excel file, convert it to a 'RData' file and us
      
 
 2. Setup and run the NN model batch script which calls itself to reset R's memory leak issue: R_Scripts/iPLS, NN Model Batch Self Call Loop.R
-  - sdf
-  - 
+ - There are 5 main sections:
+    -  Load functions and packages
+    -  Initial settings setup
+    -  If Model_Spectra.sg.iPLS is missing for the current spectra set, create it now, unless a metadata only model is being run
+    -  NN Model
+    -  Find Median over all Rdm_reps Models and create figures
+    -  An intial run predicting the ages with and without TMA using Predict_NN_Age_Wrapper() function is the last step.
 
+  
+   'Spectra_set' is set at the top of the 'Initial settings setup' section.  Below the comment (search for it): 
 
-     
+        #  *** Code to edit/add for specific datasets when < !is.null(Extra_Meta_Path) or (is.null(Extra_Meta_Path) & !Read_In_OPUS_Spectra) > ***
+
+     add any code specific to a particular spectra set that meets the conditions listed in the comment.
    
-
-
 ---
 
 <h3> Notes for the readSpectraData() Function </h3>
