@@ -147,7 +147,9 @@ a <- tf$Variable(5.56)
 b <- tf$Variable(2.7)
 print(a + b)
 
+
 k_clear_session()
+cat("\n\n")
 
 }  ###
 
@@ -166,7 +168,7 @@ Spectra_Set <- c("Sable_Test", "PWHT_Acoustic2019", "PWHT_Acoustic_2023", "PWHT_
                  
 Spectra_Path <- "Model_Scans"    # Put new spectra scans in a separate folder and enter the name of the folder below
 dir.create('Figures', showWarnings = FALSE)
-TMA_Ages = c(TRUE, FALSE)[1]
+TMA_Ages <- c(TRUE, FALSE)[1]
 verbose <- c(TRUE, FALSE)[1]
 plot <- c(TRUE, FALSE)[1]
 
@@ -258,7 +260,7 @@ else if(Spectra_Set %in% "Sable_Combo_Comm")
 		Model_Spectra_Meta_Path <- "C:/SIDT/Sable_Comm/SABL_Combo_Comm_2017__2022_Model_Spectra_Meta_ALL_GOOD_DATA.RData"                
 
 else if(Spectra_Set %in% "Sable_Test")   		
-		Model_Spectra_Meta_Path <- "C:/SIDT/Sable_Test/Sable_Test_2015_Model_Spectra_Meta_ALL_GOOD_DATA.RData"                                                                                  
+		Model_Spectra_Meta_Path <- "C:/SIDT/Sable_Test/Sable_Test_2024_Model_Spectra_Meta_ALL_GOOD_DATA.RData"                                                                                  
 
 else  {
    # Below works for standard Spectra_Set setups, like "PWHT_Acoustic2019", "Sable_Combo_2019", and "Sable_Combo_2021"
@@ -272,12 +274,21 @@ else  {
 # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 300, 'All')[[3]] 
-Rdm_Reps_Main <- c(1, 3, 20, 40, 60)[1]
+Rdm_Reps_Main <- c(1, 3, 20, 40, 60)[3]
 Folds_Num <- c(5, 10)[2] # i loop    # How many folds work best for metadata-only models was checked. Trying 2 for single sex models
-Iter_Num <- 8  # Iter while() loop
+Iter_Num <- 8 # Iter while() loop
 Num_Oties_Model <- c(NA, 500, 750, 1000)[1] # NA => use all available
 activation_function <- c('relu', 'elu', 'selu')[1]
 
+
+if(Spectra_Set == "Sable_Test") {
+   Max_N_Spectra <- 'All'
+   Rdm_Reps_Main <- 2  
+   Folds_Num <- 2 
+   Iter_Num <- 3  
+   Num_Oties_Model <- NA 
+}           
+   
 
 cat("\nWorking Directory =", getwd())
 cat("\nSpectra_Set =", Spectra_Set)
@@ -288,6 +299,7 @@ cat("\nFolds_Num =", Folds_Num)
 cat("\nIter_Num =", Iter_Num)
 cat("\nNum_Oties_Model =", Num_Oties_Model, " # NA => use all available")
 cat("\nactivation_function =", activation_function, "\n\n")
+Sys.sleep(4)
 
 
 if(!Spectra_Only)
@@ -343,7 +355,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
         # Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = Max_N_Spectra, Meta_Path = paste0(Spectra_Set, "_NIRS_Scanning_Session_Report_For_NWFSC.xlsx"),
         #                                    Extra_Meta_Path = Extra_Meta_Path, verbose = verbose, plot = plot, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
         
-        Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = Max_N_Spectra, Meta_Path = Meta_Path, TMA_Ages = TMA_Ages,
+        Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, Max_N_Spectra = Max_N_Spectra, Meta_Path = Meta_Path, TMA_Ages_Only = TMA_Ages,
                                             Extra_Meta_Path = Extra_Meta_Path, verbose = verbose, plot = plot, htmlPlotFolder = paste0('Figures/', Spectra_Set, '_Spectra_Sample_of_300'))
      
     # ----- To download a function for debuging, follow the example below -----     
@@ -357,7 +369,7 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
 		if(TMA_Ages) 
 		   Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$TMA), ]
     }
-    headTail(Model_Spectra_Meta, 2, 2, 3, 46)
+    headTail(Model_Spectra_Meta, 2, 2, 3, 60)
          
     # Single sex model    
     # Model_Spectra_Meta <- Model_Spectra_Meta[Model_Spectra_Meta$Sex %in% 'F', ]
@@ -425,21 +437,8 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
                                   | is.na(Model_Spectra_Meta$Sex_F) | is.na(Model_Spectra_Meta$Sex_M) | is.na(Model_Spectra_Meta$Sex_U)), ]    
                                   
                                   
-        } else if(Spectra_Set %in% "Sable_Test") {
-         
-           Max_N_Spectra <- 'All'
-           Rdm_Reps_Main <- 1  # Standard is 20
-           Folds_Num <- 2 # i loop - Standard is 10 
-           Iter_Num <- 2  # Iter while() loop - standard is 8
-           Num_Oties_Model <- NA # NA => use all available 
-           
-           cat("\nRdm_Reps_Main, Folds_Num, and Iter_Num changed for the Sable_Test Spectra set\n")
-           cat("\nRdm_Reps_Main =", Rdm_Reps_Main)
-           cat("\nFolds_Num =", Folds_Num)
-           cat("\nIter_Num =", Iter_Num)
-           Sys.sleep(4)
         } 
-           
+            
         headTail(Model_Spectra_Meta, 2, 2, 3, 55)    
           
     }
@@ -487,10 +486,10 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
     ####################################################
     
     # Maximum number of components to calculate.
-    nComp <- c(10, 15)[2]
+    nComp <- ifelse(Spectra_Set == "Sable_Test", 10, 15)
     
     cat("\nStarting iPLS on Savitzky-Golay smoothed data to find informative wavebands for the NN model\n\n")
-    Model_Spectra.iPLS.F <- mdatools::ipls(Model_Spectra.sg, TMA_Vector, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = 100,
+    Model_Spectra.iPLS.F <- mdatools::ipls(Model_Spectra.sg, TMA_Vector, glob.ncomp = nComp, center = TRUE, scale = TRUE, cv = ifelse(Spectra_Set == "Sable_Test", 50, 100),
                       int.ncomp = nComp, int.num = nComp, ncomp.selcrit = "min", method = "forward", silent = FALSE)
     
     summary(Model_Spectra.iPLS.F) 
@@ -1274,11 +1273,14 @@ if(exists('Wrap_Up_Flag')) {
 
    sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Predict_NN_Age_Wrapper.R")
 
-   Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model", Multi_Year = TRUE, Use_Session_Report_Meta = FALSE, 
-     Bias_Adj_Factor_Ages = c(12, 13:15), Bias_Reduction_Factor = 1.25, Lowess_smooth_para = 2/3, TMA_Ages = TRUE, TMA_Ages_Only = FALSE, # TMA_Ages_Only = FALSE => Predictions without TMA
+   Predict_NN_Age_Wrapper(Spectra_Set = Spectra_Set, Train_Result_Path = "C:/SIDT/Train_NN_Model", Multi_Year = FALSE, Use_Session_Report_Meta = FALSE, 
+     Bias_Adj_Factor_Ages = NULL, Bias_Reduction_Factor = NULL,  # NULL's here for no bias correction
+     # Bias_Adj_Factor_Ages = c(12, 13:15), Bias_Reduction_Factor = 1.25, 
+     Lowess_smooth_para = 2/3, TMA_Ages = TRUE, TMA_Ages_Only = FALSE, # TMA_Ages = TRUE => There is at least some TMA for figures that need them. TMA_Ages_Only = FALSE => Predictions for those oties without TMA will occur.
      # Metadata_Extra = c("Ship", "Cruise", "Haul", "Date_UTC", "Length_cm", "Sex", "Weight_kg", "Net_Partition"), scanUniqueName = 'filenames', Debug_plotly.Spec = TRUE,
+     F_vonBert = list(Linf = 64, k = 0.32, t0 = 0), M_vonBert = list(Linf = 57, k = 0.41, t0 = 0),
      Metadata_Extra = c("structure_weight_g", "Length_cm", "Sex", "Month", "Latitude_dd"), Meta_Data_Factors = c("Sex", "Month"), Graph_Metadata = c("structure_weight_g", "Length_cm", "Sex", "Month", "Latitude_dd"), 
-     Metadata_Extra_File = Model_Spectra_Meta_Path, 
+         Metadata_Extra_File = Model_Spectra_Meta_Path, # This is the same path when the metadata is already in Model_Spectra_Meta
      Model_Spectra_Meta_Path = Model_Spectra_Meta_Path, main = "Metadata: Str Wgt, Sex") 
 	  
 } 
