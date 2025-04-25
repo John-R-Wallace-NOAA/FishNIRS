@@ -269,7 +269,6 @@ else  {
 }
   
   
- 
 # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below). 
 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.
 Max_N_Spectra <- list(50, 200, 300, 'All')[[3]] 
@@ -280,12 +279,16 @@ Num_Oties_Model <- c(NA, 500, 750, 1000)[1] # NA => use all available
 activation_function <- c('relu', 'elu', 'selu')[1]
 
 
-print(getwd())
-print(Spectra_Set)
+cat("\nWorking Directory =", getwd())
+cat("\nSpectra_Set =", Spectra_Set)
 cat("\nSpectra_Only =", Spectra_Only)
 cat("\nMetadata_Only =", Metadata_Only) 
 cat("\nRdm_Reps_Main =", Rdm_Reps_Main)
 cat("\nFolds_Num =", Folds_Num)
+cat("\nIter_Num =", Iter_Num)
+cat("\nNum_Oties_Model =", Num_Oties_Model, " # NA => use all available")
+cat("\nactivation_function =", activation_function, "\n\n")
+
 
 if(!Spectra_Only)
    cat("\nMetadata_Names =", paste0(Metadata_Names, collpse = c(rep(",", length(Metadata_Names) -1), "")), "\n\n")
@@ -429,6 +432,12 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
            Folds_Num <- 2 # i loop - Standard is 10 
            Iter_Num <- 2  # Iter while() loop - standard is 8
            Num_Oties_Model <- NA # NA => use all available 
+           
+           cat("\nRdm_Reps_Main, Folds_Num, and Iter_Num changed for the Sable_Test Spectra set\n")
+           cat("\nRdm_Reps_Main =", Rdm_Reps_Main)
+           cat("\nFolds_Num =", Folds_Num)
+           cat("\nIter_Num =", Iter_Num)
+           Sys.sleep(4)
         } 
            
         headTail(Model_Spectra_Meta, 2, 2, 3, 55)    
@@ -585,36 +594,6 @@ if(!file.exists(paste0(Spectra_Set, '_Model_Spectra.sg.iPLS.RData')) & !Metadata
 # --- NN Model ---
 { ###
 
-# ----- Remove both metadata columns for testing  -----
-# Model_Spectra.sg.iPLS_Meta$length_prop_max <- Model_Spectra.sg.iPLS_Meta$structure_weight_dg <- NULL
-
-# ----- Leave only the fish length for testing  -----
-# Model_Spectra.sg.iPLS_Meta$structure_weight_dg <- NULL
-
-# ----- Leave only the otie weight for testing  -----
-# Model_Spectra.sg.iPLS_Meta$length_prop_max <- NULL
-
-
-#   # --------- Special code to test 'Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg', 'Days_into_Year', and reduced model size in the NN Model with the same scans in Model_Spectra.sg.iPLS_Meta ------------------------------
-#   base::load("C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2025.RData")  # From NWFSC Data Warehouse
-#   
-#   
-#   #     ===>                                                                                                                                                                                              Fish length and Otie Wgt: # SAD: 2050; RMSE: 2.7280
-#   # Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Depth_m', 'Sex', 'Weight_kg')) # Very poor results
-#   # Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Month_Scaled', 'Weight_kg', 'Depth_m'))  # SAD: 2029; RMSE: 2.7678
-#   Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m')) # SAD: 2002; RMSE: 2.6742
-#   #    Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, filenames = Model_Spectra_Meta$filenames, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Length_cm', 'Age')) # Stratified Random
-#   # Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Weight_kg') # SAD: 2088; RMSE: 2.7389
-#   # Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Depth_m')  # SAD: 2042; RMSE: 2.7404
-#   # Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", 'Month_Scaled')  # SAD: ????; RMSE: ????
-#   # Model_Spectra.sg.iPLS_Meta <- match.f(data.frame(Model_Spectra.sg.iPLS_Meta, specimen_id = as.character(Model_Spectra_Meta$specimen_id)), selectSpAgesFramFeb2024, "specimen_id", "AgeStr_id", c('Weight_kg', 'Depth_m', 'Days_into_Year')) # SAD: 2090; RMSE: 2.8047
-
-#   Model_Spectra.sg.iPLS_Meta$specimen_id <- NULL  # specimen_id only needed for the matching above
-
-
-# Use the best metadata found with the above testing for the production code is saved in the prior section
-
-
 #  ==== Metadata only model run - no need to load Model_Spectra.sg.iPLS_Meta above, as it is created below ====
      # Not using the random selection code below so that the number oties is not reduced
 if(Metadata_Only) {
@@ -656,41 +635,6 @@ print(dim(na.omit(Model_Spectra.sg.iPLS_Meta)))
 if(nrow(Model_Spectra.sg.iPLS_Meta) != nrow(na.omit(Model_Spectra.sg.iPLS_Meta)))
    stop("\n\n!! Not all missing data was removed !!\n\n")
   
-
-################ OLD ###############
-# These 3 oties in the metadata were missing from the Data WareHouse for Sablefish 2022: AgeStr_id %in% 102133144:102133146  ????????????????
-
-#  Model_Spectra.sg.iPLS_Meta$Month_Scaled[is.na(Model_Spectra.sg.iPLS_Meta$Month_Scaled)] <- 6:8/12
-#  Model_Spectra.sg.iPLS_Meta$Depth_m[is.na(Model_Spectra.sg.iPLS_Meta$Depth_m)] <- mean(Model_Spectra.sg.iPLS_Meta$Depth_m, na.rm = TRUE)
-#  Model_Spectra.sg.iPLS_Meta$Weight_kg[is.na(Model_Spectra.sg.iPLS_Meta$Weight_kg)] <- mean(Model_Spectra.sg.iPLS_Meta$Weight_kg, na.rm = TRUE) 
-#  Model_Spectra.sg.iPLS_Meta$Sex[is.na(Model_Spectra.sg.iPLS_Meta$Sex)] <- c('M','F', 'M')
-
-#  print(dim(na.omit(Model_Spectra.sg.iPLS_Meta)))
-#  print(headTail(Model_Spectra.sg.iPLS_Meta, 3, 2, 3, 5))
-################################
-
-#  # --------- Special code cont. -----------
-#  if(!is.null(Model_Spectra.sg.iPLS_Meta$Sex)) {
-#     Model_Spectra.sg.iPLS_Meta$Sex_prop_max <- as.numeric(recode.simple(Model_Spectra.sg.iPLS_Meta$Sex, data.frame(c('F','M', 'U'), 0:2)))/2  # ** All variables have to be numeric ** 
-#     Model_Spectra.sg.iPLS_Meta$Sex <- NULL
-#  }   
-#  
-#  if(!is.null(Model_Spectra.sg.iPLS_Meta$Depth_m)) {
-#     Model_Spectra.sg.iPLS_Meta$Depth_prop_max <- (Model_Spectra.sg.iPLS_Meta$Depth_m - min(Model_Spectra.sg.iPLS_Meta$Depth_m))/(max(Model_Spectra.sg.iPLS_Meta$Depth_m) - min(Model_Spectra.sg.iPLS_Meta$Depth_m))
-#     Model_Spectra.sg.iPLS_Meta$Depth_m <- NULL
-#  }   
-#  
-#  if(!is.null(Model_Spectra.sg.iPLS_Meta$Weight_kg)) {
-#     Model_Spectra.sg.iPLS_Meta$Weight_prop_max <- (Model_Spectra.sg.iPLS_Meta$Weight_kg - min(Model_Spectra.sg.iPLS_Meta$Weight_kg))/(max(Model_Spectra.sg.iPLS_Meta$Weight_kg) - min(Model_Spectra.sg.iPLS_Meta$Weight_kg))
-#     Model_Spectra.sg.iPLS_Meta$Weight_kg <- NULL
-#  }   
-#  
-#  if(!is.null(Model_Spectra.sg.iPLS_Meta$Days_into_Year)) {
-#     Model_Spectra.sg.iPLS_Meta$Days_into_Year_prop_max <- (Model_Spectra.sg.iPLS_Meta$Days_into_Year - min(Model_Spectra.sg.iPLS_Meta$Days_into_Year))/(max(Model_Spectra.sg.iPLS_Meta$Days_into_Year) - min(Model_Spectra.sg.iPLS_Meta$Days_into_Year))
-#      Model_Spectra.sg.iPLS_Meta$Days_into_Year <- NULL
-#  }   
-
-#  headTail(Model_Spectra.sg.iPLS_Meta, 3, 2, 3, 5)
 
 # = = = = = = = = = = = = = = = = = Intial setup = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
    
@@ -1353,3 +1297,4 @@ if(exists('Wrap_Up_Flag')) {
  
  
  
+
