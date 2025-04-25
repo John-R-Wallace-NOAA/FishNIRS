@@ -35,11 +35,12 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 
+
 # download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/Sable_Test/Sable_2024_Scans.zip", "Sable_2024_Scans.zip")
 # unzip("Sable_2024_Scans.zip")
 
 
-# download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scripts/iPLS%2C%20NN%20Model%20Batch%20Self%20Call%20Loop.R", "iPLS, NN Model Batch Self Call Loop.R") # !!! File is double spaced !!!
+# download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scripts/iPLS%2C%20NN%20Model%20Batch%20Self%20Call%20Loop.R", "iPLS, NN Model Batch Self Call Loop.R") # !!! With the defaults this file is double spaced :-\
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scripts/iPLS%2C%20NN%20Model%20Batch%20Self%20Call%20Loop.R", type = "script")  # 'iPLS, NN Model Batch Self Call Loop.R'
 dir.create("C:/SIDT/Train_NN_Model", showWarnings = FALSE, recursive = TRUE)
