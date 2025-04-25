@@ -5,7 +5,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
                            Extra_Meta_Path = NULL, Multi_Year = TRUE, opusReader = c('pierreroudier_opusreader', 'philippbaumann_opusreader2')[2], Max_N_Spectra = list(50, 200, 'All')[[2]], 
                            Seed_Plot = 707, Spectra_Path = "New_Scans", axes_zoomed_limit = 15, Bias_Adj_Factor_Ages = NULL, Bias_Reduction_Factor = 1, Lowess_smooth_para = 2/3, Corr_Calc = TRUE,
                            Predicted_Ages_Path = "Predicted_Ages", Meta_Add = TRUE, Metadata_Extra = NULL, Meta_Data_Factors = NULL, Graph_Metadata = NULL, Metadata_Extra_File = NULL, Delta_Given = NULL,
-                           TMA_Ages = TRUE, TMA_Ages_Only = TRUE, verbose = TRUE, scanUniqueName = 'shortName', F_vonBert = NULL, M_vonBert = NULL, Debug_plotly.Spec = FALSE, plot = TRUE, main = "") {
+                           TMA_Ages = TRUE, TMA_Ages_Only = FALSE, verbose = TRUE, scanUniqueName = 'shortName', F_vonBert = NULL, M_vonBert = NULL, Debug_plotly.Spec = FALSE, plot = TRUE, main = "") {
 
     '  ################################################################################################################################################################                             '
     '  #       Need >= R ver 3.0                                                                                                                                      #                             '
@@ -18,7 +18,8 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
     '  #  Spectra_Path  # Put new spectra scans in a separate folder and enter the name of the folder in this argument                                                                              '
     '  #  Predicted_Ages_Path # The NN predicted ages will go in the path defined by this argument                                                                                                  '
     '  #  Meta_Add  #  Will metadata be used                                                                                                                                                        '
-    '  #  TMA_Ages  # Are TMA ages available and are they to be used?                                                                                                                               '
+    '  #  TMA_Ages  # TMA_Ages = TRUE => There is at least some TMA for figures that need them.                                                                                                     '
+    '  #  TMA_Ages_Only   #  TMA_Ages_Only = FALSE => Predictions for those oties without TMA will occur.                                                                                           '
                                                                                                                                                                                                    
     '  #  Max_N_Spectra  # Default number of new spectra to be plotted in spectra figures. (The plot within Read_OPUS_Spectra() is given a different default below).                                '
     '  #                 # All spectra in the Spectra_Path folder will be assigned an age regardless of the number plotted in the figure.                                                           '
@@ -282,7 +283,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         cat("\n\nN_Samp =", N_Samp, "\n\n")
      
      if(is.null(Model_Spectra_Meta_Path)) {
-        Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages = TMA_Ages, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Path = Meta_Path, 
+        Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set, Spectra_Path = Spectra_Path, TMA_Ages_Only = TMA_Ages_Only, Max_N_Spectra = N_Samp, verbose = verbose, Meta_Path = Meta_Path, 
                                       Extra_Meta_Path = Extra_Meta_Path, plot = plot, htmlPlotFolder = paste0(Predicted_Ages_Path, '/', Spectra_Set, '_Spectra_Sample_of_', N_Samp))
      } else {
        load(Model_Spectra_Meta_Path)  
@@ -292,7 +293,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
           Model_Spectra_Meta <- Model_Spectra_Meta[!is.na(Model_Spectra_Meta$TMA), ]  # Since TMA_Ages_Only = TRUE, make sure there are no missing TMA
         
      if(verbose) {
-        cat("\n\nIf TMA_Ages_Only = TRUE, then any otie with a missing TMA has been removed\n\n")
+        cat("\n\nSince TMA_Ages_Only = TRUE, then any otie with a missing TMA has been removed\n\n")
         headTail(Model_Spectra_Meta, 2, 2, 3, 70)
      }
      
@@ -848,7 +849,10 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
         TMA_Years <- unique(New_Ages$Year[!is.na(New_Ages$TMA)])
         N_TMA_Years <- length(TMA_Years)
-        if(N_TMA_Years == 2) {
+        
+        if(N_TMA_Years == 1) {
+                 par_mfr_row <- 1; par_mfr_col <- 1
+        } else if(N_TMA_Years == 2) {
                  par_mfr_row <- 2; par_mfr_col <- 1
         } else if(N_TMA_Years > 2 & N_TMA_Years <= 4) {
                  par_mfr_row <- 2; par_mfr_col <- 2
@@ -947,7 +951,9 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
         if(!is.null(Graph_Metadata)) {
             All_Years <- unique(New_Ages_Good$Year)
             N_Years <- length(All_Years)
-            if(N_Years == 2) {
+            if(N_Years == 1) {
+                     par_mfr_row <- 1; par_mfr_col <- 1
+            } else if(N_Years == 2) {
                      par_mfr_row <- 2; par_mfr_col <- 1
             } else if(N_Years > 2 & N_Years <= 4) {
                      par_mfr_row <- 2; par_mfr_col <- 2
