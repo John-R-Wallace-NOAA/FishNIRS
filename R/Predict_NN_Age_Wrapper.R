@@ -558,7 +558,7 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          
          
          New_Ages$Delta <- Delta
-         New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded <- round(New_Ages$NN_Pred_Median + Delta)
+         New_Ages$Pred_Age_Bias_Corr_plus_Delta_rounded <- round(New_Ages$NN_Pred_Median + Delta)  # If Bias_Adj_Factor_Ages = NULL then "_Bias" will be taken out of this column name at the bottom of this function
          cat(paste0("\n\nUsing a rounding Delta of ", Delta, "\n\n"))
          # nrow(newScans.pred.ALL)/max(newScans.pred.ALL$Index) # For debugging
      
@@ -1091,26 +1091,39 @@ Predict_NN_Age_Wrapper <- function(Spectra_Set = c("Hake_2019", "Sable_2017_2019
          }
         }
         
-        New_Ages$Sex_F <- New_Ages$Sex_M <- New_Ages$Sex_U <- NULL
+        # -- Clean up New_Ages and save --
+        
+        New_Ages$structure_weight_dg <- New_Ages$Index <- New_Ages$Length_prop_max <- New_Ages$Weight_prop_max <- New_Ages$Depth_prop_max <- New_Ages$Latitude_prop_max <- New_Ages$Sex_F <- New_Ages$Sex_M <- New_Ages$Sex_U <- NULL
+        
         New_Ages <- match.f(New_Ages, NN_Pred_Median_TMA, 'filenames', 'filenames', 'Used_NN_Model')
+        New_Ages$Used_NN_Model[is.na(New_Ages$Used_NN_Model)] <- FALSE         
+        
+        names(New_Ages)[grep('Year', names(New_Ages))] <- "Year_Project"
+        
+        if(is.null(Bias_Adj_Factor_Ages)) {
+          names(New_Ages)[grep('Pred_Age_Bias_Corr_plus_Delta_rounded', names(New_Ages))] <- "Pred_Age_Corr_plus_Delta_rounded"
+          names(New_Ages)[grep('Pred_Age_Bias_Corr_plus_Delta_rounded_Minus_TMA', names(New_Ages))] <- "Pred_Age_Corr_plus_Delta_rounded_Minus_TMA"
+        }
+              
+        headTail(New_Ages)
         assign('New_Ages', New_Ages, pos = 1)
         save(New_Ages, file = paste0(Predicted_Ages_Path, '/NN Predicted Ages, ', Date(" "), '.RData'))
      
            
-     sink(paste0(Predicted_Ages_Path, "/", Spectra_Set, "_Stats.txt"), split = TRUE)
-     {
-       cat("\n\n")
-       print(Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta)))
-       
-       cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
-       summary(agePrecision(~ TMA + round(NN_Pred_Median + Delta), data = New_Ages), what="precision")
-       cat("\n\n")
-     }
-     sink()
-     
-     if(verbose) {
-       cat("\nMetadata variables used:", SG_Variables_Selected[metaDataVar], "\n\n")
-     }
+        sink(paste0(Predicted_Ages_Path, "/", Spectra_Set, "_Stats.txt"), split = TRUE)
+        {
+          cat("\n\n")
+          print(Cor_R_squared_RMSE_MAE_SAD_APE(New_Ages$TMA, round(New_Ages$NN_Pred_Median + Delta)))
+          
+          cat("\n\nFSA (Simple Fisheries Stock Assessment Methods) package's agePrecision() stats:\n\n")
+          summary(agePrecision(~ TMA + round(NN_Pred_Median + Delta), data = New_Ages), what="precision")
+          cat("\n\n")
+        }
+        sink()
+        
+        if(verbose) {
+          cat("\nMetadata variables used:", SG_Variables_Selected[metaDataVar], "\n\n")
+        }
 }     
      
      
