@@ -3,10 +3,14 @@
 dir.create("C:/SIDT/Sable_Test", showWarnings = FALSE, recursive = TRUE)
 setwd("C:/SIDT/Sable_Test")
 
+# Save this file (https://github.com/John-R-Wallace-NOAA/FishNIRS/blob/main/Sable_Test/Run%20Sable_Test.R) into C:/SIDT/Sable_Test"
+
+
 
 # --- Importing scans into R  ---
 
 # --- Download functions from GitHub ---
+{ # sourceFunctionURL
 sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
           '   # For more functionality, see gitAFile() in the rgit package ( https://github.com/John-R-Wallace-NOAA/rgit ) which includes gitPush() and git()   '
           '   # Example to save a function to the working directory:   '
@@ -30,27 +34,26 @@ sourceFunctionURL <- function (URL,  type = c("function", "script")[1]) {
             write(paste(readLines(textConnection(httr::content(getTMP))), collapse = "\n"), fileName)
           }  
 } 
-###
+sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/replaceString.R")
+} ###
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/JRWToolBox/master/R/headTail.R")
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R/Read_OPUS_Spectra.R")
 
 
-# download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/Sable_Test/Sable_2024_Scans.zip", "Sable_2024_Scans.zip")
-# unzip("Sable_2024_Scans.zip")
+# Using Micosoft Edge (or Opera, Chrome fails for me) download the file:
+#     https://drive.google.com/drive/folders/1r8HDfHxifHzYKnoqbcCev_QVLcvjIFYe?usp=sharing/Sable_2024_Scans.zip
+# unzip the folder, and also put this folder into: "C:/SIDT/Sable_Test"
 
-
-# download.file("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scripts/iPLS%2C%20NN%20Model%20Batch%20Self%20Call%20Loop.R", "iPLS, NN Model Batch Self Call Loop.R") # !!! With the defaults this file is double spaced :-\
 
 sourceFunctionURL("https://raw.githubusercontent.com/John-R-Wallace-NOAA/FishNIRS/master/R_Scripts/iPLS%2C%20NN%20Model%20Batch%20Self%20Call%20Loop.R", type = "script")  # 'iPLS, NN Model Batch Self Call Loop.R'
 dir.create("C:/SIDT/Train_NN_Model", showWarnings = FALSE, recursive = TRUE)
 file.copy("C:/SIDT/Sable_Test/iPLS, NN Model Batch Self Call Loop.R", "C:/SIDT/Train_NN_Model", overwrite = TRUE)
 
 
-
 Model_Spectra_Meta <- Read_OPUS_Spectra(Spectra_Set = "Sable_Test", fileNames_Sort_Seqment = NULL,
-      # Spectra_Path = "2024_Scans/", # Need the last "/" for now
-      Spectra_Path = "//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/NWFSC_COMBO/SABL_Sablefish/2024/",
+      Spectra_Path = "2024_Scans/", # Need the last "/" for now
+      # Spectra_Path = "//nwcfile.nmfs.local/FRAM/Assessments/Aging Lab/NIRS Scanning Data/Otoliths/FT_NIRS_Project/PRD_Production/NWFSC_COMBO/SABL_Sablefish/2024/",
       htmlPlotFolder = "Figures_Sable_Test_2024", Static_Figure = "Sable_Test_2024.png", Meta_Path = NULL, 
       Extra_Meta_Path = "C:/SIDT/Get Otie Info from Data Warehouse/selectSpAgesFramFeb2025.RData", excelSheet = 3, 
       shortNameSegments = c(1, 5), shortNameSuffix = 'Sable_Test', Debug = TRUE)
@@ -85,6 +88,11 @@ if(file.exists("C:/SIDT/Train_NN_Model/.Rprofile"))
 #    \\nwcfile.nmfs.local\FRAM\Assessments\Aging Lab\NIRS Scanning Analysis\Anaconda TensorFlow Environ/tf.7z  # 7zip compression
 
 # and uncompressed into: "C:/m3/envs/" with a resulting 'tf' path of: "C:/m3/envs/tf"  
+
+# The Anaconda TensorFlow environment is also now here (use Microsoft Edge or Opera to downlaod, Chrome fails for me):
+#    https://drive.google.com/drive/folders/1r8HDfHxifHzYKnoqbcCev_QVLcvjIFYe?usp=sharing/tf.zip     
+
+
 # Search for "Conda_TF_Eniv" in 'iPLS, NN Model Batch Self Call Loop.R' to change the path as needed.
 
 # A properly setup Nvidia graphics card may be needed (ask IT for help), but a Dell laptop with Intel UHD Graphics 630 integrated into the i7 CPU does work with the GPU mode disabled. 
